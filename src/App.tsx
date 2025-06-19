@@ -12,30 +12,74 @@ import { SettingsPage } from './pages/SettingsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const [emergencyTimeout, setEmergencyTimeout] = React.useState(false);
 
-  if (loading) {
+  // Emergency timeout to prevent infinite loading
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.warn('ProtectedRoute: Emergency timeout triggered');
+        setEmergencyTimeout(true);
+      }
+    }, 8000); // 8 second emergency timeout
+
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  if (loading && !emergencyTimeout) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-main"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-main mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  return user ? <>{children}</> : <Navigate to="/auth" />;
+  // If emergency timeout or user check complete
+  if (emergencyTimeout && !user) {
+    console.warn('ProtectedRoute: Emergency redirect to auth');
+    return <Navigate to="/auth" replace />;
+  }
+
+  return user ? <>{children}</> : <Navigate to="/auth" replace />;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const [emergencyTimeout, setEmergencyTimeout] = React.useState(false);
 
-  if (loading) {
+  // Emergency timeout to prevent infinite loading
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.warn('PublicRoute: Emergency timeout triggered');
+        setEmergencyTimeout(true);
+      }
+    }, 8000); // 8 second emergency timeout
+
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  if (loading && !emergencyTimeout) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-main"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-main mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking your session...</p>
+        </div>
       </div>
     );
   }
 
-  return user ? <Navigate to="/dashboard" /> : <>{children}</>;
+  // If emergency timeout and still loading, show children (public content)
+  if (emergencyTimeout) {
+    console.warn('PublicRoute: Emergency timeout, showing public content');
+    return <>{children}</>;
+  }
+
+  return user ? <Navigate to="/dashboard" replace /> : <>{children}</>;
 }
 
 function AppRoutes() {

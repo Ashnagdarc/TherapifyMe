@@ -22,11 +22,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     console.log('AuthProvider: Initializing...');
-    
+
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.warn('AuthProvider: Session check timeout, setting loading to false');
+      setLoading(false);
+    }, 10000); // 10 second timeout
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       console.log('AuthProvider: Initial session check', { session: !!session, error });
-      
+
+      // Clear timeout since we got a response
+      clearTimeout(timeoutId);
+
       if (error) {
         console.error('AuthProvider: Session error:', error);
         setLoading(false);
@@ -34,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         console.log('AuthProvider: User found, fetching profile...');
         fetchProfile(session.user.id);
@@ -42,6 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('AuthProvider: No user session');
         setLoading(false);
       }
+    }).catch((error) => {
+      console.error('AuthProvider: Unexpected session error:', error);
+      clearTimeout(timeoutId);
+      setLoading(false);
     });
 
     // Listen for auth changes
@@ -49,9 +62,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthProvider: Auth state changed:', event, { session: !!session });
-      
+
+      // Handle different auth events
+      if (event === 'SIGNED_OUT') {
+        console.log('AuthProvider: User signed out');
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        console.log('AuthProvider: User signed in or token refreshed');
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          console.log('AuthProvider: Fetching profile for user:', session.user.id);
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      // For other events, update user state
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         console.log('AuthProvider: Fetching profile for user:', session.user.id);
         await fetchProfile(session.user.id);
@@ -63,24 +100,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       console.log('AuthProvider: Cleaning up subscription');
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
 
   const fetchProfile = async (authId: string) => {
     console.log('AuthProvider: fetchProfile called for:', authId);
-    
+
     try {
-      // First, try to get existing profile
-      let { data, error } = await supabase
+      // Set a timeout for profile fetching
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 8000)
+      );
+
+      // First, try to get existing profile with timeout
+      const profilePromise = supabase
         .from('users')
         .select('*')
         .eq('auth_id', authId)
         .maybeSingle();
 
+      let { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
+
       console.log('AuthProvider: Profile query result:', { data: !!data, error });
 
-      if (error && error.code !== 'PGRST116') {
+      if (error && error.code !== 'PGRST116' && error.message !== 'Profile fetch timeout') {
         console.error('AuthProvider: Profile fetch error:', error);
         throw error;
       }
@@ -88,9 +133,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         console.log('AuthProvider: Profile found:', data);
         setProfile(data);
+      } else if (error?.message === 'Profile fetch timeout') {
+        console.warn('AuthProvider: Profile fetch timed out');
+        setProfile(null);
       } else {
         console.log('AuthProvider: No profile found, trying to create...');
-        
+
         // Try to create profile manually if trigger didn't work
         const { data: newProfile, error: createError } = await supabase
           .from('users')
@@ -107,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (createError) {
           console.error('AuthProvider: Error creating profile:', createError);
-          
+
           // If creation failed, try fetching again (maybe trigger created it)
           const { data: retryData, error: retryError } = await supabase
             .from('users')
@@ -138,25 +186,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('AuthProvider: Signing in...');
     setLoading(true);
-    
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    
+
     if (error) {
       console.error('AuthProvider: Sign in error:', error);
       setLoading(false);
       throw error;
     }
-    
+
     console.log('AuthProvider: Sign in successful');
   };
 
   const signUp = async (email: string, password: string, name: string) => {
     console.log('AuthProvider: Signing up...');
     setLoading(true);
-    
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -166,38 +214,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       },
     });
-    
+
     if (error) {
       console.error('AuthProvider: Sign up error:', error);
       setLoading(false);
       throw error;
     }
-    
+
     console.log('AuthProvider: Sign up successful');
   };
 
   const signOut = async () => {
     console.log('AuthProvider: Signing out...');
-    
-    // Clear local state first
-    setUser(null);
-    setProfile(null);
-    setLoading(false);
-    
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('AuthProvider: Sign out error:', error);
-      throw error;
+
+    try {
+      // Set loading state during sign out
+      setLoading(true);
+
+      // Clear local state immediately
+      setUser(null);
+      setProfile(null);
+
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('AuthProvider: Sign out error:', error);
+        // Don't throw error - still clear local state
+      }
+
+      // Clear any cached data in localStorage
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+
+      console.log('AuthProvider: Sign out successful');
+
+      // Force page reload to ensure clean state
+      window.location.href = '/';
+
+    } catch (error) {
+      console.error('AuthProvider: Unexpected sign out error:', error);
+      // Still clear state and redirect
+      setUser(null);
+      setProfile(null);
+      window.location.href = '/';
+    } finally {
+      setLoading(false);
     }
-    
-    console.log('AuthProvider: Sign out successful');
   };
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user) throw new Error('No authenticated user');
 
     console.log('AuthProvider: Updating profile:', updates);
-    
+
     const { data, error } = await supabase
       .from('users')
       .update({ ...updates, updated_at: new Date().toISOString() })
@@ -209,14 +278,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('AuthProvider: Profile update error:', error);
       throw error;
     }
-    
+
     console.log('AuthProvider: Profile updated:', data);
     setProfile(data);
   };
 
-  console.log('AuthProvider: Current state:', { 
-    user: !!user, 
-    profile: !!profile, 
+  console.log('AuthProvider: Current state:', {
+    user: !!user,
+    profile: !!profile,
     loading,
     userId: user?.id,
     profileId: profile?.id
