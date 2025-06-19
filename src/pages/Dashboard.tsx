@@ -136,6 +136,18 @@ export function Dashboard() {
         };
     }, [audioUrl]);
 
+    // Debug effect to monitor state changes
+    React.useEffect(() => {
+        console.log('=== STATE CHANGE DEBUG ===');
+        console.log('checkInStep:', checkInStep);
+        console.log('transcription length:', transcription.length);
+        console.log('editedTranscription length:', editedTranscription.length);
+        console.log('audioUrl:', !!audioUrl);
+        console.log('selectedMood:', selectedMood);
+        console.log('checkInError:', checkInError);
+        console.log('========================');
+    }, [checkInStep, transcription, editedTranscription, audioUrl, selectedMood, checkInError]);
+
     const getDefaultDashboardData = (): DashboardData => ({
         moodTrends: getDefaultMoodTrends(),
         userAnalytics: {
@@ -218,10 +230,34 @@ export function Dashboard() {
     const startRecording = async () => {
         try {
             setCheckInError(null);
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            console.log('Requesting microphone access...');
+
+            // Check if browser supports getUserMedia
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Your browser does not support audio recording. Please use a modern browser like Chrome, Firefox, or Safari.');
+            }
+
+            // Request microphone access with specific constraints
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 44100
+                }
+            });
+
+            console.log('Microphone access granted');
             streamRef.current = stream;
 
-            const mediaRecorder = new MediaRecorder(stream);
+            // Check if MediaRecorder is supported
+            if (!window.MediaRecorder) {
+                throw new Error('Your browser does not support audio recording. Please update to a newer version.');
+            }
+
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+            });
             mediaRecorderRef.current = mediaRecorder;
 
             const chunks: BlobPart[] = [];
@@ -229,11 +265,23 @@ export function Dashboard() {
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
                     chunks.push(event.data);
+                    console.log('Audio chunk received:', event.data.size, 'bytes');
                 }
             };
 
             mediaRecorder.onstop = async () => {
-                const blob = new Blob(chunks, { type: 'audio/wav' });
+                console.log('MediaRecorder stopped, processing audio...');
+                const mimeType = mediaRecorder.mimeType || 'audio/wav';
+                const blob = new Blob(chunks, { type: mimeType });
+
+                if (blob.size === 0) {
+                    console.error('No audio data recorded');
+                    setCheckInError('No audio was recorded. Please check your microphone and try again.');
+                    setCheckInStep('idle');
+                    return;
+                }
+
+                console.log('Audio blob created:', blob.size, 'bytes');
                 setAudioBlob(blob);
 
                 const url = URL.createObjectURL(blob);
@@ -244,14 +292,25 @@ export function Dashboard() {
                 await processRecording(blob);
 
                 if (streamRef.current) {
-                    streamRef.current.getTracks().forEach(track => track.stop());
+                    streamRef.current.getTracks().forEach(track => {
+                        track.stop();
+                        console.log('Media track stopped');
+                    });
                 }
             };
 
-            mediaRecorder.start();
+            mediaRecorder.onerror = (event) => {
+                console.error('MediaRecorder error:', event);
+                setCheckInError('Recording failed. Please try again.');
+                setCheckInStep('idle');
+            };
+
+            mediaRecorder.start(1000); // Collect data every second
             setCheckInStep('recording');
             setIsRecording(true);
             setRecordingTime(0);
+
+            console.log('Recording started successfully');
 
             timerRef.current = setInterval(() => {
                 setRecordingTime(prev => prev + 1);
@@ -259,69 +318,139 @@ export function Dashboard() {
 
         } catch (err) {
             console.error('Error starting recording:', err);
-            setCheckInError('Unable to access microphone. Please check your permissions.');
+            if (err instanceof Error) {
+                if (err.name === 'NotAllowedError') {
+                    setCheckInError('Microphone access denied. Please allow microphone access and try again.');
+                } else if (err.name === 'NotFoundError') {
+                    setCheckInError('No microphone found. Please connect a microphone and try again.');
+                } else if (err.name === 'NotReadableError') {
+                    setCheckInError('Microphone is being used by another application. Please close other apps and try again.');
+                } else {
+                    setCheckInError(err.message || 'Unable to access microphone. Please check your permissions and try again.');
+                }
+            } else {
+                setCheckInError('Unable to access microphone. Please check your permissions and try again.');
+            }
+            setCheckInStep('idle');
         }
     };
 
     const stopRecording = () => {
         if (mediaRecorderRef.current && isRecording) {
+            console.log('Stopping recording...');
+
+            // Validate recording duration
+            if (recordingTime < 1) {
+                setCheckInError('Recording too short. Please record for at least 1 second.');
+                setCheckInStep('idle');
+                setIsRecording(false);
+
+                // Clean up
+                if (timerRef.current) {
+                    clearInterval(timerRef.current);
+                }
+                if (streamRef.current) {
+                    streamRef.current.getTracks().forEach(track => track.stop());
+                }
+                return;
+            }
+
             mediaRecorderRef.current.stop();
             setIsRecording(false);
 
             if (timerRef.current) {
                 clearInterval(timerRef.current);
             }
+
+            console.log(`Recording stopped after ${recordingTime} seconds`);
         }
     };
 
     const processRecording = async (blob: Blob) => {
         try {
-            setProcessingStep('Transcribing your audio...');
-            console.log('Starting transcription process...');
+            console.log('=== PROCESSING RECORDING START ===');
+            console.log('Blob size:', blob.size, 'bytes');
+            console.log('Blob type:', blob.type);
+
+            setProcessingStep('Uploading your audio...');
+            setCheckInError(null); // Clear any previous errors
 
             // Upload audio first
-            const fileName = `${profile?.id}/voice-note-${Date.now()}.wav`;
+            const fileName = `${profile?.id}/voice-note-${Date.now()}.webm`;
             console.log('Uploading audio file:', fileName);
+            console.log('User ID:', profile?.id);
+            console.log('Blob details:', { size: blob.size, type: blob.type });
 
             const { data, error } = await supabase.storage
                 .from('voice-recordings')
                 .upload(fileName, blob, {
-                    contentType: 'audio/wav',
-                    upsert: false
+                    contentType: blob.type || 'audio/webm',
+                    upsert: true, // Allow overwrite if file exists
+                    cacheControl: '3600'
                 });
 
             if (error) {
                 console.error('Error uploading audio:', error);
-                throw new Error('Failed to upload audio file');
+                console.error('Error details:', JSON.stringify(error, null, 2));
+
+                // Try alternative approach - skip upload and continue with local blob
+                console.warn('Upload failed, continuing with local audio blob for transcription');
+                const localUrl = URL.createObjectURL(blob);
+                setAudioUrl(localUrl);
+            } else {
+                console.log('Audio uploaded successfully:', data);
+
+                // Get public URL
+                const { data: urlData } = supabase.storage
+                    .from('voice-recordings')
+                    .getPublicUrl(fileName);
+
+                console.log('Public URL obtained:', urlData.publicUrl);
+                setAudioUrl(urlData.publicUrl);
             }
 
-            console.log('Audio uploaded successfully:', data);
-
-            // Get public URL
-            const { data: urlData } = supabase.storage
-                .from('voice-recordings')
-                .getPublicUrl(fileName);
-
             // Transcribe
+            setProcessingStep('Transcribing your audio...');
             console.log('Starting transcription...');
-            const transcriptionText = await TranscriptionService.transcribeAudio(blob);
-            console.log('Transcription completed:', transcriptionText);
 
-            setTranscription(transcriptionText);
-            setEditedTranscription(transcriptionText);
-            setAudioUrl(urlData.publicUrl);
+            try {
+                const transcriptionText = await TranscriptionService.transcribeAudio(blob);
+                console.log('Transcription completed successfully:', transcriptionText);
+
+                if (!transcriptionText || transcriptionText.trim() === '') {
+                    console.warn('Empty transcription received, using placeholder');
+                    const placeholderText = "I shared my thoughts during this check-in session.";
+                    setTranscription(placeholderText);
+                    setEditedTranscription(placeholderText);
+                } else {
+                    setTranscription(transcriptionText);
+                    setEditedTranscription(transcriptionText);
+                }
+            } catch (transcriptionError) {
+                console.error('Transcription failed:', transcriptionError);
+                // Provide a fallback message instead of failing completely
+                const fallbackText = "Audio recorded successfully. You can edit this text to describe what you shared.";
+                setTranscription(fallbackText);
+                setEditedTranscription(fallbackText);
+                console.log('Using fallback transcription text');
+            }
 
             // Move to reviewing step
-            setCheckInStep('reviewing');
-            setProcessingStep('');
-            console.log('Moved to reviewing step');
+            console.log('Moving to reviewing step...');
+            console.log('Transcription text will be set to state');
+            console.log('Audio URL will be available for playback');
 
-            // Small delay to ensure UI updates properly
-            await new Promise(resolve => setTimeout(resolve, 500));
+            setProcessingStep('');
+            setCheckInStep('reviewing');
+
+            console.log('=== PROCESSING RECORDING COMPLETED ===');
+            console.log('State changed to: reviewing');
 
         } catch (error) {
-            console.error('Error processing recording:', error);
+            console.error('=== PROCESSING RECORDING FAILED ===');
+            console.error('Error details:', error);
             setCheckInError(`Failed to process your recording: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
+            setProcessingStep('');
             setCheckInStep('idle');
         }
     };
@@ -344,12 +473,20 @@ export function Dashboard() {
             setProcessingStep('Saving your check-in...');
 
             // Create the journal entry
+            console.log('Creating journal entry with data:', {
+                user_id: profile.id,
+                mood_tag: selectedMood,
+                voice_note_url: audioUrl,
+                transcription: editedTranscription || null,
+                text_summary: editedTranscription ? editedTranscription.substring(0, 500) : null,
+            });
+
             const { data: entryData, error: entryError } = await supabase
                 .from('entries')
                 .insert({
                     user_id: profile.id,
                     mood_tag: selectedMood,
-                    audio_url: audioUrl,
+                    voice_note_url: audioUrl, // Fixed: use voice_note_url instead of audio_url
                     transcription: editedTranscription || null,
                     text_summary: editedTranscription ? editedTranscription.substring(0, 500) : null,
                 })
@@ -437,10 +574,17 @@ Take care of yourself, and know that I'm here whenever you need support on your 
             analyticsService.invalidateUserCache(profile.id);
             await fetchDashboardData();
 
+            // Set completion state
+            setCheckInStep('complete');
+            setProcessingStep('');
+            console.log('Check-in completed successfully!');
+
         } catch (error) {
             console.error('Error saving check-in:', error);
-            setCheckInError('Failed to save your check-in. Please try again.');
+            console.error('Full error details:', JSON.stringify(error, null, 2));
+            setCheckInError(`Failed to save your check-in: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
             setCheckInStep('reviewing');
+            setProcessingStep('');
         }
     };
 
@@ -481,38 +625,44 @@ Take care of yourself, and know that I'm here whenever you need support on your 
             case 'recording':
                 return {
                     hue: 0, // Red for recording
-                    hoverIntensity: 0.8,
-                    forceHoverState: true
+                    hoverIntensity: 0.8 + (Math.sin(Date.now() * 0.01) * 0.2), // Pulsing effect
+                    forceHoverState: true,
+                    rotateOnHover: true
                 };
             case 'processing':
                 return {
                     hue: 60, // Yellow for processing
                     hoverIntensity: 0.6,
-                    forceHoverState: true
+                    forceHoverState: true,
+                    rotateOnHover: true
                 };
             case 'reviewing':
                 return {
                     hue: 180, // Cyan for reviewing
                     hoverIntensity: 0.4,
-                    forceHoverState: false
+                    forceHoverState: false,
+                    rotateOnHover: false
                 };
             case 'generating':
                 return {
                     hue: 120, // Green for generating
                     hoverIntensity: 0.7,
-                    forceHoverState: true
+                    forceHoverState: true,
+                    rotateOnHover: true
                 };
             case 'complete':
                 return {
                     hue: 270, // Purple for complete
                     hoverIntensity: 0.5,
-                    forceHoverState: false
+                    forceHoverState: false,
+                    rotateOnHover: false
                 };
             default:
                 return {
                     hue: 220, // Default blue
                     hoverIntensity: 0.3,
-                    forceHoverState: false
+                    forceHoverState: false,
+                    rotateOnHover: false
                 };
         }
     };
@@ -670,6 +820,24 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                     >
                         <Orb {...getOrbProps()} />
 
+                        {/* Recording Time Display */}
+                        {checkInStep === 'recording' && (
+                            <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
+                                <div className="bg-red-600 px-4 py-2 rounded-full text-white font-mono text-lg animate-pulse">
+                                    🔴 {formatTime(recordingTime)}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Processing Step Display */}
+                        {(checkInStep === 'processing' || checkInStep === 'generating') && processingStep && (
+                            <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-full text-center">
+                                <div className="bg-gray-800/90 px-4 py-2 rounded-lg text-gray-300 text-sm">
+                                    {processingStep}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Orb Icon Overlay */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             {checkInStep === 'idle' && (
@@ -698,16 +866,48 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                         <p className="text-gray-300 text-lg">
                             {getOrbMessage()}
                         </p>
+
+                        {/* Debug Info - Remove in production */}
+                        <div className="mt-2 text-xs text-gray-500 font-mono">
+                            State: {checkInStep} | Transcription: {transcription ? 'Yes' : 'No'} | Audio: {audioUrl ? 'Yes' : 'No'}
+                        </div>
                     </div>
 
                     {/* Check-in Flow UI */}
                     {checkInStep === 'reviewing' && (
                         <div className="w-full max-w-2xl space-y-6">
 
+                            {/* Audio Playback */}
+                            {audioUrl && (
+                                <div className="bg-gray-800 rounded-lg p-6">
+                                    <div className="flex items-center space-x-3 mb-4">
+                                        <Volume2 className="w-5 h-5 text-green-400" />
+                                        <h3 className="text-lg font-medium">Your Recording</h3>
+                                    </div>
+                                    <div className="bg-gray-900 rounded-lg p-4">
+                                        <audio
+                                            controls
+                                            className="w-full"
+                                            preload="metadata"
+                                        >
+                                            <source src={audioUrl} type="audio/webm" />
+                                            <source src={audioUrl} type="audio/wav" />
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                        <p className="text-xs text-gray-400 mt-2">
+                                            Listen to your recording to compare with the transcription below
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Transcription Editor */}
                             <div className="bg-gray-800 rounded-lg p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-medium">Your Thoughts</h3>
+                                    <div className="flex items-center space-x-3">
+                                        <MessageCircle className="w-5 h-5 text-blue-400" />
+                                        <h3 className="text-lg font-medium">Your Thoughts</h3>
+                                    </div>
                                     <button
                                         onClick={() => setIsEditingText(!isEditingText)}
                                         className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
@@ -731,6 +931,9 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                                         </p>
                                     </div>
                                 )}
+                                <p className="text-xs text-gray-400 mt-2">
+                                    Compare the audio with this text and edit if needed before saving
+                                </p>
                             </div>
 
                             {/* Mood Selection */}
