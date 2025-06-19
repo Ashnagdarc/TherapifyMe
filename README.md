@@ -298,9 +298,9 @@ We welcome contributions from the community! Please follow these steps:
 
 - **Daniel Samuel** - Lead Developer & Architecture
 - **Godswill Igbava** - Full-Stack Developer
-- **Emmanuel Atom** - Frontend Specialist
-- **Ojochide** - Backend & Database Engineer
-- **Gloria** - UI/UX Designer & Frontend Developer
+- **Emmanuel Atom** - UI/UX Designer
+- **Ojochide** - Project Manager
+- **Gloria** - UI/UX Designer
 
 ### **Special Recognition**
 
