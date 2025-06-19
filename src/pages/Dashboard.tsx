@@ -54,7 +54,7 @@ const MOOD_OPTIONS = [
 type CheckInStep = 'idle' | 'recording' | 'processing' | 'reviewing' | 'generating' | 'complete';
 
 export function Dashboard() {
-    const { profile, signOut, loading: authLoading } = useAuth();
+    const { profile, user, signOut, loading: authLoading } = useAuth();
     const navigate = useNavigate();
 
     // Dashboard Data State
@@ -145,8 +145,11 @@ export function Dashboard() {
         console.log('audioUrl:', !!audioUrl);
         console.log('selectedMood:', selectedMood);
         console.log('checkInError:', checkInError);
+        console.log('profile:', profile);
+        console.log('user:', user);
+        console.log('authLoading:', authLoading);
         console.log('========================');
-    }, [checkInStep, transcription, editedTranscription, audioUrl, selectedMood, checkInError]);
+    }, [checkInStep, transcription, editedTranscription, audioUrl, selectedMood, checkInError, profile, user, authLoading]);
 
     const getDefaultDashboardData = (): DashboardData => ({
         moodTrends: getDefaultMoodTrends(),
@@ -188,19 +191,56 @@ export function Dashboard() {
         return last7Days;
     };
 
-    const fetchDashboardData = async () => {
-        console.log('Dashboard: fetchDashboardData called', { profileId: profile?.id });
+    const fetchDashboardData = async (userIdOverride?: string) => {
+        const userId = userIdOverride || profile?.id;
+        const authId = user?.id;
 
-        if (!profile?.id) {
-            console.log('Dashboard: No profile ID, using default data');
+        console.log('Dashboard: fetchDashboardData called', {
+            userId,
+            profileId: profile?.id,
+            authId,
+            userIdOverride
+        });
+
+        if (!userId && !authId) {
+            console.log('Dashboard: No user ID available, using default data');
             setDashboardData(getDefaultDashboardData());
             setLoading(false);
             return;
         }
 
         try {
-            console.log('Dashboard: Calling analyticsService...');
-            const data = await analyticsService.getDashboardData(profile.id);
+            let targetUserId = userId;
+
+            // If no userId but we have authId, try to find the user profile
+            if (!targetUserId && authId) {
+                console.log('Dashboard: Looking up user profile by auth ID...');
+                const { data: userProfile, error } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('auth_id', authId)
+                    .maybeSingle();
+
+                if (userProfile) {
+                    targetUserId = userProfile.id;
+                    console.log('Dashboard: Found user profile:', targetUserId);
+                } else {
+                    console.log('Dashboard: No user profile found, using default data');
+                    setDashboardData(getDefaultDashboardData());
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            if (!targetUserId) {
+                console.log('Dashboard: No target user ID found, using default data');
+                setDashboardData(getDefaultDashboardData());
+                setLoading(false);
+                return;
+            }
+
+            console.log('Dashboard: Calling analyticsService with userId:', targetUserId);
+            const data = await analyticsService.getDashboardData(targetUserId);
             console.log('Dashboard: Analytics data received:', data);
             setDashboardData(data);
         } catch (error) {
@@ -461,10 +501,67 @@ export function Dashboard() {
             return;
         }
 
-        if (!profile) {
-            setCheckInError('Profile not loaded. Please try again.');
+        // Check for user ID from either profile or user
+        let userId = profile?.id;
+        const authId = user?.id;
+
+        if (!authId) {
+            console.error('No auth ID available:', { profile, user });
+            setCheckInError('User not authenticated. Please sign in again.');
             return;
         }
+
+        // If no profile, try to create/get user profile
+        if (!userId) {
+            console.log('No profile found, creating/fetching user profile...');
+            try {
+                // First try to get existing profile
+                const { data: existingUser, error: fetchError } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('auth_id', authId)
+                    .maybeSingle();
+
+                if (existingUser) {
+                    userId = existingUser.id;
+                    console.log('Found existing user profile:', userId);
+                } else {
+                    // Create new profile
+                    const { data: newUser, error: createError } = await supabase
+                        .from('users')
+                        .insert({
+                            auth_id: authId,
+                            name: user?.user_metadata?.name || 'User',
+                            timezone: 'UTC',
+                            language: 'en',
+                            preferred_tone: 'calm',
+                            storage_folder: authId
+                        })
+                        .select('id')
+                        .single();
+
+                    if (createError) {
+                        console.error('Failed to create user profile:', createError);
+                        throw createError;
+                    }
+
+                    userId = newUser.id;
+                    console.log('Created new user profile:', userId);
+                }
+            } catch (profileError) {
+                console.error('Profile creation/fetch failed:', profileError);
+                setCheckInError('Failed to create user profile. Please try again.');
+                return;
+            }
+        }
+
+        if (!userId) {
+            console.error('Failed to obtain user ID');
+            setCheckInError('Failed to create user session. Please try again.');
+            return;
+        }
+
+        console.log('Using user ID:', userId, 'Auth ID:', authId);
 
         setCheckInStep('generating');
         setCheckInError(null);
@@ -474,7 +571,7 @@ export function Dashboard() {
 
             // Create the journal entry
             console.log('Creating journal entry with data:', {
-                user_id: profile.id,
+                user_id: userId,
                 mood_tag: selectedMood,
                 voice_note_url: audioUrl,
                 transcription: editedTranscription || null,
@@ -484,7 +581,7 @@ export function Dashboard() {
             const { data: entryData, error: entryError } = await supabase
                 .from('entries')
                 .insert({
-                    user_id: profile.id,
+                    user_id: userId,
                     mood_tag: selectedMood,
                     voice_note_url: audioUrl, // Fixed: use voice_note_url instead of audio_url
                     transcription: editedTranscription || null,
@@ -500,7 +597,7 @@ export function Dashboard() {
                 setProcessingStep('Analyzing content for safety...');
                 try {
                     const crisisService = CrisisDetectionService.getInstance();
-                    await crisisService.analyzeText(editedTranscription, profile.id);
+                    await crisisService.analyzeText(editedTranscription, userId);
                 } catch (crisisError) {
                     console.warn('Crisis detection failed:', crisisError);
                 }
@@ -515,7 +612,8 @@ export function Dashboard() {
             setProcessingStep('Creating your personalized video response...');
             try {
                 // Create a personalized script based on the AI analysis and user mood
-                const personalizedScript = `Hello ${profile.name || 'there'}. 
+                const userName = profile?.name || user?.user_metadata?.name || 'there';
+                const personalizedScript = `Hello ${userName}. 
 
 I've been reflecting on what you shared with me during your check-in today. You mentioned feeling ${selectedMood}, and I can sense the depth of your experience.
 
@@ -570,9 +668,12 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                 // Don't throw error - we can complete the check-in without the video
             }
 
-            // Update analytics cache
-            analyticsService.invalidateUserCache(profile.id);
-            await fetchDashboardData();
+            // Update analytics cache and refresh dashboard
+            console.log('Invalidating analytics cache for user:', userId);
+            analyticsService.invalidateUserCache(userId);
+
+            console.log('Fetching updated dashboard data...');
+            await fetchDashboardData(userId);
 
             // Set completion state
             setCheckInStep('complete');
@@ -869,7 +970,7 @@ Take care of yourself, and know that I'm here whenever you need support on your 
 
                         {/* Debug Info - Remove in production */}
                         <div className="mt-2 text-xs text-gray-500 font-mono">
-                            State: {checkInStep} | Transcription: {transcription ? 'Yes' : 'No'} | Audio: {audioUrl ? 'Yes' : 'No'}
+                            State: {checkInStep} | Transcription: {transcription ? 'Yes' : 'No'} | Audio: {audioUrl ? 'Yes' : 'No'} | Entries: {dashboardData?.userAnalytics.totalEntries || 0}
                         </div>
                     </div>
 
