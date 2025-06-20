@@ -390,7 +390,7 @@ export function SettingsPage() {
 
                 <div className="grid gap-8">
                     {/* Account Overview */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-grey p-6">
+                    <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-semibold text-primery flex items-center">
                                 <User className="h-5 w-5 mr-3 text-main" />
@@ -417,7 +417,7 @@ export function SettingsPage() {
                                             type="text"
                                             value={formData.name}
                                             onChange={(e) => handleInputChange('name', e.target.value)}
-                                            className="w-full px-3 py-2 border border-grey rounded-lg focus:ring-2 focus:ring-main focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-grey rounded-lg focus:ring-3 focus:ring-main focus:border-transparent"
                                             placeholder="Enter your full name"
                                         />
                                     ) : (
@@ -434,7 +434,7 @@ export function SettingsPage() {
                                         <select
                                             value={formData.timezone}
                                             onChange={(e) => handleInputChange('timezone', e.target.value)}
-                                            className="w-full px-3 py-2 border border-grey rounded-lg focus:ring-2 focus:ring-main focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-grey rounded-lg focus:ring-3 focus:ring-main focus:border-transparent"
                                         >
                                             {TIMEZONE_OPTIONS.map(option => (
                                                 <option key={option.value} value={option.value}>
@@ -457,7 +457,7 @@ export function SettingsPage() {
                                         <select
                                             value={formData.language}
                                             onChange={(e) => handleInputChange('language', e.target.value)}
-                                            className="w-full px-3 py-2 border border-grey rounded-lg focus:ring-2 focus:ring-main focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-grey rounded-lg focus:ring-3 focus:ring-main focus:border-transparent"
                                         >
                                             {LANGUAGE_OPTIONS.map(option => (
                                                 <option key={option.value} value={option.value}>
@@ -497,7 +497,7 @@ export function SettingsPage() {
                     </div>
 
                     {/* AI Preferences */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-grey p-6">
+                    <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
                         <h2 className="text-xl font-semibold text-primery flex items-center mb-6">
                             <Brain className="h-5 w-5 mr-3 text-main" />
                             AI Response Preferences
@@ -722,7 +722,7 @@ export function SettingsPage() {
                     </div>
 
                     {/* Data Management */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-grey p-6">
+                    <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
                         <h2 className="text-xl font-semibold text-primery flex items-center mb-6">
                             <Shield className="h-5 w-5 mr-3 text-main" />
                             Data & Privacy

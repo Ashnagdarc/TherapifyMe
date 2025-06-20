@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { 
-  ArrowLeft, 
-  Play, 
-  Pause, 
-  Volume2, 
-  Share, 
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  Volume2,
+  Share,
   Download,
   Copy,
   Check,
@@ -26,7 +26,7 @@ export function AIResponsePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as AIResponseState;
-  
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [copied, setCopied] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -115,7 +115,7 @@ export function AIResponsePage() {
             </Button>
             <h1 className="text-2xl font-bold text-primery">AI Response</h1>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
@@ -150,14 +150,14 @@ export function AIResponsePage() {
           {/* Main AI Response */}
           <div className="lg:col-span-2 space-y-6">
             {/* Mood Summary */}
-            <div className="bg-white rounded-2xl shadow-sm border border-grey p-6">
+            <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-primery">Your Check-In</h2>
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getMoodColor(state.mood)}`}>
                   {getMoodEmoji(state.mood)} {state.mood}
                 </span>
               </div>
-              
+
               {state.transcription && (
                 <div className="bg-grey-2 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-grey mb-2">What you shared:</h3>
@@ -167,13 +167,13 @@ export function AIResponsePage() {
             </div>
 
             {/* AI Response */}
-            <div className="bg-white rounded-2xl shadow-sm border border-grey p-6">
+            <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-primery flex items-center">
                   <Volume2 className="w-5 h-5 mr-2 text-main" />
                   AI Therapist Response
                 </h2>
-                
+
                 {state.aiResponseAudioUrl && (
                   <div className="flex items-center space-x-2">
                     <button
@@ -195,13 +195,13 @@ export function AIResponsePage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="prose prose-lg max-w-none">
                 <p className="text-text-black leading-relaxed text-lg">
                   {state.aiResponse}
                 </p>
               </div>
-              
+
               {state.aiResponseAudioUrl && (
                 <audio
                   ref={audioRef}
@@ -216,12 +216,12 @@ export function AIResponsePage() {
           {/* Sidebar - Suggestions */}
           <div className="space-y-6">
             {/* Personalized Suggestions */}
-            <div className="bg-white rounded-2xl shadow-sm border border-grey p-6">
+            <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
               <h3 className="text-lg font-semibold text-primery flex items-center mb-4">
                 <Lightbulb className="w-5 h-5 mr-2 text-yellow-500" />
                 Suggested Actions
               </h3>
-              
+
               <div className="space-y-3">
                 {state.suggestions.map((suggestion, index) => (
                   <div key={index} className="flex items-start space-x-3 p-3 bg-grey-2 rounded-lg">
@@ -235,9 +235,9 @@ export function AIResponsePage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-sm border border-grey p-6">
+            <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
               <h3 className="text-lg font-semibold text-primery mb-4">Quick Actions</h3>
-              
+
               <div className="space-y-3">
                 <Button
                   variant="outline"
@@ -247,7 +247,7 @@ export function AIResponsePage() {
                 >
                   New Check-In
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -256,7 +256,7 @@ export function AIResponsePage() {
                 >
                   View Journal
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   size="sm"

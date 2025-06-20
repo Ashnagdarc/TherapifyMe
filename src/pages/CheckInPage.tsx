@@ -363,7 +363,7 @@ export function CheckInPage() {
         </div>
 
         {/* Main Content */}
-        <div className="bg-white rounded-2xl shadow-sm border border-grey p-8">
+        <div className="bg-white rounded-2xl shadow-xs border border-grey p-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-primery mb-4">
               How are you feeling today?

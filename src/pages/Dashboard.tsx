@@ -1000,7 +1000,7 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                                     <textarea
                                         value={editedTranscription}
                                         onChange={(e) => setEditedTranscription(e.target.value)}
-                                        className="w-full h-32 bg-gray-900 border border-gray-700 rounded-lg p-4 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full h-32 bg-gray-900 border border-gray-700 rounded-lg p-4 text-white resize-none focus:outline-hidden focus:ring-3 focus:ring-blue-500"
                                         placeholder="Edit your transcription here..."
                                     />
                                 ) : (

@@ -37,7 +37,7 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50">
       {/* Mobile Header */}
-      <div className="md:hidden bg-white shadow-sm border-b border-grey">
+      <div className="md:hidden bg-white shadow-xs border-b border-grey">
         <div className="px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold text-primery">TherapifyMe</h1>
           <Button
@@ -53,7 +53,7 @@ export function Layout() {
       <div className="flex">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex md:w-64 md:flex-col">
-          <div className="flex flex-col flex-grow pt-5 bg-white shadow-sm">
+          <div className="flex flex-col flex-grow pt-5 bg-white shadow-xs">
             <div className="flex items-center flex-shrink-0 px-4">
               <h1 className="text-2xl font-bold text-primery">TherapifyMe</h1>
             </div>
@@ -66,16 +66,14 @@ export function Layout() {
                     <button
                       key={item.name}
                       onClick={() => navigate(item.href)}
-                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md w-full text-left transition-colors ${
-                        isActive
-                          ? 'bg-main text-white'
-                          : 'text-text-black hover:bg-grey-2'
-                      }`}
+                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md w-full text-left transition-colors ${isActive
+                        ? 'bg-main text-white'
+                        : 'text-text-black hover:bg-grey-2'
+                        }`}
                     >
                       <Icon
-                        className={`mr-3 h-5 w-5 ${
-                          isActive ? 'text-white' : 'text-grey'
-                        }`}
+                        className={`mr-3 h-5 w-5 ${isActive ? 'text-white' : 'text-grey'
+                          }`}
                       />
                       {item.name}
                     </button>
@@ -98,7 +96,7 @@ export function Layout() {
 
         {/* Main Content */}
         <div className="flex flex-col flex-1 overflow-hidden">
-          <main className="flex-1 relative overflow-y-auto focus:outline-none">
+          <main className="flex-1 relative overflow-y-auto focus:outline-hidden">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 <Outlet />
@@ -118,11 +116,10 @@ export function Layout() {
               <button
                 key={item.name}
                 onClick={() => navigate(item.href)}
-                className={`flex flex-col items-center py-2 px-1 text-xs font-medium rounded-md transition-colors ${
-                  isActive
-                    ? 'text-main bg-blue-50'
-                    : 'text-grey hover:text-text-black'
-                }`}
+                className={`flex flex-col items-center py-2 px-1 text-xs font-medium rounded-md transition-colors ${isActive
+                  ? 'text-main bg-blue-50'
+                  : 'text-grey hover:text-text-black'
+                  }`}
               >
                 <Icon className="h-5 w-5 mb-1" />
                 {item.name}

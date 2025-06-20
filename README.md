@@ -130,7 +130,7 @@ TherapifyMe/
 ├── supabase/
 │   └── migrations/        # Database schema migrations
 ├── package.json
-├── tailwind.config.js
+├── tailwind.css (v4.1 configuration)
 ├── tsconfig.json
 └── vite.config.ts
 ```
