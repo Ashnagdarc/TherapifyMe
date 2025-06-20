@@ -113,7 +113,7 @@ export function AuthPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your full name"
-                  className={`w-full px-4 py-4 border rounded-lg focus:ring-2 focus:border-transparent outline-none text-gray-900 placeholder-gray-400 ${validationErrors.name
+                  className={`w-full px-4 py-4 border rounded-lg focus:ring-3 focus:border-transparent outline-hidden text-gray-900 placeholder-gray-400 ${validationErrors.name
                     ? 'border-red-300 focus:ring-red-500'
                     : 'border-gray-200 focus:ring-blue-500'
                     }`}
@@ -132,7 +132,7 @@ export function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className={`w-full px-4 py-4 pr-12 border rounded-lg focus:ring-2 focus:border-transparent outline-none text-gray-900 placeholder-gray-400 ${validationErrors.email
+                  className={`w-full px-4 py-4 pr-12 border rounded-lg focus:ring-3 focus:border-transparent outline-hidden text-gray-900 placeholder-gray-400 ${validationErrors.email
                     ? 'border-red-300 focus:ring-red-500'
                     : 'border-gray-200 focus:ring-blue-500'
                     }`}
@@ -154,7 +154,7 @@ export function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
-                  className={`w-full px-4 py-4 pr-12 border rounded-lg focus:ring-2 focus:border-transparent outline-none text-gray-900 placeholder-gray-400 ${validationErrors.password
+                  className={`w-full px-4 py-4 pr-12 border rounded-lg focus:ring-3 focus:border-transparent outline-hidden text-gray-900 placeholder-gray-400 ${validationErrors.password
                     ? 'border-red-300 focus:ring-red-500'
                     : 'border-gray-200 focus:ring-blue-500'
                     }`}

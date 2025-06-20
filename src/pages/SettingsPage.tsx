@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
+import { EnhancedAIService } from '../services/enhancedAIService';
 import {
     ArrowLeft,
     User,
@@ -20,7 +21,11 @@ import {
     Upload,
     Settings,
     LogOut,
-    Home
+    Home,
+    Zap,
+    TestTube,
+    Loader,
+    Brain
 } from 'lucide-react';
 
 const TIMEZONE_OPTIONS = [
@@ -69,6 +74,12 @@ const TONE_OPTIONS = [
     },
 ];
 
+interface DiagnosticsResult {
+    huggingFace: { success: boolean; message: string };
+    tavus: { success: boolean; message: string };
+    overall: { success: boolean; message: string };
+}
+
 export function SettingsPage() {
     const { profile, updateProfile, signOut } = useAuth();
     const navigate = useNavigate();
@@ -80,6 +91,13 @@ export function SettingsPage() {
         language: 'en',
         preferred_tone: 'calm' as 'calm' | 'motivational' | 'reflective'
     });
+
+    // AI Settings state
+    const [aiPercentage, setAiPercentage] = useState(70);
+    const [confidenceThreshold, setConfidenceThreshold] = useState(0.6);
+    const [isRunningDiagnostics, setIsRunningDiagnostics] = useState(false);
+    const [diagnostics, setDiagnostics] = useState<DiagnosticsResult | null>(null);
+    const [lastTestTime, setLastTestTime] = useState<string | null>(null);
 
     // UI state
     const [loading, setLoading] = useState(false);
@@ -102,6 +120,12 @@ export function SettingsPage() {
             });
             fetchUserStats();
         }
+
+        // Load AI settings from localStorage
+        const savedPercentage = localStorage.getItem('ai-percentage');
+        const savedThreshold = localStorage.getItem('ai-confidence-threshold');
+        if (savedPercentage) setAiPercentage(parseInt(savedPercentage));
+        if (savedThreshold) setConfidenceThreshold(parseFloat(savedThreshold));
     }, [profile]);
 
     const fetchUserStats = async () => {
@@ -150,6 +174,15 @@ export function SettingsPage() {
 
         try {
             await updateProfile(formData);
+
+            // Also save AI settings
+            localStorage.setItem('ai-percentage', aiPercentage.toString());
+            localStorage.setItem('ai-confidence-threshold', confidenceThreshold.toString());
+            EnhancedAIService.configureAI({
+                useAIPercentage: aiPercentage,
+                confidenceThreshold: confidenceThreshold
+            });
+
             setMessage({ type: 'success', text: 'Settings saved successfully!' });
             setIsEditing(false);
         } catch (error: any) {
@@ -157,6 +190,60 @@ export function SettingsPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleAISaveSettings = () => {
+        // Save AI settings to localStorage
+        localStorage.setItem('ai-percentage', aiPercentage.toString());
+        localStorage.setItem('ai-confidence-threshold', confidenceThreshold.toString());
+
+        // Update AI service configuration
+        EnhancedAIService.configureAI({
+            useAIPercentage: aiPercentage,
+            confidenceThreshold: confidenceThreshold
+        });
+
+        setMessage({ type: 'success', text: 'AI settings saved successfully!' });
+    };
+
+    const runDiagnostics = async () => {
+        setIsRunningDiagnostics(true);
+        try {
+            const result = await EnhancedAIService.runDiagnostics();
+            setDiagnostics(result);
+            setLastTestTime(new Date().toLocaleString());
+        } catch (error) {
+            console.error('Diagnostics failed:', error);
+            setDiagnostics({
+                huggingFace: { success: false, message: 'Failed to run diagnostics' },
+                tavus: { success: false, message: 'Failed to run diagnostics' },
+                overall: { success: false, message: 'Diagnostics failed to complete' }
+            });
+        }
+        setIsRunningDiagnostics(false);
+    };
+
+    const resetAIToDefaults = () => {
+        setAiPercentage(70);
+        setConfidenceThreshold(0.6);
+        EnhancedAIService.configureAI({
+            useAIPercentage: 70,
+            confidenceThreshold: 0.6
+        });
+        localStorage.removeItem('ai-percentage');
+        localStorage.removeItem('ai-confidence-threshold');
+        setMessage({ type: 'success', text: 'AI settings reset to defaults!' });
+    };
+
+    const getStatusIcon = (success: boolean, isLoading: boolean = false) => {
+        if (isLoading) return <Loader className="w-4 h-4 animate-spin text-blue-500" />;
+        return success ?
+            <CheckCircle className="w-4 h-4 text-green-500" /> :
+            <AlertCircle className="w-4 h-4 text-red-500" />;
+    };
+
+    const getStatusColor = (success: boolean) => {
+        return success ? 'text-green-600' : 'text-red-600';
     };
 
     const handleExportData = async () => {
@@ -412,43 +499,224 @@ export function SettingsPage() {
                     {/* AI Preferences */}
                     <div className="bg-white rounded-2xl shadow-sm border border-grey p-6">
                         <h2 className="text-xl font-semibold text-primery flex items-center mb-6">
-                            <Volume2 className="h-5 w-5 mr-3 text-main" />
+                            <Brain className="h-5 w-5 mr-3 text-main" />
                             AI Response Preferences
                         </h2>
 
-                        <div className="space-y-4">
-                            <p className="text-text-black text-sm mb-4">
-                                Choose how you'd like your AI companion to respond to your check-ins
-                            </p>
+                        <div className="space-y-6">
+                            {/* Tone Selection */}
+                            <div className="space-y-4">
+                                <p className="text-text-black text-sm mb-4">
+                                    Choose how you'd like your AI companion to respond to your check-ins
+                                </p>
 
-                            <div className="grid gap-4">
-                                {TONE_OPTIONS.map((tone) => (
-                                    <label
-                                        key={tone.value}
-                                        className={`flex items-start space-x-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.preferred_tone === tone.value
-                                            ? 'border-main bg-main bg-opacity-5'
-                                            : 'border-grey hover:border-grey-2'
-                                            } ${!isEditing ? 'cursor-default' : ''}`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="preferred_tone"
-                                            value={tone.value}
-                                            checked={formData.preferred_tone === tone.value}
-                                            onChange={(e) => isEditing && handleInputChange('preferred_tone', e.target.value)}
-                                            className="sr-only"
-                                            disabled={!isEditing}
-                                        />
-                                        <span className="text-2xl">{tone.icon}</span>
-                                        <div className="flex-1">
-                                            <div className="font-medium text-primery">{tone.label}</div>
-                                            <div className="text-sm text-text-black">{tone.description}</div>
-                                        </div>
-                                        {formData.preferred_tone === tone.value && (
-                                            <CheckCircle className="h-5 w-5 text-main flex-shrink-0" />
-                                        )}
+                                <div className="grid gap-4">
+                                    {TONE_OPTIONS.map((tone) => (
+                                        <label
+                                            key={tone.value}
+                                            className={`flex items-start space-x-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.preferred_tone === tone.value
+                                                ? 'border-main bg-main bg-opacity-5'
+                                                : 'border-grey hover:border-grey-2'
+                                                } ${!isEditing ? 'cursor-default' : ''}`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="preferred_tone"
+                                                value={tone.value}
+                                                checked={formData.preferred_tone === tone.value}
+                                                onChange={(e) => isEditing && handleInputChange('preferred_tone', e.target.value)}
+                                                className="sr-only"
+                                                disabled={!isEditing}
+                                            />
+                                            <span className="text-2xl">{tone.icon}</span>
+                                            <div className="flex-1">
+                                                <div className="font-medium text-primery">{tone.label}</div>
+                                                <div className="text-sm text-text-black">{tone.description}</div>
+                                            </div>
+                                            {formData.preferred_tone === tone.value && (
+                                                <CheckCircle className="h-5 w-5 text-main flex-shrink-0" />
+                                            )}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* AI Generation Settings */}
+                            <div className="border-t border-grey pt-6">
+                                <div className="flex items-center space-x-2 mb-4">
+                                    <Zap className="w-5 h-5 text-blue-500" />
+                                    <h3 className="text-lg font-medium text-primery">Advanced AI Settings</h3>
+                                </div>
+
+                                {/* AI Usage Percentage */}
+                                <div className="space-y-3 mb-6">
+                                    <label className="block text-sm font-medium text-primery">
+                                        AI Usage Percentage: {aiPercentage}%
                                     </label>
-                                ))}
+                                    <div className="space-y-2">
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="100"
+                                            step="10"
+                                            value={aiPercentage}
+                                            onChange={(e) => setAiPercentage(parseInt(e.target.value))}
+                                            disabled={!isEditing}
+                                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider disabled:opacity-50"
+                                        />
+                                        <div className="flex justify-between text-xs text-text-black">
+                                            <span>Always Templates</span>
+                                            <span>Balanced</span>
+                                            <span>Always AI</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-text-black">
+                                        Controls how often AI generation is attempted. Lower values favor reliable templates,
+                                        higher values use more dynamic AI responses.
+                                    </p>
+                                </div>
+
+                                {/* Confidence Threshold */}
+                                <div className="space-y-3 mb-6">
+                                    <label className="block text-sm font-medium text-primery">
+                                        AI Confidence Threshold: {(confidenceThreshold * 100).toFixed(0)}%
+                                    </label>
+                                    <div className="space-y-2">
+                                        <input
+                                            type="range"
+                                            min="0.3"
+                                            max="0.9"
+                                            step="0.1"
+                                            value={confidenceThreshold}
+                                            onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value))}
+                                            disabled={!isEditing}
+                                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider disabled:opacity-50"
+                                        />
+                                        <div className="flex justify-between text-xs text-text-black">
+                                            <span>Lenient</span>
+                                            <span>Balanced</span>
+                                            <span>Strict</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-text-black">
+                                        Minimum confidence required to use AI responses. Lower values accept more AI responses,
+                                        higher values fall back to templates more often.
+                                    </p>
+                                </div>
+
+                                {/* AI Diagnostics */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-2">
+                                            <TestTube className="w-5 h-5 text-purple-500" />
+                                            <h4 className="font-medium text-primery">Service Diagnostics</h4>
+                                        </div>
+                                        <button
+                                            onClick={runDiagnostics}
+                                            disabled={isRunningDiagnostics}
+                                            className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 text-sm"
+                                        >
+                                            {isRunningDiagnostics ? (
+                                                <>
+                                                    <Loader className="w-4 h-4 animate-spin" />
+                                                    <span>Testing...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <TestTube className="w-4 h-4" />
+                                                    <span>Run Tests</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    {lastTestTime && (
+                                        <p className="text-sm text-text-black">Last tested: {lastTestTime}</p>
+                                    )}
+
+                                    {diagnostics && (
+                                        <div className="space-y-3">
+                                            {/* Hugging Face Status */}
+                                            <div className="flex items-center justify-between p-3 bg-grey-2 rounded-lg">
+                                                <div className="flex items-center space-x-3">
+                                                    {getStatusIcon(diagnostics.huggingFace.success, false)}
+                                                    <div>
+                                                        <h5 className="font-medium text-primery text-sm">Hugging Face AI</h5>
+                                                        <p className="text-xs text-text-black">Free AI text generation</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className={`text-sm font-medium ${getStatusColor(diagnostics.huggingFace.success)}`}>
+                                                        {diagnostics.huggingFace.success ? 'Connected' : 'Failed'}
+                                                    </p>
+                                                    <p className="text-xs text-text-black">{diagnostics.huggingFace.message}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Tavus Status */}
+                                            <div className="flex items-center justify-between p-3 bg-grey-2 rounded-lg">
+                                                <div className="flex items-center space-x-3">
+                                                    {getStatusIcon(diagnostics.tavus.success, false)}
+                                                    <div>
+                                                        <h5 className="font-medium text-primery text-sm">Tavus Video</h5>
+                                                        <p className="text-xs text-text-black">AI video generation</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className={`text-sm font-medium ${getStatusColor(diagnostics.tavus.success)}`}>
+                                                        {diagnostics.tavus.success ? 'Connected' : 'Failed'}
+                                                    </p>
+                                                    <p className="text-xs text-text-black">{diagnostics.tavus.message}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Overall Status */}
+                                            <div className="flex items-center justify-between p-3 bg-main bg-opacity-10 rounded-lg border border-main border-opacity-20">
+                                                <div className="flex items-center space-x-3">
+                                                    {getStatusIcon(diagnostics.overall.success, false)}
+                                                    <div>
+                                                        <h5 className="font-medium text-primery text-sm">Overall Status</h5>
+                                                        <p className="text-xs text-text-black">All AI services</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className={`text-sm font-medium ${getStatusColor(diagnostics.overall.success)}`}>
+                                                        {diagnostics.overall.success ? 'All Systems Go' : 'Issues Detected'}
+                                                    </p>
+                                                    <p className="text-xs text-text-black">{diagnostics.overall.message}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* API Key Info */}
+                                    <div className="space-y-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                        <h5 className="font-medium text-primery text-sm">API Key Requirements</h5>
+                                        <div className="space-y-1 text-xs text-text-black">
+                                            <p>• <strong>VITE_HUGGINGFACE_API_KEY</strong>: Free AI text generation</p>
+                                            <p>• <strong>VITE_TAVUS_API_KEY</strong>: AI video generation</p>
+                                            <p>• <strong>VITE_ELEVENLABS_API_KEY</strong>: AI voice generation</p>
+                                        </div>
+                                    </div>
+
+                                    {/* AI Action Buttons */}
+                                    {isEditing && (
+                                        <div className="flex space-x-3 pt-4 border-t border-grey">
+                                            <button
+                                                onClick={handleAISaveSettings}
+                                                className="flex-1 bg-main text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors font-medium text-sm"
+                                            >
+                                                Save AI Settings
+                                            </button>
+                                            <button
+                                                onClick={resetAIToDefaults}
+                                                className="px-4 py-2 border border-grey rounded-lg hover:bg-grey-2 transition-colors font-medium text-primery text-sm"
+                                            >
+                                                Reset AI Defaults
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

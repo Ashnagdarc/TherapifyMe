@@ -808,14 +808,7 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                         <MessageCircle className="w-4 h-4" />
                         <span>Journal</span>
                     </button>
-                    <button
-                        onClick={() => setIsAISettingsOpen(true)}
-                        className="flex items-center space-x-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-                        title="AI Settings - Configure your AI therapy experience"
-                    >
-                        <Brain className="w-4 h-4" />
-                        <span>AI</span>
-                    </button>
+
                     <button
                         onClick={() => navigate('/settings')}
                         className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"

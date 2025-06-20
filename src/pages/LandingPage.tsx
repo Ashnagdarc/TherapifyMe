@@ -71,7 +71,7 @@ export function LandingPage() {
 
           {/* Features */}
           <div className="mt-24 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-grey hover:shadow-md transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
               <div className="w-12 h-12 bg-main bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
                 <Mic className="h-6 w-6 text-main" />
               </div>
@@ -82,7 +82,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-grey hover:shadow-md transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
               <div className="w-12 h-12 bg-teal-500 bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
                 <BookOpen className="h-6 w-6 text-teal-600" />
               </div>
@@ -93,7 +93,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-grey hover:shadow-md transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
               <div className="w-12 h-12 bg-purple-500 bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
                 <Video className="h-6 w-6 text-purple-600" />
               </div>
