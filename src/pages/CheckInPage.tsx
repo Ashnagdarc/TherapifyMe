@@ -242,10 +242,14 @@ export function CheckInPage() {
 
       // Generate AI response
       setProcessingStep('Generating AI response...');
-      const aiResponse = await AIResponseService.generateResponse(
+      // Import the enhanced AI service
+      const { EnhancedAIService } = await import('../services/enhancedAIService');
+
+      const aiResponse = await EnhancedAIService.generateResponse(
         selectedMood,
         transcription,
-        profile.preferred_tone as 'calm' | 'motivational' | 'reflective'
+        profile.preferred_tone as 'calm' | 'motivational' | 'reflective',
+        profile.id
       );
       aiResponseText = aiResponse.response;
 

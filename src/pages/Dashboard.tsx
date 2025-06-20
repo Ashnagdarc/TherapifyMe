@@ -37,6 +37,8 @@ import {
     Save
 } from 'lucide-react';
 import { TavusService } from '../services/tavusService';
+import { WeeklyVideoSection } from '../components/WeeklyVideoSection';
+import { AISettingsModal } from '../components/AISettingsModal';
 
 const MOOD_OPTIONS = [
     { value: 'happy', label: '😊 Happy' },
@@ -76,6 +78,9 @@ export function Dashboard() {
     const [aiAnalysis, setAiAnalysis] = useState<string>('');
     const [checkInError, setCheckInError] = useState<string | null>(null);
     const [aiVideoUrl, setAiVideoUrl] = useState<string>('');
+
+    // AI Settings Modal State
+    const [isAISettingsOpen, setIsAISettingsOpen] = useState(false);
 
     // Check-in Refs
     const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
@@ -407,209 +412,170 @@ export function Dashboard() {
     };
 
     const processRecording = async (blob: Blob) => {
+        if (!profile?.id || !user?.id) {
+            console.error('No user profile found');
+            setCheckInStep('idle');
+            return;
+        }
+
+        setCheckInStep('processing');
+        setProcessingStep('Processing your recording...');
+
         try {
-            console.log('=== PROCESSING RECORDING START ===');
-            console.log('Blob size:', blob.size, 'bytes');
-            console.log('Blob type:', blob.type);
+            const userId = profile.id;
+            const authId = user.id;
 
-            setProcessingStep('Uploading your audio...');
-            setCheckInError(null); // Clear any previous errors
+            // Upload voice recording to Supabase Storage
+            setProcessingStep('Uploading your voice recording...');
+            const fileName = `${authId}/${Date.now()}-voice-note.webm`;
 
-            // Upload audio first
-            const fileName = `${profile?.id}/voice-note-${Date.now()}.webm`;
-            console.log('Uploading audio file:', fileName);
-            console.log('User ID:', profile?.id);
-            console.log('Blob details:', { size: blob.size, type: blob.type });
-
-            const { data, error } = await supabase.storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('voice-recordings')
                 .upload(fileName, blob, {
-                    contentType: blob.type || 'audio/webm',
-                    upsert: true, // Allow overwrite if file exists
-                    cacheControl: '3600'
+                    contentType: 'audio/webm',
+                    cacheControl: '3600',
+                    upsert: false
                 });
 
-            if (error) {
-                console.error('Error uploading audio:', error);
-                console.error('Error details:', JSON.stringify(error, null, 2));
-
-                // Try alternative approach - skip upload and continue with local blob
-                console.warn('Upload failed, continuing with local audio blob for transcription');
-                const localUrl = URL.createObjectURL(blob);
-                setAudioUrl(localUrl);
-            } else {
-                console.log('Audio uploaded successfully:', data);
-
-                // Get public URL
-                const { data: urlData } = supabase.storage
-                    .from('voice-recordings')
-                    .getPublicUrl(fileName);
-
-                console.log('Public URL obtained:', urlData.publicUrl);
-                setAudioUrl(urlData.publicUrl);
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw new Error('Failed to upload voice recording: ' + uploadError.message);
             }
 
-            // Transcribe
-            setProcessingStep('Transcribing your audio...');
+            // Get public URL for the uploaded file
+            const { data: urlData } = supabase.storage
+                .from('voice-recordings')
+                .getPublicUrl(fileName);
+
+            const voiceNoteUrl = urlData.publicUrl;
+            console.log('Voice recording uploaded successfully:', voiceNoteUrl);
+
+            // Set the audio URL for playback during review
+            setAudioUrl(voiceNoteUrl);
+
+            // Transcribe audio
+            setProcessingStep('Converting speech to text...');
             console.log('Starting transcription...');
 
+            let transcriptionResult = '';
             try {
-                const transcriptionText = await TranscriptionService.transcribeAudio(blob);
-                console.log('Transcription completed successfully:', transcriptionText);
-
-                if (!transcriptionText || transcriptionText.trim() === '') {
-                    console.warn('Empty transcription received, using placeholder');
-                    const placeholderText = "I shared my thoughts during this check-in session.";
-                    setTranscription(placeholderText);
-                    setEditedTranscription(placeholderText);
-                } else {
-                    setTranscription(transcriptionText);
-                    setEditedTranscription(transcriptionText);
-                }
+                transcriptionResult = await TranscriptionService.transcribeAudio(blob);
+                console.log('Transcription successful:', transcriptionResult);
             } catch (transcriptionError) {
                 console.error('Transcription failed:', transcriptionError);
-                // Provide a fallback message instead of failing completely
-                const fallbackText = "Audio recorded successfully. You can edit this text to describe what you shared.";
-                setTranscription(fallbackText);
-                setEditedTranscription(fallbackText);
-                console.log('Using fallback transcription text');
+                // Continue without transcription
+                transcriptionResult = '';
             }
 
-            // Move to reviewing step
-            console.log('Moving to reviewing step...');
-            console.log('Transcription text will be set to state');
-            console.log('Audio URL will be available for playback');
-
-            setProcessingStep('');
+            setTranscription(transcriptionResult);
+            setEditedTranscription(transcriptionResult);
             setCheckInStep('reviewing');
 
-            console.log('=== PROCESSING RECORDING COMPLETED ===');
-            console.log('State changed to: reviewing');
-
         } catch (error) {
-            console.error('=== PROCESSING RECORDING FAILED ===');
-            console.error('Error details:', error);
-            setCheckInError(`Failed to process your recording: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
-            setProcessingStep('');
+            console.error('Error processing recording:', error);
+            setCheckInError(error instanceof Error ? error.message : 'Failed to process recording');
             setCheckInStep('idle');
         }
     };
 
     const handleSaveAndGenerate = async () => {
-        if (!selectedMood) {
-            setCheckInError('Please select how you\'re feeling');
+        if (!selectedMood || !profile?.id || !user?.id) {
+            setCheckInError('Please select a mood and ensure you are logged in');
             return;
         }
-
-        // Check for user ID from either profile or user
-        let userId = profile?.id;
-        const authId = user?.id;
-
-        if (!authId) {
-            console.error('No auth ID available:', { profile, user });
-            setCheckInError('User not authenticated. Please sign in again.');
-            return;
-        }
-
-        // If no profile, try to create/get user profile
-        if (!userId) {
-            console.log('No profile found, creating/fetching user profile...');
-            try {
-                // First try to get existing profile
-                const { data: existingUser, error: fetchError } = await supabase
-                    .from('users')
-                    .select('id')
-                    .eq('auth_id', authId)
-                    .maybeSingle();
-
-                if (existingUser) {
-                    userId = existingUser.id;
-                    console.log('Found existing user profile:', userId);
-                } else {
-                    // Create new profile
-                    const { data: newUser, error: createError } = await supabase
-                        .from('users')
-                        .insert({
-                            auth_id: authId,
-                            name: user?.user_metadata?.name || 'User',
-                            timezone: 'UTC',
-                            language: 'en',
-                            preferred_tone: 'calm',
-                            storage_folder: authId
-                        })
-                        .select('id')
-                        .single();
-
-                    if (createError) {
-                        console.error('Failed to create user profile:', createError);
-                        throw createError;
-                    }
-
-                    userId = newUser.id;
-                    console.log('Created new user profile:', userId);
-                }
-            } catch (profileError) {
-                console.error('Profile creation/fetch failed:', profileError);
-                setCheckInError('Failed to create user profile. Please try again.');
-                return;
-            }
-        }
-
-        if (!userId) {
-            console.error('Failed to obtain user ID');
-            setCheckInError('Failed to create user session. Please try again.');
-            return;
-        }
-
-        console.log('Using user ID:', userId, 'Auth ID:', authId);
 
         setCheckInStep('generating');
-        setCheckInError(null);
+        setProcessingStep('Analyzing your thoughts...');
 
         try {
-            setProcessingStep('Saving your check-in...');
+            const userId = profile.id;
+            const authId = user.id;
+            const finalTranscription = editedTranscription || transcription || '';
 
-            // Create the journal entry
-            console.log('Creating journal entry with data:', {
-                user_id: userId,
-                mood_tag: selectedMood,
-                voice_note_url: audioUrl,
-                transcription: editedTranscription || null,
-                text_summary: editedTranscription ? editedTranscription.substring(0, 500) : null,
-            });
+            // Get stored voice recording URL from previous upload
+            const voiceNoteUrl = audioUrl; // This should now be the Supabase Storage URL
+
+            if (!voiceNoteUrl) {
+                throw new Error('No voice recording found. Please record your voice first.');
+            }
+
+            // Generate AI response
+            setProcessingStep('Generating your personalized AI response...');
+
+            const userPreferences = {
+                tone: profile.preferred_tone || 'calm',
+                language: profile.language || 'en'
+            };
+
+            // Import the enhanced AI service
+            const { EnhancedAIService } = await import('../services/enhancedAIService');
+
+            const aiResponse = await EnhancedAIService.generateResponse(
+                selectedMood as MoodTag,
+                finalTranscription,
+                (profile?.preferred_tone as 'calm' | 'motivational' | 'reflective') || 'calm',
+                userId
+            );
+
+            setAiAnalysis(aiResponse.response);
+
+            // Generate audio response using ElevenLabs
+            setProcessingStep('Creating your audio response...');
+
+            let aiResponseUrl = '';
+            try {
+                const audioResponse = await ElevenLabsService.textToSpeech(
+                    aiResponse.response
+                );
+
+                // Upload AI response audio to Supabase Storage
+                const aiFileName = `${authId}/${Date.now()}-ai-response.mp3`;
+
+                const { data: aiUploadData, error: aiUploadError } = await supabase.storage
+                    .from('voice-recordings')
+                    .upload(aiFileName, audioResponse, {
+                        contentType: 'audio/mpeg',
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (!aiUploadError) {
+                    const { data: aiUrlData } = supabase.storage
+                        .from('voice-recordings')
+                        .getPublicUrl(aiFileName);
+                    aiResponseUrl = aiUrlData.publicUrl;
+                    console.log('AI response audio uploaded successfully:', aiResponseUrl);
+                }
+            } catch (audioError) {
+                console.error('AI audio generation failed:', audioError);
+                // Continue without audio response
+            }
+
+            // Save entry to database
+            setProcessingStep('Saving your check-in...');
 
             const { data: entryData, error: entryError } = await supabase
                 .from('entries')
                 .insert({
                     user_id: userId,
                     mood_tag: selectedMood,
-                    voice_note_url: audioUrl, // Fixed: use voice_note_url instead of audio_url
-                    transcription: editedTranscription || null,
-                    text_summary: editedTranscription ? editedTranscription.substring(0, 500) : null,
+                    voice_note_url: voiceNoteUrl,
+                    ai_response_url: aiResponseUrl,
+                    text_summary: aiResponse.response,
+                    transcription: finalTranscription
                 })
                 .select()
                 .single();
 
-            if (entryError) throw entryError;
-
-            // Crisis detection
-            if (editedTranscription) {
-                setProcessingStep('Analyzing content for safety...');
-                try {
-                    const crisisService = CrisisDetectionService.getInstance();
-                    await crisisService.analyzeText(editedTranscription, userId);
-                } catch (crisisError) {
-                    console.warn('Crisis detection failed:', crisisError);
-                }
+            if (entryError) {
+                console.error('Entry save error:', entryError);
+                throw new Error('Failed to save entry: ' + entryError.message);
             }
 
-            // Generate AI analysis
-            setProcessingStep('AI is analyzing your thoughts...');
-            const aiResponse = await AIResponseService.generateResponse(selectedMood as MoodTag, editedTranscription);
-            setAiAnalysis(aiResponse.response);
+            console.log('Entry saved successfully:', entryData);
 
-            // Generate Tavus video response
-            setProcessingStep('Creating your personalized video response...');
+            // Generate Tavus video response (ASYNC - don't wait)
+            console.log('Starting async video generation...');
             try {
                 // Create a personalized script based on the AI analysis and user mood
                 const userName = profile?.name || user?.user_metadata?.name || 'there';
@@ -625,67 +591,78 @@ Take care of yourself, and know that I'm here whenever you need support on your 
 
                 console.log('Generating Tavus video with script:', personalizedScript);
 
-                // Generate video using Tavus service
-                const tavusResponse = await TavusService.createVideo(personalizedScript);
-                console.log('Tavus response:', tavusResponse);
+                // Start video generation asynchronously (don't wait for completion)
+                TavusService.createVideo(personalizedScript)
+                    .then(async (tavusResponse) => {
+                        console.log('Tavus video creation started:', tavusResponse);
 
-                // Poll for video completion (Tavus videos take time to generate)
-                let videoStatus = tavusResponse;
-                let attempts = 0;
-                const maxAttempts = 30; // 5 minutes max wait time
+                        // Poll for completion in background
+                        let attempts = 0;
+                        const maxAttempts = 20; // 10 minutes max
 
-                while (videoStatus.status === 'pending' || videoStatus.status === 'generating') {
-                    if (attempts >= maxAttempts) {
-                        console.warn('Video generation timeout, but saving entry');
-                        break;
-                    }
+                        const pollVideoStatus = async () => {
+                            try {
+                                const videoStatus = await TavusService.getVideoStatus(tavusResponse.video_id);
+                                console.log('Video status check:', videoStatus);
 
-                    setProcessingStep(`Creating your video response... (${Math.round((attempts / maxAttempts) * 100)}%)`);
-                    await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+                                if (videoStatus.status === 'completed' && (videoStatus.download_url || videoStatus.stream_url)) {
+                                    // Update entry with video URL when ready
+                                    const videoUrl = videoStatus.download_url || videoStatus.stream_url || '';
+                                    await supabase
+                                        .from('entries')
+                                        .update({ ai_response_url: videoUrl })
+                                        .eq('id', entryData.id);
 
-                    try {
-                        videoStatus = await TavusService.getVideoStatus(tavusResponse.video_id);
-                        console.log('Video status check:', videoStatus);
-                    } catch (statusError) {
-                        console.warn('Error checking video status:', statusError);
-                        break;
-                    }
+                                    console.log('Entry updated with video URL:', videoUrl);
+                                    return;
+                                }
 
-                    attempts++;
-                }
+                                if (videoStatus.status === 'failed') {
+                                    console.warn('Video generation failed');
+                                    return;
+                                }
 
-                if (videoStatus.status === 'completed' && (videoStatus.download_url || videoStatus.stream_url)) {
-                    setAiVideoUrl(videoStatus.download_url || videoStatus.stream_url || '');
-                    console.log('Video generation completed successfully');
-                } else {
-                    console.warn('Video generation incomplete, but proceeding without video');
-                    setAiVideoUrl(''); // Proceed without video if generation fails
-                }
+                                // Continue polling if still generating
+                                if ((videoStatus.status === 'pending' || videoStatus.status === 'generating') && attempts < maxAttempts) {
+                                    attempts++;
+                                    setTimeout(pollVideoStatus, 30000); // Check every 30 seconds
+                                }
+                            } catch (error) {
+                                console.error('Error polling video status:', error);
+                            }
+                        };
+
+                        // Start polling after initial delay
+                        setTimeout(pollVideoStatus, 30000);
+                    })
+                    .catch(error => {
+                        console.error('Video generation failed:', error);
+                        // Entry is already saved with audio, so this is non-blocking
+                    });
+
+                // Set temporary message for immediate display
+                setAiVideoUrl('generating');
+                console.log('Video generation started in background');
 
             } catch (videoError) {
-                console.error('Video generation failed:', videoError);
-                setAiVideoUrl(''); // Proceed without video if generation fails
-                // Don't throw error - we can complete the check-in without the video
+                console.error('Video generation initialization failed:', videoError);
+                setAiVideoUrl(''); // Proceed without video if initialization fails
             }
 
             // Update analytics cache and refresh dashboard
             console.log('Invalidating analytics cache for user:', userId);
             analyticsService.invalidateUserCache(userId);
 
-            console.log('Fetching updated dashboard data...');
+            // Refresh dashboard data
             await fetchDashboardData(userId);
 
-            // Set completion state
             setCheckInStep('complete');
-            setProcessingStep('');
-            console.log('Check-in completed successfully!');
+            setCheckInError(null);
 
         } catch (error) {
-            console.error('Error saving check-in:', error);
-            console.error('Full error details:', JSON.stringify(error, null, 2));
-            setCheckInError(`Failed to save your check-in: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
+            console.error('Error saving and generating response:', error);
+            setCheckInError(error instanceof Error ? error.message : 'Failed to generate AI response');
             setCheckInStep('reviewing');
-            setProcessingStep('');
         }
     };
 
@@ -830,6 +807,14 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                     >
                         <MessageCircle className="w-4 h-4" />
                         <span>Journal</span>
+                    </button>
+                    <button
+                        onClick={() => setIsAISettingsOpen(true)}
+                        className="flex items-center space-x-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                        title="AI Settings - Configure your AI therapy experience"
+                    >
+                        <Brain className="w-4 h-4" />
+                        <span>AI</span>
                     </button>
                     <button
                         onClick={() => navigate('/settings')}
@@ -1106,7 +1091,26 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                             )}
 
                             {/* Video Response */}
-                            {aiVideoUrl ? (
+                            {aiVideoUrl === 'generating' ? (
+                                <div className="bg-gray-800 rounded-lg p-6">
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <Volume2 className="w-5 h-5 text-blue-400" />
+                                        <h3 className="text-lg font-medium">Your Personal Video Response</h3>
+                                    </div>
+                                    <div className="bg-gray-900 rounded-lg p-4 text-center">
+                                        <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                                        </div>
+                                        <h4 className="text-xl font-medium mb-2">Video Response Generating</h4>
+                                        <p className="text-gray-400 mb-2">
+                                            Your personalized video response is being created in the background.
+                                        </p>
+                                        <p className="text-sm text-gray-500">
+                                            This takes 2-5 minutes. Visit your Journal in a few minutes to see the completed video.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : aiVideoUrl ? (
                                 <div className="bg-gray-800 rounded-lg p-6">
                                     <div className="flex items-center space-x-2 mb-4">
                                         <Volume2 className="w-5 h-5 text-blue-400" />
@@ -1129,10 +1133,10 @@ Take care of yourself, and know that I'm here whenever you need support on your 
                                     </div>
                                     <div className="bg-gray-900 rounded-lg p-4 text-center">
                                         <p className="text-gray-400 mb-2">
-                                            Your video response is being prepared and will be available soon.
+                                            Your video response will be generated for your next check-in.
                                         </p>
                                         <p className="text-sm text-gray-500">
-                                            Video generation typically takes 2-5 minutes. Check back in a moment or visit your Journal to see when it's ready.
+                                            We're continuously improving our video generation system.
                                         </p>
                                     </div>
                                 </div>
@@ -1158,8 +1162,14 @@ Take care of yourself, and know that I'm here whenever you need support on your 
 
                 </div>
 
-                {/* Right Sidebar - Quick Actions */}
+                {/* Right Sidebar - Quick Actions & Weekly Video */}
                 <div className="lg:w-80 p-6 space-y-6">
+
+                    {/* Weekly Therapy Video */}
+                    <div className="bg-gray-800 rounded-lg p-4">
+                        <h3 className="text-sm font-medium text-gray-400 mb-3">This Week's Therapy Session</h3>
+                        <WeeklyVideoSection userId={profile?.id || ''} />
+                    </div>
 
                     {/* Quick Stats */}
                     <div className="bg-gray-800 rounded-lg p-4">
@@ -1212,6 +1222,12 @@ Take care of yourself, and know that I'm here whenever you need support on your 
 
                 </div>
             </div>
+
+            {/* AI Settings Modal */}
+            <AISettingsModal
+                isOpen={isAISettingsOpen}
+                onClose={() => setIsAISettingsOpen(false)}
+            />
         </div>
     );
 } 

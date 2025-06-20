@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Entry, MoodTag } from '../types/database';
 import { Button } from '../components/ui/Button';
+import { WeeklyVideoPlayer } from '../components/WeeklyVideoPlayer';
 import {
     Search,
     Filter,
@@ -19,7 +20,8 @@ import {
     SortDesc,
     Settings,
     LogOut,
-    Home
+    Home,
+    Video
 } from 'lucide-react';
 
 const MOOD_OPTIONS = [
@@ -421,6 +423,24 @@ export function JournalPage() {
                                     </div>
                                 )}
 
+                                {/* AI Video Response */}
+                                {entry.ai_response_url && entry.ai_response_url.includes('tavus') && (
+                                    <div className="mb-4">
+                                        <h4 className="text-sm font-medium text-purple-300 mb-2 flex items-center space-x-2">
+                                            <Video className="w-4 h-4" />
+                                            <span>AI Video Response</span>
+                                        </h4>
+                                        <div className="bg-gray-900 rounded-lg p-4">
+                                            <WeeklyVideoPlayer
+                                                videoUrl={entry.ai_response_url}
+                                                title="Personal AI Video Response"
+                                                onGenerateNewVideo={() => { }}
+                                                isGenerating={false}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Audio Controls */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-4">
@@ -438,7 +458,7 @@ export function JournalPage() {
                                             </button>
                                         )}
 
-                                        {entry.ai_response_url && (
+                                        {entry.ai_response_url && !entry.ai_response_url.includes('tavus') && (
                                             <button
                                                 onClick={() => handlePlayAudio(entry.ai_response_url!, `${entry.id}-ai`)}
                                                 className="flex items-center space-x-2 px-3 py-2 bg-purple-600 bg-opacity-20 text-purple-400 rounded-lg hover:bg-opacity-30 transition-colors"
@@ -448,7 +468,7 @@ export function JournalPage() {
                                                 ) : (
                                                     <Play className="h-4 w-4" />
                                                 )}
-                                                <span className="text-sm">AI Response</span>
+                                                <span className="text-sm">AI Audio Response</span>
                                             </button>
                                         )}
                                     </div>
