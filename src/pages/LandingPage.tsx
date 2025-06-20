@@ -1,7 +1,7 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
-import { Mic, Heart, BookOpen, Video, Zap } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/Button";
+import { Mic, Heart, BookOpen, Video, Zap } from "lucide-react";
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -20,16 +20,10 @@ export function LandingPage() {
             </div>
           </div>
           <div className="space-x-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/auth')}
-            >
+            <Button variant="ghost" onClick={() => navigate("/auth")}>
               Sign In
             </Button>
-            <Button
-              variant="primary"
-              onClick={() => navigate('/auth')}
-            >
+            <Button variant="primary" onClick={() => navigate("/auth")}>
               Get Started
             </Button>
           </div>
@@ -53,15 +47,16 @@ export function LandingPage() {
             </h1>
 
             <p className="mt-6 max-w-2xl mx-auto text-xl text-text-black">
-              Check in with your emotions through voice. Get personalized AI responses
-              and track your mental wellness journey with compassionate support.
+              Check in with your emotions through voice. Get personalized AI
+              responses and track your mental wellness journey with
+              compassionate support.
             </p>
 
             <div className="mt-10">
               <Button
                 variant="primary"
                 size="lg"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate("/auth")}
                 className="text-lg px-8 py-4"
               >
                 Start Your Check-In
@@ -75,10 +70,12 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-main bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
                 <Mic className="h-6 w-6 text-main" />
               </div>
-              <h3 className="text-xl font-semibold text-primery mb-4">Voice Check-Ins</h3>
+              <h3 className="text-xl font-semibold text-primery mb-4">
+                Voice Check-Ins
+              </h3>
               <p className="text-text-black">
-                Simply speak how you're feeling. Our AI listens with compassion and
-                responds with personalized, calming voice messages.
+                Simply speak how you're feeling. Our AI listens with compassion
+                and responds with personalized, calming voice messages.
               </p>
             </div>
 
@@ -86,10 +83,12 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-teal-500 bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
                 <BookOpen className="h-6 w-6 text-teal-600" />
               </div>
-              <h3 className="text-xl font-semibold text-primery mb-4">Digital Journal</h3>
+              <h3 className="text-xl font-semibold text-primery mb-4">
+                Digital Journal
+              </h3>
               <p className="text-text-black">
-                Automatically log your sessions. Track your emotional patterns and
-                see your wellness journey unfold over time.
+                Automatically log your sessions. Track your emotional patterns
+                and see your wellness journey unfold over time.
               </p>
             </div>
 
@@ -97,10 +96,12 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-purple-500 bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
                 <Video className="h-6 w-6 text-purple-600" />
               </div>
-              <h3 className="text-xl font-semibold text-primery mb-4">Weekly Therapy</h3>
+              <h3 className="text-xl font-semibold text-primery mb-4">
+                Weekly Therapy
+              </h3>
               <p className="text-text-black">
-                Receive personalized AI therapy videos weekly, providing continuous
-                support and guidance for your mental wellness.
+                Receive personalized AI therapy videos weekly, providing
+                continuous support and guidance for your mental wellness.
               </p>
             </div>
           </div>
@@ -117,7 +118,7 @@ export function LandingPage() {
             <Button
               variant="secondary"
               size="lg"
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate("/auth")}
               className="text-lg px-8 py-4 bg-white text-main hover:bg-grey-2"
             >
               Start Your Journey
@@ -130,16 +131,26 @@ export function LandingPage() {
       <footer className="mt-24 bg-white border-t border-grey">
         <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-primery mb-4">TherapifyMe</h3>
+            <h3 className="text-lg font-semibold text-primery mb-4">
+              TherapifyMe
+            </h3>
             <p className="text-text-black mb-8">
-              AI-powered mental wellness companion for students, creators, and anyone
-              prioritizing their mental health.
+              AI-powered mental wellness companion for students, creators, and
+              anyone prioritizing their mental health.
             </p>
             <div className="flex justify-center space-x-6 text-sm text-grey">
-              <a href="#" className="hover:text-text-black transition-colors">About</a>
-              <a href="#" className="hover:text-text-black transition-colors">Privacy</a>
-              <a href="#" className="hover:text-text-black transition-colors">Terms</a>
-              <a href="#" className="hover:text-text-black transition-colors">Support</a>
+              <a href="#" className="hover:text-text-black transition-colors">
+                About
+              </a>
+              <a href="#" className="hover:text-text-black transition-colors">
+                Privacy
+              </a>
+              <a href="#" className="hover:text-text-black transition-colors">
+                Terms
+              </a>
+              <a href="#" className="hover:text-text-black transition-colors">
+                Support
+              </a>
             </div>
           </div>
         </div>

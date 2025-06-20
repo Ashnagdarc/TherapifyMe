@@ -1,14 +1,19 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { Layout } from './components/Layout';
-import { LandingPage } from './pages/LandingPage';
-import { AuthPage } from './pages/AuthPage';
-import { Dashboard } from './pages/Dashboard';
-import { CheckInPage } from './pages/CheckInPage';
-import { AIResponsePage } from './pages/AIResponsePage';
-import { JournalPage } from './pages/JournalPage';
-import { SettingsPage } from './pages/SettingsPage';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { Layout } from "./components/Layout";
+import { LandingPage } from "./pages/LandingPage";
+import { AuthPage } from "./pages/AuthPage";
+import { Dashboard } from "./pages/Dashboard";
+import { CheckInPage } from "./pages/CheckInPage";
+import { AIResponsePage } from "./pages/AIResponsePage";
+import { JournalPage } from "./pages/JournalPage";
+import { SettingsPage } from "./pages/SettingsPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -18,7 +23,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
-        console.warn('ProtectedRoute: Emergency timeout triggered');
+        console.warn("ProtectedRoute: Emergency timeout triggered");
         setEmergencyTimeout(true);
       }
     }, 8000); // 8 second emergency timeout
@@ -39,7 +44,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   // If emergency timeout or user check complete
   if (emergencyTimeout && !user) {
-    console.warn('ProtectedRoute: Emergency redirect to auth');
+    console.warn("ProtectedRoute: Emergency redirect to auth");
     return <Navigate to="/auth" replace />;
   }
 
@@ -54,7 +59,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
-        console.warn('PublicRoute: Emergency timeout triggered');
+        console.warn("PublicRoute: Emergency timeout triggered");
         setEmergencyTimeout(true);
       }
     }, 8000); // 8 second emergency timeout
@@ -75,7 +80,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
   // If emergency timeout and still loading, show children (public content)
   if (emergencyTimeout) {
-    console.warn('PublicRoute: Emergency timeout, showing public content');
+    console.warn("PublicRoute: Emergency timeout, showing public content");
     return <>{children}</>;
   }
 
@@ -85,41 +90,62 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={
-        <PublicRoute>
-          <LandingPage />
-        </PublicRoute>
-      } />
-      <Route path="/auth" element={
-        <PublicRoute>
-          <AuthPage />
-        </PublicRoute>
-      } />
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/check-in" element={
-        <ProtectedRoute>
-          <CheckInPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/ai-response" element={
-        <ProtectedRoute>
-          <AIResponsePage />
-        </ProtectedRoute>
-      } />
-      <Route path="/journal" element={
-        <ProtectedRoute>
-          <JournalPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <SettingsPage />
-        </ProtectedRoute>
-      } />
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/auth"
+        element={
+          <PublicRoute>
+            <AuthPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/check-in"
+        element={
+          <ProtectedRoute>
+            <CheckInPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai-response"
+        element={
+          <ProtectedRoute>
+            <AIResponsePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/journal"
+        element={
+          <ProtectedRoute>
+            <JournalPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
