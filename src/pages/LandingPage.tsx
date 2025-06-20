@@ -23,7 +23,7 @@ type CTASectionProps = {
 export function LandingPage() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen flex flex-col items-center gap-[3rem] bg-gradient-to-br from-purple-50 via-white to-teal-50">
+    <div className="min-h-screen flex flex-col items-center gap-[3rem] font-montserrat bg-gradient-to-br from-purple-50 via-white to-teal-50">
       <Header navigate={navigate} />
 
       <Main navigate={navigate}>
@@ -47,8 +47,8 @@ function Header({ navigate }: HeaderProps) {
 
   return (
     <header className=" w-full flex items-center py-[1.5rem] px-[0.7rem] bg-grey-2 shadow-xl/40 shadow-grey fixed sm:px-[1.5rem] lg:min-h-[100px] lg:px-[2rem]">
-      <div className=" w-full flex items-start justify-between lg:items-center">
-        <div className="flex flex-col gap-[0.5rem] lg:flex-row lg:items-center lg:gap-[1rem] ">
+      <div className=" w-full flex items-start justify-between md:items-center">
+        <div className="flex flex-col gap-[0.5rem] md:flex-row md:items-center md:gap-[1rem] ">
           <h1 className="text-2xl font-bold text-primery">TherapifyMe</h1>
 
           {/* Bolt.new Badge */}
@@ -60,7 +60,7 @@ function Header({ navigate }: HeaderProps) {
 
         {/* mobile header nav bar */}
         {screenWidth <= 430 ? (
-          <div className="flex flex-col items-end gap-[0.7rem] lg:flex-row lg:items-center lg:gap-[1rem]">
+          <div className="flex flex-col items-end gap-[0.7rem] md:flex-row md:items-center md:gap-[1rem]">
             {!isOpen ? (
               <Menu onClick={() => handleNavToggle()} />
             ) : (
@@ -98,9 +98,9 @@ function Header({ navigate }: HeaderProps) {
 function Main({ navigate, children }: MainProps) {
   return (
     <main className="px-4 mt-[12rem] sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center">
-          <div className="animate-pulse mb-8">
+      <div className="w-full flex flex-col items-center gap-[2rem]">
+        <div className=" w-full flex flex-col items-center gap-[2rem] text-center">
+          <div className="animate-pulse">
             <div className="w-24 h-24 bg-gradient-to-br from-main to-purple-600 rounded-full mx-auto flex items-center justify-center">
               <Mic className="h-12 w-12 text-white" />
             </div>
@@ -112,13 +112,13 @@ function Main({ navigate, children }: MainProps) {
             <span className="block">Companion</span>
           </h1>
 
-          <p className="mt-6 max-w-2xl mx-auto text-xl text-text-black">
+          <p className="max-w-2xl mx-auto text-xl text-text-black">
             Check in with your emotions through voice. Get personalized AI
             responses and track your mental wellness journey with compassionate
             support.
           </p>
 
-          <div className="mt-10">
+          <div className="">
             <Button
               variant="primary"
               size="lg"
@@ -142,40 +142,34 @@ function Main({ navigate, children }: MainProps) {
 
 function MainFeaturesSection() {
   return (
-    <div className="mt-24 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      <div className="bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
-        <div className="w-12 h-12 bg-main bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
+    <div className=" grid grid-cols-1 gap-[2rem] mt-[4rem] sm:grid-cols-2 md:grid-cols-3">
+      <div className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
+        <div className="w-12 h-12 bg-main/80 bg-opacity-10 rounded-lg flex items-center justify-center">
           <Mic className="h-6 w-6 text-main" />
         </div>
-        <h3 className="text-xl font-semibold text-primery mb-4">
-          Voice Check-Ins
-        </h3>
+        <h3 className="text-xl font-semibold text-primery">Voice Check-Ins</h3>
         <p className="text-text-black">
           Simply speak how you're feeling. Our AI listens with compassion and
           responds with personalized, calming voice messages.
         </p>
       </div>
 
-      <div className="bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
-        <div className="w-12 h-12 bg-teal-500 bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
+      <div className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
+        <div className="w-12 h-12 bg-teal-500 bg-opacity-10 rounded-lg flex items-center justify-center ">
           <BookOpen className="h-6 w-6 text-teal-600" />
         </div>
-        <h3 className="text-xl font-semibold text-primery mb-4">
-          Digital Journal
-        </h3>
+        <h3 className="text-xl font-semibold text-primery ">Digital Journal</h3>
         <p className="text-text-black">
           Automatically log your sessions. Track your emotional patterns and see
           your wellness journey unfold over time.
         </p>
       </div>
 
-      <div className="bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
-        <div className="w-12 h-12 bg-purple-500 bg-opacity-10 rounded-lg flex items-center justify-center mb-6">
+      <div className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
+        <div className="w-12 h-12 bg-purple-500 bg-opacity-10 rounded-lg flex items-center justify-center">
           <Video className="h-6 w-6 text-purple-600" />
         </div>
-        <h3 className="text-xl font-semibold text-primery mb-4">
-          Weekly Therapy
-        </h3>
+        <h3 className="text-xl font-semibold text-primery">Weekly Therapy</h3>
         <p className="text-text-black">
           Receive personalized AI therapy videos weekly, providing continuous
           support and guidance for your mental wellness.
@@ -187,14 +181,16 @@ function MainFeaturesSection() {
 
 function MainCTASection({ navigate }: CTASectionProps) {
   return (
-    <div className="mt-24 bg-gradient-to-r from-main to-purple-600 rounded-3xl p-12 text-center">
-      <h2 className="text-3xl font-bold text-white mb-6">
+    <div className=" flex flex-col items-center gap-[2rem] mt-[4rem] bg-gradient-to-r from-main to-purple-600 rounded-3xl p-12 text-center">
+      <h2 className="text-3xl font-bold text-white ">
         Ready to prioritize your mental wellness?
       </h2>
-      <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+
+      <p className="text-xl text-blue-100 max-w-2xl mx-auto leading-[2rem] ">
         Join thousands who are already using TherapifyMe to check in with their
         emotions and build healthier mental habits.
       </p>
+
       <Button
         variant="secondary"
         size="lg"
@@ -208,31 +204,31 @@ function MainCTASection({ navigate }: CTASectionProps) {
 }
 
 function Footer() {
+  const footerNavList = [
+    { name: "about", path: "#" },
+    { name: "privacy", path: "#" },
+    { name: "terms", path: "#" },
+    { name: "support", path: "#" },
+  ];
+
   return (
-    <footer className="mt-24 bg-white border-t border-grey">
-      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-primery mb-4">
-            TherapifyMe
-          </h3>
-          <p className="text-text-black mb-8">
+    <footer className="w-full mt-[4rem] bg-white border-t border-grey shadow-reverse-shadow shadow-grey/80 ">
+      <div className="w-full flex flex-col items-center gap-[1.5rem] px-4 py-12 sm:px-6 md:py-[2rem] lg:px-8 ">
+        <div className="text-center flex flex-col items-center gap-[1rem]">
+          <h3 className="text-lg font-semibold text-primery">TherapifyMe</h3>
+
+          <p className="text-text-black mb-[1rem]">
             AI-powered mental wellness companion for students, creators, and
             anyone prioritizing their mental health.
           </p>
-          <div className="flex justify-center space-x-6 text-sm text-grey">
-            <a href="#" className="hover:text-text-black transition-colors">
-              About
-            </a>
-            <a href="#" className="hover:text-text-black transition-colors">
-              Privacy
-            </a>
-            <a href="#" className="hover:text-text-black transition-colors">
-              Terms
-            </a>
-            <a href="#" className="hover:text-text-black transition-colors">
-              Support
-            </a>
-          </div>
+
+          <ul className="flex justify-center gap-[1.5rem] capitalize text-sm text-grey md:gap-[2rem]">
+            {footerNavList.map((item) => (
+              <li className="hover:text-text-black transition-colors">
+                <a href={item.path}>{item.name}</a>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </footer>
