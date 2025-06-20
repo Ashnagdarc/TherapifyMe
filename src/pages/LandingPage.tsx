@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, NavigateFunction } from "react-router-dom";
-import { Button } from "../components/ui/Button";
-import { Mic, Heart, BookOpen, Video, Zap } from "lucide-react";
+import { useScreenWidth } from "../hooks/useScreenWidth";
 
-// types
+// imported reusable components
+import { Button } from "../components/ui/Button";
+import { Mic, Heart, BookOpen, Video, Zap, Menu, X } from "lucide-react";
+
+// component prop types
 type HeaderProps = {
   navigate: NavigateFunction;
 };
@@ -20,7 +23,7 @@ type CTASectionProps = {
 export function LandingPage() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50">
+    <div className="min-h-screen flex flex-col items-center gap-[3rem] bg-gradient-to-br from-purple-50 via-white to-teal-50">
       <Header navigate={navigate} />
 
       <Main navigate={navigate}>
@@ -33,27 +36,60 @@ export function LandingPage() {
 }
 
 function Header({ navigate }: HeaderProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const screenWidth = useScreenWidth();
+
+  function handleNavToggle() {
+    if (screenWidth > 430) return;
+    setIsOpen(!isOpen);
+  }
+
   return (
-    <header className="px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center space-x-4">
+    <header className=" w-full flex items-center py-[1.5rem] px-[0.7rem] bg-grey-2 shadow-xl/40 shadow-grey fixed sm:px-[1.5rem] lg:min-h-[100px] lg:px-[2rem]">
+      <div className=" w-full flex items-start justify-between lg:items-center">
+        <div className="flex flex-col gap-[0.5rem] lg:flex-row lg:items-center lg:gap-[1rem] ">
           <h1 className="text-2xl font-bold text-primery">TherapifyMe</h1>
+
           {/* Bolt.new Badge */}
-          <div className="flex items-center bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-            <Zap className="h-4 w-4 mr-1 animate-pulse" />
+          <div className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+            <Zap className="h-4 w-4 animate-pulse" />
             <span>Built with Bolt.new</span>
           </div>
         </div>
 
-        <div className="space-x-4">
-          <Button variant="ghost" onClick={() => navigate("/auth")}>
-            Sign In
-          </Button>
+        {/* mobile header nav bar */}
+        {screenWidth <= 430 ? (
+          <div className="flex flex-col items-end gap-[0.7rem] lg:flex-row lg:items-center lg:gap-[1rem]">
+            {!isOpen ? (
+              <Menu onClick={() => handleNavToggle()} />
+            ) : (
+              <X onClick={() => handleNavToggle()} />
+            )}
 
-          <Button variant="primary" onClick={() => navigate("/auth")}>
-            Get Started
-          </Button>
-        </div>
+            {isOpen && (
+              <div className="flex flex-col items-center gap-[0.5rem] p-[1rem] bg-accent shadow-xl/40 shadow-black rounded-[0.7rem] fixed top-[10rem] z-[99] ">
+                <Button variant="ghost" onClick={() => navigate("/auth")}>
+                  Sign In
+                </Button>
+
+                <Button variant="primary" onClick={() => navigate("/auth")}>
+                  Get Started
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-[1rem]">
+            <Button variant="ghost" onClick={() => navigate("/auth")}>
+              Sign In
+            </Button>
+
+            <Button variant="primary" onClick={() => navigate("/auth")}>
+              Get Started
+            </Button>
+          </div>
+        )}
       </div>
     </header>
   );
@@ -61,7 +97,7 @@ function Header({ navigate }: HeaderProps) {
 
 function Main({ navigate, children }: MainProps) {
   return (
-    <main className="px-4 py-12 sm:px-6 lg:px-8">
+    <main className="px-4 mt-[12rem] sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center">
           <div className="animate-pulse mb-8">
