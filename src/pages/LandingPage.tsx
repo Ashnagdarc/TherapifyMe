@@ -172,7 +172,10 @@ function MainFeaturesSection() {
   return (
     <div className=" grid grid-cols-1 gap-[2rem] mt-[4rem] sm:grid-cols-2 md:grid-cols-3">
       {featuresData.map((feature) => (
-        <div className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
+        <div
+          key={feature.title}
+          className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow"
+        >
           <div
             className={`w-12 h-12 ${feature.bgColor}  bg-opacity-10 rounded-lg flex items-center justify-center`}
           >
