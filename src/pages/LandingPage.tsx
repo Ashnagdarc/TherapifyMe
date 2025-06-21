@@ -68,8 +68,12 @@ function Header({ navigate }: HeaderProps) {
             )}
 
             {isOpen && (
-              <div className="flex flex-col items-center gap-[0.5rem] p-[1rem] bg-accent shadow-xl/40 shadow-black rounded-[0.7rem] fixed top-[10rem] z-[99] ">
-                <Button variant="ghost" onClick={() => navigate("/auth")}>
+              <div className="flex flex-col items-center gap-[1.5rem] p-[1rem] bg-accent shadow-xl/40 shadow-black rounded-[0.7rem] fixed top-[8rem] z-[99] ">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate("/auth")}
+                  className="shadow-xl/30 shadow-black"
+                >
                   Sign In
                 </Button>
 
@@ -141,40 +145,45 @@ function Main({ navigate, children }: MainProps) {
 }
 
 function MainFeaturesSection() {
+  const featuresData = [
+    {
+      bgColor: "bg-main/80",
+      icon: <Mic className="h-6 w-6 text-main" />,
+      title: "Voice Check-Ins",
+      textContent:
+        "Simply speak how you're feeling. Our AI listens with compassion and responds with personalized, calming voice messages.",
+    },
+    {
+      bgColor: "bg-teal-500",
+      icon: <BookOpen className="h-6 w-6 text-teal-600" />,
+      title: "Digital Journal",
+      textContent:
+        "Automatically log your sessions. Track your emotional patterns and see your wellness journey unfold over time.",
+    },
+    {
+      bgColor: "bg-purple-500",
+      icon: <Video className="h-6 w-6 text-purple-600" />,
+      title: "Weekly Therapy",
+      textContent:
+        "Receive personalized AI therapy videos weekly, providing continuous support and guidance for your mental wellness.",
+    },
+  ];
+
   return (
     <div className=" grid grid-cols-1 gap-[2rem] mt-[4rem] sm:grid-cols-2 md:grid-cols-3">
-      <div className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
-        <div className="w-12 h-12 bg-main/80 bg-opacity-10 rounded-lg flex items-center justify-center">
-          <Mic className="h-6 w-6 text-main" />
+      {featuresData.map((feature) => (
+        <div className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
+          <div
+            className={`w-12 h-12 ${feature.bgColor}  bg-opacity-10 rounded-lg flex items-center justify-center`}
+          >
+            {feature.icon}
+          </div>
+          <h3 className="text-xl font-semibold text-primery">
+            {feature.title}
+          </h3>
+          <p className="text-text-black">{feature.textContent}</p>
         </div>
-        <h3 className="text-xl font-semibold text-primery">Voice Check-Ins</h3>
-        <p className="text-text-black">
-          Simply speak how you're feeling. Our AI listens with compassion and
-          responds with personalized, calming voice messages.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
-        <div className="w-12 h-12 bg-teal-500 bg-opacity-10 rounded-lg flex items-center justify-center ">
-          <BookOpen className="h-6 w-6 text-teal-600" />
-        </div>
-        <h3 className="text-xl font-semibold text-primery ">Digital Journal</h3>
-        <p className="text-text-black">
-          Automatically log your sessions. Track your emotional patterns and see
-          your wellness journey unfold over time.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-[1.5rem] bg-white p-8 rounded-2xl shadow-xs border border-grey hover:shadow-sm transition-shadow">
-        <div className="w-12 h-12 bg-purple-500 bg-opacity-10 rounded-lg flex items-center justify-center">
-          <Video className="h-6 w-6 text-purple-600" />
-        </div>
-        <h3 className="text-xl font-semibold text-primery">Weekly Therapy</h3>
-        <p className="text-text-black">
-          Receive personalized AI therapy videos weekly, providing continuous
-          support and guidance for your mental wellness.
-        </p>
-      </div>
+      ))}
     </div>
   );
 }
@@ -222,9 +231,9 @@ function Footer() {
             anyone prioritizing their mental health.
           </p>
 
-          <ul className="flex justify-center gap-[1.5rem] capitalize text-sm text-grey md:gap-[2rem]">
+          <ul className="flex justify-center gap-[1.5rem] capitalize text-sm text-text-black/70 md:gap-[2rem]">
             {footerNavList.map((item) => (
-              <li className="hover:text-text-black transition-colors">
+              <li className="hover:text-primery transition-colors duration-300">
                 <a href={item.path}>{item.name}</a>
               </li>
             ))}
