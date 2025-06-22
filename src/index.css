@@ -1,6 +1,9 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
 
 @theme {
+  --font-montserrat: "Montserrat", sans-serif;
+
   /* Custom color palette from your original design */
   --color-black: rgb(17 17 17);
   --color-grey: rgb(205 205 205);
@@ -43,6 +46,9 @@
   --color-ring: oklch(0.65 0.016 220.9);
 
   --radius: 0.5rem;
+
+  --shadow-reverse-shadow: 0 -20px 25px -5px rgb(0 0 0 / 0.1),
+    0 -8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 @utility all-unset {
@@ -58,6 +64,7 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: "Montserrat", sans-serif;
   }
 
   .dark {
