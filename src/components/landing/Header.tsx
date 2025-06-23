@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Zap, Menu, X } from "lucide-react"; // Or any other icon you prefer
 
-import Logo from "../../assets/images/Logo.png";
+import Logo from "../Logo";
 import { useState } from "react";
 
 const navList = [
@@ -36,11 +36,7 @@ export default function Header() {
     >
       <div className="w-[95%] h-[68px] flex justify-between items-center bg-white mx-auto px-6  rounded-[1rem] shadow-xl/50 shadow-primery/50">
         <div className="flex items-center gap-[0.4rem]">
-          <img
-            src={Logo}
-            alt="TherapifyMe Logo"
-            className="w-8 h-8 md:w-[36px] md:h-[36px]"
-          />
+          <Logo />
 
           <span className="text-2xl font-bold text-gray-900">TherapifyMe</span>
         </div>

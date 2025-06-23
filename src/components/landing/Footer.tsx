@@ -1,17 +1,13 @@
 import { Facebook, Twitter, Linkedin } from "lucide-react";
 
-import Logo from "../../assets/images/Logo.png";
+import Logo from "../Logo";
 
 export default function Footer() {
   return (
     <footer className="py-12 bg-white border-t border-gray-200">
       <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
         <div className="flex items-center space-x-2 mb-4 md:mb-0">
-          <img
-            src={Logo}
-            alt="TherapifyMe Logo"
-            className="w-8 h-8 md:w-[36px] md:h-[36px]"
-          />
+          <Logo />
 
           <span className="text-xl font-bold text-gray-900">TherapifyMe</span>
         </div>
