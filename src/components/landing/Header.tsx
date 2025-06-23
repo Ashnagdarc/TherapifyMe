@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
-import { Zap } from "lucide-react"; // Or any other icon you prefer
+import { Zap, Menu, X } from "lucide-react"; // Or any other icon you prefer
 
 import Logo from "../../assets/images/Logo.png";
+import { useState } from "react";
 
 const navList = [
   {
@@ -20,11 +21,20 @@ const navList = [
 ];
 
 export default function Header() {
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+
+  function handleNavToggle() {
+    setIsOpen(!isOpen);
+  }
 
   return (
-    <header className="w-full py-4 flex justify-center sticky top-0 z-50">
-      <div className="container h-[68px] bg-white mx-auto px-6 flex justify-between items-center rounded-[1rem] shadow-xl/50 shadow-primery/50">
+    <header
+      className={`w-full ${
+        isOpen &&
+        " h-dvh bg-black/20 backdrop-blur-2xl transition-all duration-200 ease-in"
+      } py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:flex-row md:justify-center md:gap-0`}
+    >
+      <div className="w-[95%] h-[68px] flex justify-between items-center bg-white mx-auto px-6  rounded-[1rem] shadow-xl/50 shadow-primery/50">
         <div className="flex items-center gap-[0.4rem]">
           <img
             src={Logo}
@@ -35,26 +45,54 @@ export default function Header() {
           <span className="text-2xl font-bold text-gray-900">TherapifyMe</span>
         </div>
 
-        <nav className="hidden md:flex items-center space-x-8">
-          {navList.map((item) => (
-            <a
-              href={item.path}
-              className="text-gray-60  hover:text-blue-600 transition-all duration-300 ease-in-out"
-            >
-              {item.title}
-            </a>
-          ))}
-        </nav>
+        {!isOpen ? (
+          <Menu className="md:hidden" onClick={handleNavToggle} />
+        ) : (
+          <X className="md:hidden" onClick={handleNavToggle} />
+        )}
 
-        <Button
-          onClick={() => navigate("/auth")}
-          variant="primary"
-          className="hidden md:flex bg-gray-900 hover:bg-gray-800"
-        >
-          <Zap className="w-4 h-4 mr-2" />
-          Get Started
-        </Button>
+        <NavList className="hidden md:flex items-center gap-[2rem]" />
+
+        <CTAButton className="hidden md:flex gap-[0.5rem] bg-gray-900 hover:bg-gray-800" />
       </div>
+
+      {isOpen && (
+        <div className="w-[80%] h-[35svh] flex flex-col items-center justify-between py-[1rem] bg-white rounded-[0.6rem] shadow-xl/50 shadow-black/70 md:hidden">
+          <NavList className="flex flex-col items-center gap-[1rem]" />
+
+          <CTAButton className="flex items-center gap-[0.5rem] bg-gray-900 hover:bg-gray-800 " />
+        </div>
+      )}
     </header>
+  );
+}
+
+function NavList({ className = "" }) {
+  return (
+    <nav className={className}>
+      {navList.map((item) => (
+        <a
+          href={item.path}
+          className=" font-[600]  text-[16px] text-gray-60 hover:text-blue-600 transition-all duration-300 ease-in-out capitalize md:font-[300] md:text-[18px]  "
+        >
+          {item.title}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function CTAButton({ className = "" }) {
+  const navigate = useNavigate();
+
+  return (
+    <Button
+      onClick={() => navigate("/auth")}
+      variant="primary"
+      className={className}
+    >
+      <Zap className="w-4 h-4" />
+      Get Started
+    </Button>
   );
 }
