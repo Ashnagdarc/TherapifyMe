@@ -2,11 +2,16 @@ export interface User {
   id: string;
   auth_id: string;
   name: string;
+  email?: string;
   timezone: string;
   language: string;
-  preferred_tone: 'calm' | 'motivational' | 'reflective';
+  preferred_tone: 'calm' | 'motivational' | 'reflective' | 'direct' | 'empathetic';
+  storage_folder: string;
   created_at: string;
   updated_at: string;
+  tavus_api_key?: string | null;
+  gemini_api_key?: string | null;
+  full_name?: string | null;
 }
 
 export interface Entry {
@@ -18,6 +23,7 @@ export interface Entry {
   text_summary: string;
   transcription: string;
   created_at: string;
+  tavus_video_url?: string | null;
 }
 
 export interface TavusVideo {

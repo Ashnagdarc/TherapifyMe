@@ -19,9 +19,7 @@ interface TavusVideoResponse {
 export class TavusService {
   private static readonly API_BASE_URL = 'https://tavusapi.com/v2';
 
-  static async createVideo(script: string, replicaId?: string): Promise<TavusVideoResponse> {
-    const apiKey = import.meta.env.VITE_TAVUS_API_KEY;
-
+  static async createVideo(apiKey: string, script: string, replicaId?: string): Promise<TavusVideoResponse> {
     if (!apiKey) {
       throw new Error('Tavus API key not configured');
     }
@@ -58,9 +56,7 @@ export class TavusService {
     }
   }
 
-  static async getVideoStatus(videoId: string): Promise<TavusVideoResponse> {
-    const apiKey = import.meta.env.VITE_TAVUS_API_KEY;
-
+  static async getVideoStatus(apiKey: string, videoId: string): Promise<TavusVideoResponse> {
     if (!apiKey) {
       throw new Error('Tavus API key not configured');
     }
@@ -83,9 +79,7 @@ export class TavusService {
     }
   }
 
-  static async listReplicas(): Promise<any[]> {
-    const apiKey = import.meta.env.VITE_TAVUS_API_KEY;
-
+  static async listReplicas(apiKey: string): Promise<any[]> {
     if (!apiKey) {
       throw new Error('Tavus API key not configured');
     }
@@ -106,6 +100,18 @@ export class TavusService {
     } catch (error) {
       console.error('Error fetching replicas:', error);
       throw error;
+    }
+  }
+
+  static async testConnection(apiKey: string): Promise<{ success: boolean; message: string }> {
+    if (!apiKey) {
+      return { success: false, message: 'API key is missing.' };
+    }
+    try {
+      await this.listReplicas(apiKey);
+      return { success: true, message: 'Tavus API connection successful.' };
+    } catch (error: any) {
+      return { success: false, message: `Connection failed: ${error.message}` };
     }
   }
 }

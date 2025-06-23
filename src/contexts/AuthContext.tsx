@@ -21,194 +21,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("AuthProvider: Initializing...");
-
-    // Set a timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      console.warn(
-        "AuthProvider: Session check timeout, setting loading to false"
-      );
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchProfile(session.user.id);
+      }
       setLoading(false);
-    }, 10000); // 10 second timeout
+    };
 
-    // Get initial session
-    supabase.auth
-      .getSession()
-      .then(({ data: { session }, error }) => {
-        console.log("AuthProvider: Initial session check", {
-          session: !!session,
-          error,
-        });
+    checkSession();
 
-        // Clear timeout since we got a response
-        clearTimeout(timeoutId);
-
-        if (error) {
-          console.error("AuthProvider: Session error:", error);
-          setLoading(false);
-          return;
-        }
-
-        setUser(session?.user ?? null);
-
-        if (session?.user) {
-          console.log("AuthProvider: User found, fetching profile...");
-          fetchProfile(session.user.id);
-        } else {
-          console.log("AuthProvider: No user session");
-          setLoading(false);
-        }
-      })
-      .catch((error) => {
-        console.error("AuthProvider: Unexpected session error:", error);
-        clearTimeout(timeoutId);
-        setLoading(false);
-      });
-
-    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("AuthProvider: Auth state changed:", event, {
-        session: !!session,
-      });
-
-      // Handle different auth events
-      if (event === "SIGNED_OUT") {
-        console.log("AuthProvider: User signed out");
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-        return;
-      }
-
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        console.log("AuthProvider: User signed in or token refreshed");
-        setUser(session?.user ?? null);
-
-        if (session?.user) {
-          console.log(
-            "AuthProvider: Fetching profile for user:",
-            session.user.id
-          );
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-          setLoading(false);
-        }
-        return;
-      }
-
-      // For other events, update user state
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-
       if (session?.user) {
-        console.log(
-          "AuthProvider: Fetching profile for user:",
-          session.user.id
-        );
-        await fetchProfile(session.user.id);
+        fetchProfile(session.user.id);
       } else {
         setProfile(null);
-        setLoading(false);
       }
     });
 
     return () => {
-      console.log("AuthProvider: Cleaning up subscription");
-      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
 
-  const fetchProfile = async (authId: string) => {
-    console.log("AuthProvider: fetchProfile called for:", authId);
-
+  const fetchProfile = async (userId: string) => {
+    console.log("AuthProvider: Fetching profile for user:", userId);
+    setLoading(true);
     try {
-      // Set a timeout for profile fetching
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Profile fetch timeout")), 8000)
-      );
-
-      // First, try to get existing profile with timeout
-      const profilePromise = supabase
+      const { data, error, status } = await supabase
         .from("users")
-        .select("*")
-        .eq("auth_id", authId)
-        .maybeSingle();
+        .select(`*`)
+        .eq("auth_id", userId)
+        .single();
 
-      let { data, error } = (await Promise.race([
-        profilePromise,
-        timeoutPromise,
-      ])) as any;
-
-      console.log("AuthProvider: Profile query result:", {
-        data: !!data,
-        error,
-      });
-
-      if (
-        error &&
-        error.code !== "PGRST116" &&
-        error.message !== "Profile fetch timeout"
-      ) {
+      if (error && status !== 406) {
         console.error("AuthProvider: Profile fetch error:", error);
-        throw error;
-      }
-
-      if (data) {
+        setProfile(null);
+      } else if (data) {
         console.log("AuthProvider: Profile found:", data);
         setProfile(data);
-      } else if (error?.message === "Profile fetch timeout") {
-        console.warn("AuthProvider: Profile fetch timed out");
-        setProfile(null);
-      } else {
-        console.log("AuthProvider: No profile found, trying to create...");
-
-        // Try to create profile manually if trigger didn't work
-        const { data: newProfile, error: createError } = await supabase
-          .from("users")
-          .insert({
-            auth_id: authId,
-            name: "",
-            timezone: "UTC",
-            language: "en",
-            preferred_tone: "calm",
-            storage_folder: authId,
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error("AuthProvider: Error creating profile:", createError);
-
-          // If creation failed, try fetching again (maybe trigger created it)
-          const { data: retryData, error: retryError } = await supabase
-            .from("users")
-            .select("*")
-            .eq("auth_id", authId)
-            .maybeSingle();
-
-          if (retryData) {
-            console.log("AuthProvider: Profile found on retry:", retryData);
-            setProfile(retryData);
-          } else {
-            console.error(
-              "AuthProvider: Could not create or find profile:",
-              retryError
-            );
-            setProfile(null);
-          }
-        } else {
-          console.log(
-            "AuthProvider: Profile created successfully:",
-            newProfile
-          );
-          setProfile(newProfile);
-        }
       }
     } catch (error) {
-      console.error("AuthProvider: Unexpected error in fetchProfile:", error);
+      console.error("AuthProvider: Unexpected error fetching profile:", error);
       setProfile(null);
     } finally {
       setLoading(false);

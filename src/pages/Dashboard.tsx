@@ -6,12 +6,7 @@ import { AnalyticsService, DashboardData } from "../services/analyticsService";
 
 // imported UI components
 import CheckIn from "../components/dashboard/CheckIn";
-import CurrentStreak from "../components/dashboard/CurrentStreak";
-import MoodTrendSidebar from "../components/dashboard/MoodTrendSidebar";
-import RecentCheckinsSidebar from "../components/dashboard/RecentCheckinsSidebar";
-import TherapySession from "../components/dashboard/TherapySession";
-import UserProgress from "../components/dashboard/UserProgress";
-import MoodInsights from "../components/dashboard/MoodInsights";
+import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 
 // imported database component
 import { Entry } from "../types/database";
@@ -70,27 +65,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white font-sans">
-      <div className="container mx-auto p-4 grid grid-cols-12 gap-8 items-center h-screen">
-        {/* Left Sidebar */}
-        <div className="col-span-3 space-y-6">
-          <CurrentStreak days={dashboardData?.streakInfo?.current || 0} />
-          <MoodTrendSidebar trends={dashboardData?.moodTrends || []} />
-          <RecentCheckinsSidebar entries={dashboardData?.recentEntries || []} />
-        </div>
+    <div className="container mx-auto p-4 grid grid-cols-12 gap-8 h-screen">
+      {/* Combined Sidebar */}
+      <DashboardSidebar dashboardData={dashboardData} loading={loading} />
 
-        {/* Center Orb */}
-        <div className="col-span-6">
-          <CheckIn onCheckInComplete={handleCheckInComplete} />
-        </div>
-
-        {/* Right Sidebar */}
-        <div className="col-span-3 space-y-6">
-          <h3 className="text-sm text-gray-400">This Week's Therapy Session</h3>
-          <TherapySession />
-          <UserProgress stats={dashboardData?.userAnalytics} />
-          <MoodInsights mood={dashboardData?.userAnalytics.dominantMood} />
-        </div>
+      {/* Center Orb */}
+      <div className="col-span-9 flex items-center justify-center">
+        <CheckIn onCheckInComplete={handleCheckInComplete} />
       </div>
     </div>
   );

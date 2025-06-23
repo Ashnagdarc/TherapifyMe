@@ -119,22 +119,38 @@ export class AnalyticsService {
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-            // Use the user_sessions table for pre-calculated daily data
+            // Try user_sessions table first, but only use existing columns
             const { data: sessionData, error: sessionError } = await supabase
                 .from('user_sessions')
-                .select('session_date, dominant_mood, check_ins_count, mood_score')
+                .select('session_date, check_ins_count')
                 .eq('user_id', userId)
                 .gte('session_date', sevenDaysAgo.toISOString().split('T')[0])
                 .order('session_date', { ascending: true });
 
             if (!sessionError && sessionData && sessionData.length > 0) {
-                // Use pre-calculated session data
-                return sessionData.map(session => ({
-                    date: session.session_date,
-                    mood: session.dominant_mood || 'content',
-                    intensity: session.mood_score || 5,
-                    count: session.check_ins_count || 0
-                }));
+                // Use session data but calculate mood from entries for each date
+                const trends: MoodTrendData[] = [];
+                for (const session of sessionData) {
+                    // Get entries for this specific date to calculate mood
+                    const { data: dayEntries } = await supabase
+                        .from('entries')
+                        .select('mood_tag')
+                        .eq('user_id', userId)
+                        .gte('created_at', `${session.session_date}T00:00:00`)
+                        .lt('created_at', `${session.session_date}T23:59:59`);
+
+                    const moods = dayEntries?.map(e => e.mood_tag) || [];
+                    const dominantMood = this.getDominantMood(moods) || 'content';
+
+                    trends.push({
+                        date: session.session_date,
+                        mood: dominantMood,
+                        intensity: this.calculateMoodIntensity(dominantMood, session.check_ins_count || 0),
+                        count: session.check_ins_count || 0
+                    });
+                }
+
+                if (trends.length > 0) return trends;
             }
 
             // Fallback to real-time calculation if session data not available
@@ -248,22 +264,8 @@ export class AnalyticsService {
         lastCheckIn: string | null;
     }> {
         try {
-            // Try to get from user_sessions first (pre-calculated)
-            const { data: sessionData } = await supabase
-                .from('user_sessions')
-                .select('streak_days, session_date')
-                .eq('user_id', userId)
-                .order('session_date', { ascending: false })
-                .limit(1);
-
-            if (sessionData && sessionData.length > 0) {
-                const latestSession = sessionData[0];
-                return {
-                    current: latestSession.streak_days || 0,
-                    longest: latestSession.streak_days || 0, // We'd need to calculate this separately
-                    lastCheckIn: latestSession.session_date
-                };
-            }
+            // Skip user_sessions for now since it doesn't have streak_days column
+            // Calculate streak directly from entries
 
             // Fallback to real-time calculation
             const { data: entries } = await supabase
@@ -343,16 +345,15 @@ export class AnalyticsService {
         try {
             const moodScore = this.getMoodScore(entryData.mood);
 
-            // Update or insert session data
+            // Update or insert session data (only using existing columns)
             const { error } = await supabase
                 .from('user_sessions')
                 .upsert({
                     user_id: userId,
                     session_date: entryData.date,
                     check_ins_count: 1,
-                    dominant_mood: entryData.mood,
-                    mood_score: moodScore,
-                    updated_at: new Date().toISOString()
+                    mood_trend_direction: entryData.mood, // Use mood as trend direction for now
+                    created_at: new Date().toISOString()
                 }, {
                     onConflict: 'user_id,session_date',
                     ignoreDuplicates: false

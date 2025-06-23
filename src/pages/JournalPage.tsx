@@ -46,6 +46,7 @@ export default function JournalPage() {
 
   // Audio player state
   const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null);
+  const [videoPlayer, setVideoPlayer] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     if (profile) fetchEntries();
@@ -110,6 +111,53 @@ export default function JournalPage() {
     const { error } = await supabase.from("entries").delete().eq("id", id);
     if (error) console.error("Error deleting entry", error);
     else fetchEntries();
+  };
+
+  const renderEntryMedia = (entry: Entry) => {
+    const hasMedia = entry.voice_note_url || entry.ai_response_url || entry.tavus_video_url;
+
+    if (!hasMedia) return null;
+
+    return (
+      <div className="mt-4 pt-4 border-t border-gray-700/50 space-y-2">
+        {entry.voice_note_url && (
+          <Button
+            variant="secondary"
+            onClick={() => handlePlayAudio(entry.voice_note_url!, entry.id + "-voice")}
+            className="w-full"
+          >
+            {playingAudio === entry.id + "-voice" ? <Pause size={16} className="mr-2" /> : <Play size={16} className="mr-2" />}
+            Your Voice Note
+          </Button>
+        )}
+        {entry.ai_response_url && (
+          <Button
+            variant="secondary"
+            onClick={() => handlePlayAudio(entry.ai_response_url!, entry.id + "-ai")}
+            className="w-full"
+          >
+            {playingAudio === entry.id + "-ai" ? <Pause size={16} className="mr-2" /> : <Play size={16} className="mr-2" />}
+            Listen to AI Response
+          </Button>
+        )}
+        {entry.tavus_video_url && (
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setVideoPlayer(prev => ({ ...prev, [entry.id]: !prev[entry.id] }))}
+              className="w-full"
+            >
+              Watch AI Video
+            </Button>
+            {videoPlayer[entry.id] && (
+              <div className="aspect-video rounded-lg overflow-hidden mt-2">
+                <video src={entry.tavus_video_url} controls autoPlay className="w-full h-full" />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -223,24 +271,7 @@ export default function JournalPage() {
                     </div>
                   )}
                 </div>
-                {entry.voice_note_url && (
-                  <div className="mt-4 pt-4 border-t border-gray-700/50">
-                    <Button
-                      variant="secondary"
-                      onClick={() =>
-                        handlePlayAudio(entry.voice_note_url!, entry.id)
-                      }
-                      className="w-full"
-                    >
-                      {playingAudio === entry.id ? (
-                        <Pause size={16} className="mr-2" />
-                      ) : (
-                        <Play size={16} className="mr-2" />
-                      )}
-                      Your Voice Note
-                    </Button>
-                  </div>
-                )}
+                {renderEntryMedia(entry)}
               </div>
             ))}
             {filteredEntries.length === 0 && (

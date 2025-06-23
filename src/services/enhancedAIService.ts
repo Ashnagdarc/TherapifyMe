@@ -1,331 +1,243 @@
-import { HuggingFaceService } from './huggingFaceService';
-import { AIResponseService } from './aiResponseService';
+import GeminiService from './geminiService';
 import { TavusService } from './tavusService';
-import { MoodTag } from '../types/database';
+import { supabase } from '../lib/supabase';
+import { PostgrestError } from '@supabase/supabase-js';
 
-interface EnhancedAIResponse {
-    response: string;
-    tone: 'calm' | 'motivational' | 'reflective';
-    suggestions: string[];
-    source: 'ai' | 'template' | 'hybrid';
-    confidence: number;
-    videoScript?: string;
-}
-
-interface VideoGenerationRequest {
-    aiResponse: string;
-    mood: MoodTag;
-    transcription: string;
-    userTone: 'calm' | 'motivational' | 'reflective';
+// Helper to get user from Supabase to fetch API keys
+async function getUser() {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+        console.error('Error fetching user:', error);
+        return null;
+    }
+    return data.user;
 }
 
 export class EnhancedAIService {
-    private static readonly AI_CONFIDENCE_THRESHOLD = 0.6;
-    private static readonly USE_AI_PERCENTAGE = 70; // 70% of time try AI first
+    private static readonly AI_USAGE_PERCENTAGE_KEY = 'aiUsagePercentage';
+    private static readonly CONFIDENCE_THRESHOLD_KEY = 'aiConfidenceThreshold';
+    private static readonly RESPONSE_HISTORY_KEY = 'aiResponseHistory';
 
-    static async generateResponse(
-        mood: MoodTag,
-        transcription: string,
-        userTone: 'calm' | 'motivational' | 'reflective' = 'calm',
-        userId?: string,
-        forceAI: boolean = false
-    ): Promise<EnhancedAIResponse> {
-        const shouldUseAI = forceAI || Math.random() * 100 < this.USE_AI_PERCENTAGE;
+    private static getAiUsagePercentage(): number {
+        const storedValue = localStorage.getItem(EnhancedAIService.AI_USAGE_PERCENTAGE_KEY);
+        return storedValue ? parseInt(storedValue, 10) : 70;
+    }
 
-        if (shouldUseAI) {
+    private static getConfidenceThreshold(): number {
+        const storedValue = localStorage.getItem(EnhancedAIService.CONFIDENCE_THRESHOLD_KEY);
+        return storedValue ? parseInt(storedValue, 10) : 60;
+    }
+
+    private static getResponseHistory(): string[] {
+        const storedHistory = localStorage.getItem(EnhancedAIService.RESPONSE_HISTORY_KEY);
+        return storedHistory ? JSON.parse(storedHistory) : [];
+    }
+
+    private static addToResponseHistory(response: string) {
+        let history = this.getResponseHistory();
+        history.unshift(response);
+        if (history.length > 10) {
+            history = history.slice(0, 10);
+        }
+        localStorage.setItem(EnhancedAIService.RESPONSE_HISTORY_KEY, JSON.stringify(history));
+    }
+
+    private static isRepetitive(response: string): boolean {
+        const history = this.getResponseHistory();
+        return history.slice(0, 3).some(pastResponse => pastResponse === response);
+    }
+
+    private static getSystemPrompt(entryText: string): string {
+        const themes = GeminiService.detectThemes(entryText);
+
+        let prompt = `
+            You are a compassionate and empathetic AI therapy assistant named 'Aura'.
+            Your goal is to make the user feel heard, validated, and deeply understood.
+            You NEVER give direct advice. Instead, you ask gentle, open-ended questions to guide reflection.
+            You are talking to a user who just wrote this journal entry: "${entryText}"
+        `;
+
+        if (themes.length > 0) {
+            prompt += `\nThe entry seems to touch on themes of: ${themes.join(', ')}.`;
+        }
+
+        prompt += `
+            Based on this, your task is to craft a response that:
+            1. Validates the user's feelings directly and with warmth.
+            2. Shows you understand the situation by briefly and thoughtfully paraphrasing a key part of their entry.
+            3. Asks ONE insightful, open-ended question to encourage deeper reflection.
+            4. Maintains a warm, supportive, and non-judgmental tone.
+            Keep the response between 100 and 250 words.
+            
+            Your response:
+        `;
+
+        return prompt;
+    }
+
+    private static getApiKey(type: 'gemini_api_key' | 'tavus_api_key'): string | null {
+        // Use global environment variables instead of user-specific keys
+        if (type === 'gemini_api_key') {
+            return import.meta.env.VITE_GEMINI_API_KEY || null;
+        }
+        if (type === 'tavus_api_key') {
+            return import.meta.env.VITE_TAVUS_API_KEY || null;
+        }
+        return null;
+    }
+
+    public static async generateEnhancedResponse(entryText: string): Promise<{
+        finalResponse: string;
+        aiConfidence: number;
+        source: 'AI' | 'Template' | 'Hybrid';
+        videoScript: string;
+    }> {
+        const aiUsage = this.getAiUsagePercentage() / 100;
+        const confidenceThreshold = this.getConfidenceThreshold() / 100;
+        const geminiApiKey = this.getApiKey('gemini_api_key');
+
+        if (geminiApiKey && Math.random() < aiUsage) {
             try {
-                console.log('🤖 Attempting AI generation...');
+                const prompt = this.getSystemPrompt(entryText);
+                const aiResponse = await GeminiService.generateText(geminiApiKey, prompt);
+                const confidence = this.calculateConfidence(aiResponse);
 
-                // Try Hugging Face AI first
-                const aiResult = await HuggingFaceService.generateTherapeuticResponse(
-                    mood,
-                    transcription,
-                    userTone,
-                    userId
-                );
+                if (this.isRepetitive(aiResponse)) {
+                    console.log("AI response was repetitive, falling back to template.");
+                    return this.getTemplateResponse(entryText, "Repetitive AI");
+                }
 
-                if (aiResult.confidence >= this.AI_CONFIDENCE_THRESHOLD) {
-                    console.log('✅ AI generation successful with high confidence');
-
+                if (confidence >= confidenceThreshold) {
+                    this.addToResponseHistory(aiResponse);
                     return {
-                        response: aiResult.response,
-                        tone: aiResult.tone,
-                        suggestions: aiResult.suggestions,
-                        source: 'ai',
-                        confidence: aiResult.confidence,
-                        videoScript: this.createVideoScript(aiResult.response, mood, transcription)
+                        finalResponse: aiResponse,
+                        aiConfidence: confidence * 100,
+                        source: 'AI',
+                        videoScript: this.createVideoScript(aiResponse)
                     };
                 } else {
-                    console.log('⚠️ AI confidence too low, falling back to hybrid approach');
-                    return await this.generateHybridResponse(mood, transcription, userTone, userId, aiResult);
+                    const template = this.getTemplateResponse(entryText, "Low AI Confidence");
+                    const hybridResponse = this.createHybridResponse(aiResponse, template.finalResponse);
+                    this.addToResponseHistory(hybridResponse);
+                    return {
+                        finalResponse: hybridResponse,
+                        aiConfidence: confidence * 100,
+                        source: 'Hybrid',
+                        videoScript: this.createVideoScript(hybridResponse)
+                    };
                 }
             } catch (error) {
-                console.error('❌ AI generation failed:', error);
-                console.log('🔄 Falling back to enhanced template system');
-                return await this.generateTemplateResponse(mood, transcription, userTone, userId);
+                console.error("Error generating AI response, falling back to template:", error);
+                return this.getTemplateResponse(entryText, "AI Service Error");
             }
-        } else {
-            console.log('📝 Using enhanced template system');
-            return await this.generateTemplateResponse(mood, transcription, userTone, userId);
         }
+
+        return this.getTemplateResponse(entryText, "AI Not Triggered");
     }
 
-    private static async generateHybridResponse(
-        mood: MoodTag,
-        transcription: string,
-        userTone: 'calm' | 'motivational' | 'reflective',
-        userId: string | undefined,
-        aiResult: any
-    ): Promise<EnhancedAIResponse> {
-        // Get template response for comparison and enhancement
-        const templateResult = await AIResponseService.generateResponse(
-            mood,
-            transcription,
-            userTone,
-            userId
-        );
+    private static calculateConfidence(responseText: string): number {
+        let score = 0;
+        const wordCount = responseText.split(' ').length;
+        if (wordCount > 100 && wordCount < 400) score += 0.3;
+        else if (wordCount > 50) score += 0.15;
 
-        // Combine AI insights with template reliability
-        const hybridResponse = this.blendResponses(aiResult.response, templateResult.response);
+        if (responseText.includes('?')) score += 0.3;
 
-        // Use best suggestions from both sources
-        const combinedSuggestions = [
-            ...aiResult.suggestions.slice(0, 2),
-            ...templateResult.suggestions.slice(0, 1)
-        ];
+        const validationPhrases = ["it sounds like", "it makes sense that", "i can understand why", "that seems", "it's understandable"];
+        if (validationPhrases.some(phrase => responseText.toLowerCase().includes(phrase))) {
+            score += 0.2;
+        }
+
+        const advicePhrases = ["you should", "you need to", "try to"];
+        if (!advicePhrases.some(phrase => responseText.toLowerCase().includes(phrase))) {
+            score += 0.2;
+        }
+
+        return Math.min(score, 1.0);
+    }
+
+    private static getTemplateResponse(entryText: string, reason: string): { finalResponse: string; aiConfidence: number; source: 'Template'; videoScript: string; } {
+        console.log(`Using template response. Reason: ${reason}`);
+        const themes = GeminiService.detectThemes(entryText);
+        let response = "Thank you for sharing that with me. It takes courage to put your thoughts and feelings into words. ";
+
+        if (themes.includes('work')) {
+            response += "Navigating the pressures of work can be really challenging. ";
+        }
+        if (themes.includes('relationships')) {
+            response += "Relationships are such a core part of our lives, and they can bring both joy and difficulty. ";
+        }
+        response += "What's one thing you could do for yourself today that would feel kind?";
+
+        this.addToResponseHistory(response);
 
         return {
-            response: hybridResponse,
-            tone: userTone,
-            suggestions: combinedSuggestions,
-            source: 'hybrid',
-            confidence: (aiResult.confidence + 0.8) / 2, // Average AI confidence with template baseline
-            videoScript: this.createVideoScript(hybridResponse, mood, transcription)
+            finalResponse: response,
+            aiConfidence: 0,
+            source: 'Template',
+            videoScript: this.createVideoScript(response)
         };
     }
 
-    private static async generateTemplateResponse(
-        mood: MoodTag,
-        transcription: string,
-        userTone: 'calm' | 'motivational' | 'reflective',
-        userId: string | undefined
-    ): Promise<EnhancedAIResponse> {
-        const templateResult = await AIResponseService.generateResponse(
-            mood,
-            transcription,
-            userTone,
-            userId
-        );
+    private static createHybridResponse(aiResponse: string, templateResponse: string): string {
+        const aiSentences = aiResponse.split('. ');
+        const templateSentences = templateResponse.split('?');
 
-        return {
-            response: templateResult.response,
-            tone: templateResult.tone,
-            suggestions: templateResult.suggestions,
-            source: 'template',
-            confidence: 0.85, // Template system has high reliability
-            videoScript: this.createVideoScript(templateResult.response, mood, transcription)
-        };
+        const insightfulPart = aiSentences.slice(0, aiSentences.length - 1).join('. ') + '.';
+        const safeQuestion = '?' + templateSentences[templateSentences.length - 1];
+
+        return `${insightfulPart} ${safeQuestion}`;
     }
 
-    private static blendResponses(aiResponse: string, templateResponse: string): string {
-        // Extract the most therapeutic parts from both responses
-        const aiWords = aiResponse.split(' ');
-        const templateWords = templateResponse.split(' ');
-
-        // Use AI opening if it's therapeutic, otherwise use template
-        const aiOpening = aiWords.slice(0, 30).join(' ');
-        const templateOpening = templateWords.slice(0, 30).join(' ');
-
-        const opening = this.isTherapeuticOpening(aiOpening) ? aiOpening : templateOpening;
-
-        // Use template middle section for reliability
-        const middle = templateWords.slice(30, -30).join(' ');
-
-        // Use AI closing if it's insightful, otherwise use template
-        const aiClosing = aiWords.slice(-30).join(' ');
-        const templateClosing = templateWords.slice(-30).join(' ');
-
-        const closing = this.isInsightfulClosing(aiClosing) ? aiClosing : templateClosing;
-
-        return `${opening} ${middle} ${closing}`.trim();
+    private static createVideoScript(responseText: string): string {
+        const keyPoints = responseText.split('. ').slice(0, 3).join('. ');
+        return `Hey, I was just thinking about what you shared earlier. I wanted to say... ${keyPoints}. Remember to be kind to yourself.`;
     }
 
-    private static isTherapeuticOpening(text: string): boolean {
-        const therapeuticPhrases = [
-            'I hear you', 'Thank you for', 'I can sense', 'What you\'re sharing',
-            'I understand', 'Your feelings', 'It sounds like'
-        ];
-        return therapeuticPhrases.some(phrase => text.toLowerCase().includes(phrase.toLowerCase()));
-    }
-
-    private static isInsightfulClosing(text: string): boolean {
-        const insightfulPhrases = [
-            'strength within', 'you deserve', 'take this one step', 'be gentle',
-            'you have the power', 'trust yourself', 'you matter'
-        ];
-        return insightfulPhrases.some(phrase => text.toLowerCase().includes(phrase.toLowerCase()));
-    }
-
-    private static createVideoScript(response: string, mood: MoodTag, transcription: string): string {
-        // Create a video-optimized version of the response
-        const videoResponse = response
-            .replace(/\n\n/g, '\n') // Single line breaks for video
-            .replace(/\. /g, '. [pause] ') // Add pauses for natural speech
-            .trim();
-
-        // Add video-specific opening
-        const videoOpening = this.getVideoOpening(mood);
-
-        // Add gentle closing for video
-        const videoClosing = "\n\n[pause] Remember, I'm here to support you on this journey, and you're doing great by taking time to reflect and care for yourself.";
-
-        return `${videoOpening}\n\n${videoResponse}${videoClosing}`;
-    }
-
-    private static getVideoOpening(mood: MoodTag): string {
-        const openings: Record<MoodTag, string> = {
-            happy: "It's wonderful to see you in such a positive space today.",
-            sad: "I want you to know that it's perfectly okay to feel sad sometimes.",
-            anxious: "I can sense you're feeling anxious, and that's completely understandable.",
-            stressed: "I know you're feeling stressed right now, and I'm here with you.",
-            excited: "Your excitement is beautiful, and I love seeing this energy in you.",
-            overwhelmed: "When everything feels overwhelming, remember that you don't have to handle it all at once.",
-            frustrated: "Frustration can be so difficult to sit with, and I hear how you're feeling.",
-            calm: "I can feel the calm energy you're bringing today, and it's lovely.",
-            grateful: "Your gratitude is such a gift, both to yourself and others.",
-            content: "There's something beautiful about feeling content, and I'm glad you're experiencing this."
-        };
-
-        return openings[mood] || "Thank you for sharing with me today.";
-    }
-
-    // Generate Tavus video based on AI response
-    static async generateTherapyVideo(
-        request: VideoGenerationRequest,
-        replicaId?: string
-    ): Promise<{ videoId: string; status: string }> {
-        try {
-            console.log('🎥 Creating therapy video with Tavus...');
-
-            const videoScript = this.createVideoScript(
-                request.aiResponse,
-                request.mood,
-                request.transcription
-            );
-
-            const videoResponse = await TavusService.createVideo(videoScript, replicaId);
-
-            console.log('✅ Video generation initiated:', videoResponse.video_id);
-
-            return {
-                videoId: videoResponse.video_id,
-                status: videoResponse.status
-            };
-        } catch (error) {
-            console.error('❌ Video generation failed:', error);
-            throw new Error('Failed to generate therapy video');
-        }
-    }
-
-    // Get video status and download URL
-    static async getVideoStatus(videoId: string) {
-        try {
-            return await TavusService.getVideoStatus(videoId);
-        } catch (error) {
-            console.error('Error getting video status:', error);
-            throw error;
-        }
-    }
-
-    // Test all AI services
-    static async runDiagnostics(): Promise<{
-        huggingFace: { success: boolean; message: string };
-        tavus: { success: boolean; message: string };
-        overall: { success: boolean; message: string };
+    public static async runDiagnostics(): Promise<{
+        gemini: { status: 'Untested' | 'Operational' | 'Error' | 'Testing...'; message: string };
+        tavus: { status: 'Untested' | 'Operational' | 'Error' | 'Testing...'; message: string };
+        overall: { status: 'Untested' | 'Operational' | 'Error' | 'Testing...' | 'Good' | 'Issues Detected'; message: string };
     }> {
-        console.log('🔍 Running AI service diagnostics...');
+        console.log("🔍 Running AI service diagnostics...");
 
-        // Test Hugging Face
-        const huggingFaceTest = await HuggingFaceService.testConnection();
-
-        // Test Tavus
-        let tavusTest;
-        try {
-            await TavusService.listReplicas();
-            tavusTest = { success: true, message: "Tavus API connected successfully" };
-        } catch (error) {
-            tavusTest = {
-                success: false,
-                message: `Tavus connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-            };
-        }
-
-        const overallSuccess = huggingFaceTest.success && tavusTest.success;
-
-        return {
-            huggingFace: huggingFaceTest,
-            tavus: tavusTest,
-            overall: {
-                success: overallSuccess,
-                message: overallSuccess
-                    ? "All AI services are operational"
-                    : "Some AI services are experiencing issues"
-            }
+        const results: {
+            gemini: { status: 'Untested' | 'Operational' | 'Error' | 'Testing...'; message: string };
+            tavus: { status: 'Untested' | 'Operational' | 'Error' | 'Testing...'; message: string };
+            overall: { status: 'Untested' | 'Operational' | 'Error' | 'Testing...' | 'Good' | 'Issues Detected'; message: string };
+        } = {
+            gemini: { status: 'Untested', message: '' },
+            tavus: { status: 'Untested', message: '' },
+            overall: { status: 'Good', message: 'All systems operational' }
         };
-    }
 
-    // Generate response with automatic video creation
-    static async generateResponseWithVideo(
-        mood: MoodTag,
-        transcription: string,
-        userTone: 'calm' | 'motivational' | 'reflective' = 'calm',
-        userId?: string,
-        generateVideo: boolean = false,
-        replicaId?: string
-    ): Promise<EnhancedAIResponse & { videoGeneration?: { videoId: string; status: string } }> {
-        // Generate AI response
-        const aiResponse = await this.generateResponse(mood, transcription, userTone, userId);
+        // Get API keys from environment
+        const geminiApiKey = this.getApiKey('gemini_api_key');
+        const tavusApiKey = this.getApiKey('tavus_api_key');
 
-        // Optionally generate video
-        if (generateVideo) {
-            try {
-                const videoGeneration = await this.generateTherapyVideo({
-                    aiResponse: aiResponse.response,
-                    mood,
-                    transcription,
-                    userTone
-                }, replicaId);
-
-                return {
-                    ...aiResponse,
-                    videoGeneration
-                };
-            } catch (videoError) {
-                console.warn('Video generation failed, returning response without video:', videoError);
-                return aiResponse;
-            }
+        try {
+            const geminiResult = await GeminiService.testConnection(geminiApiKey || '');
+            results.gemini.status = geminiResult.success ? 'Operational' : 'Error';
+            results.gemini.message = geminiResult.message;
+        } catch (error: any) {
+            results.gemini.status = 'Error';
+            results.gemini.message = error.message;
         }
 
-        return aiResponse;
-    }
-
-    // Configure AI preferences
-    static configureAI(options: {
-        useAIPercentage?: number;
-        confidenceThreshold?: number;
-        forceTemplate?: boolean;
-    }) {
-        if (options.useAIPercentage !== undefined) {
-            (this as any).USE_AI_PERCENTAGE = Math.max(0, Math.min(100, options.useAIPercentage));
+        try {
+            const tavusResult = await TavusService.testConnection(tavusApiKey || '');
+            results.tavus.status = tavusResult.success ? 'Operational' : 'Error';
+            results.tavus.message = tavusResult.message;
+        } catch (error: any) {
+            results.tavus.status = 'Error';
+            results.tavus.message = `Connection failed: ${error.message}`;
         }
 
-        if (options.confidenceThreshold !== undefined) {
-            (this as any).AI_CONFIDENCE_THRESHOLD = Math.max(0, Math.min(1, options.confidenceThreshold));
+        if (results.gemini.status !== 'Operational' || results.tavus.status !== 'Operational') {
+            results.overall.status = 'Issues Detected';
+            results.overall.message = 'One or more AI services are experiencing issues.';
         }
 
-        console.log('🔧 AI configuration updated:', {
-            useAIPercentage: (this as any).USE_AI_PERCENTAGE,
-            confidenceThreshold: (this as any).AI_CONFIDENCE_THRESHOLD
-        });
+        return results;
     }
-} 
+}
