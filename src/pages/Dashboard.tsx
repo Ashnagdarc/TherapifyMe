@@ -39,6 +39,10 @@ import {
 import { TavusService } from '../services/tavusService';
 import { WeeklyVideoSection } from '../components/WeeklyVideoSection';
 import { AISettingsModal } from '../components/AISettingsModal';
+import { DashboardHeader } from '../components/dashboard/DashboardHeader';
+import { MoodTrendChart } from '../components/dashboard/MoodTrendChart';
+import { RecentEntriesList } from '../components/dashboard/RecentEntriesList';
+import { CheckIn } from '../components/dashboard/CheckIn';
 
 const MOOD_OPTIONS = [
     { value: 'happy', label: '😊 Happy' },
@@ -781,446 +785,43 @@ Take care of yourself, and know that I'm here whenever you need support on your 
         return colors[mood] || 'bg-gray-400';
     };
 
-    if (loading) {
+    const handleCheckInComplete = () => {
+        // Refetch data when a new check-in is completed
+        setLoading(true);
+        if (profile?.id) {
+            analyticsService.getDashboardData(profile.id)
+                .then(setDashboardData)
+                .catch(error => {
+                    console.error("Failed to refetch dashboard data:", error);
+                    setDashboardData(null);
+                })
+                .finally(() => setLoading(false));
+        }
+    };
+
+    if (loading || authLoading) {
         return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <div className="flex justify-center items-center h-[calc(100vh-8rem)]">
+                <Loader2 className="w-16 h-16 animate-spin text-blue-600" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-800">
-                <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">T</span>
-                    </div>
-                    <h1 className="text-xl font-semibold">TherapifyMe</h1>
+        <div className="space-y-8">
+            <DashboardHeader />
+            <CheckIn onCheckInComplete={handleCheckInComplete} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                    <MoodTrendChart moodTrends={dashboardData?.moodTrends || []} />
                 </div>
-
-                <div className="flex items-center space-x-4">
-                    <button
-                        onClick={() => navigate('/journal')}
-                        className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                        <MessageCircle className="w-4 h-4" />
-                        <span>Journal</span>
-                    </button>
-
-                    <button
-                        onClick={() => navigate('/settings')}
-                        className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                        <Settings className="w-4 h-4" />
-                        <span>Settings</span>
-                    </button>
-                    <button
-                        onClick={signOut}
-                        className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                        <LogOut className="w-4 h-4" />
-                    </button>
+                <div>
+                    <WeeklyVideoSection userId={profile?.id || ''} />
                 </div>
             </div>
-
-            {/* Main Content */}
-            <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
-
-                {/* Left Sidebar - Stats */}
-                <div className="lg:w-80 p-6 space-y-6 border-r border-gray-800">
-                    {/* Current Streak */}
-                    <div className="bg-gray-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-gray-400 mb-2">Current Streak</h3>
-                        <div className="text-2xl font-bold text-blue-400">
-                            {dashboardData?.streakInfo.current || 0} days
-                        </div>
-                    </div>
-
-                    {/* Mood Trend */}
-                    <div className="bg-gray-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">7-Day Mood Trend</h3>
-                        <div className="space-y-2">
-                            {dashboardData?.moodTrends.slice(-7).map((trend, index) => (
-                                <div key={index} className="flex items-center justify-between">
-                                    <span className="text-xs text-gray-400 w-8">
-                                        {new Date(trend.date).toLocaleDateString('en-US', { weekday: 'short' })}
-                                    </span>
-                                    <div className="flex-1 mx-2">
-                                        <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                                            <div
-                                                className={`h-full ${getMoodColor(trend.mood)} rounded-full transition-all duration-300`}
-                                                style={{ width: `${Math.max(trend.intensity || 10, 10)}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <span className="text-xs text-gray-400 capitalize w-16 text-right">
-                                        {trend.mood !== 'neutral' && trend.count > 0 ? trend.mood : '-'}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Recent Entries */}
-                    <div className="bg-gray-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">Recent Check-ins</h3>
-                        {dashboardData?.recentEntries.length ? (
-                            <div className="space-y-2">
-                                {dashboardData.recentEntries.slice(0, 3).map((entry) => (
-                                    <div key={entry.id} className="flex items-center space-x-2">
-                                        <div className={`w-2 h-2 rounded-full ${getMoodColor(entry.mood_tag)}`}></div>
-                                        <span className="text-xs text-gray-300 capitalize">{entry.mood_tag}</span>
-                                        <span className="text-xs text-gray-500 ml-auto">
-                                            {new Date(entry.created_at).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-xs text-gray-500">No entries yet</p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Center - Orb Interface */}
-                <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-8">
-
-                    {/* Orb Container */}
-                    <div
-                        className="relative cursor-pointer group"
-                        onClick={handleOrbClick}
-                        style={{
-                            width: checkInStep === 'recording' ? '400px' : '300px',
-                            height: checkInStep === 'recording' ? '400px' : '300px',
-                            transition: 'all 0.3s ease'
-                        }}
-                    >
-                        <Orb {...getOrbProps()} />
-
-                        {/* Recording Time Display */}
-                        {checkInStep === 'recording' && (
-                            <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
-                                <div className="bg-red-600 px-4 py-2 rounded-full text-white font-mono text-lg animate-pulse">
-                                    🔴 {formatTime(recordingTime)}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Processing Step Display */}
-                        {(checkInStep === 'processing' || checkInStep === 'generating') && processingStep && (
-                            <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-full text-center">
-                                <div className="bg-gray-800/90 px-4 py-2 rounded-lg text-gray-300 text-sm">
-                                    {processingStep}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Orb Icon Overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            {checkInStep === 'idle' && (
-                                <Mic className="w-12 h-12 text-white/70 group-hover:text-white transition-colors" />
-                            )}
-                            {checkInStep === 'recording' && (
-                                <Square className="w-12 h-12 text-white animate-pulse" />
-                            )}
-                            {(checkInStep === 'processing' || checkInStep === 'generating') && (
-                                <Loader2 className="w-12 h-12 text-white animate-spin" />
-                            )}
-                            {checkInStep === 'reviewing' && (
-                                <Edit3 className="w-12 h-12 text-white/70" />
-                            )}
-                            {checkInStep === 'complete' && (
-                                <Sparkles className="w-12 h-12 text-white animate-pulse" />
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Message */}
-                    <div className="text-center">
-                        <h2 className="text-2xl font-light text-blue-300 mb-2">
-                            Hello {profile?.name || 'there'}
-                        </h2>
-                        <p className="text-gray-300 text-lg">
-                            {getOrbMessage()}
-                        </p>
-
-                        {/* Debug Info - Remove in production */}
-                        <div className="mt-2 text-xs text-gray-500 font-mono">
-                            State: {checkInStep} | Transcription: {transcription ? 'Yes' : 'No'} | Audio: {audioUrl ? 'Yes' : 'No'} | Entries: {dashboardData?.userAnalytics.totalEntries || 0}
-                        </div>
-                    </div>
-
-                    {/* Check-in Flow UI */}
-                    {checkInStep === 'reviewing' && (
-                        <div className="w-full max-w-2xl space-y-6">
-
-                            {/* Audio Playback */}
-                            {audioUrl && (
-                                <div className="bg-gray-800 rounded-lg p-6">
-                                    <div className="flex items-center space-x-3 mb-4">
-                                        <Volume2 className="w-5 h-5 text-green-400" />
-                                        <h3 className="text-lg font-medium">Your Recording</h3>
-                                    </div>
-                                    <div className="bg-gray-900 rounded-lg p-4">
-                                        <audio
-                                            controls
-                                            className="w-full"
-                                            preload="metadata"
-                                        >
-                                            <source src={audioUrl} type="audio/webm" />
-                                            <source src={audioUrl} type="audio/wav" />
-                                            Your browser does not support the audio element.
-                                        </audio>
-                                        <p className="text-xs text-gray-400 mt-2">
-                                            Listen to your recording to compare with the transcription below
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Transcription Editor */}
-                            <div className="bg-gray-800 rounded-lg p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center space-x-3">
-                                        <MessageCircle className="w-5 h-5 text-blue-400" />
-                                        <h3 className="text-lg font-medium">Your Thoughts</h3>
-                                    </div>
-                                    <button
-                                        onClick={() => setIsEditingText(!isEditingText)}
-                                        className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
-                                    >
-                                        <Edit3 className="w-4 h-4" />
-                                        <span>{isEditingText ? 'Save' : 'Edit'}</span>
-                                    </button>
-                                </div>
-
-                                {isEditingText ? (
-                                    <textarea
-                                        value={editedTranscription}
-                                        onChange={(e) => setEditedTranscription(e.target.value)}
-                                        className="w-full h-32 bg-gray-900 border border-gray-700 rounded-lg p-4 text-white resize-none focus:outline-hidden focus:ring-3 focus:ring-blue-500"
-                                        placeholder="Edit your transcription here..."
-                                    />
-                                ) : (
-                                    <div className="bg-gray-900 rounded-lg p-4 min-h-[128px]">
-                                        <p className="text-gray-300">
-                                            {editedTranscription || transcription || 'No transcription available'}
-                                        </p>
-                                    </div>
-                                )}
-                                <p className="text-xs text-gray-400 mt-2">
-                                    Compare the audio with this text and edit if needed before saving
-                                </p>
-                            </div>
-
-                            {/* Mood Selection */}
-                            <div className="bg-gray-800 rounded-lg p-6">
-                                <h3 className="text-lg font-medium mb-4">How are you feeling?</h3>
-                                <Select
-                                    value={selectedMood}
-                                    onChange={(value) => setSelectedMood(value as MoodTag)}
-                                    options={MOOD_OPTIONS}
-                                    placeholder="Select your mood"
-                                    className="bg-gray-700 border-gray-600 text-white [&>option]:bg-gray-700 [&>option]:text-white"
-                                />
-                            </div>
-
-                            {/* Error Message */}
-                            {checkInError && (
-                                <div className="bg-red-900/50 border border-red-600 rounded-lg p-4">
-                                    <p className="text-red-200">{checkInError}</p>
-                                </div>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex space-x-4">
-                                <button
-                                    onClick={resetCheckIn}
-                                    className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-                                >
-                                    Start Over
-                                </button>
-                                <Button
-                                    onClick={handleSaveAndGenerate}
-                                    disabled={!selectedMood}
-                                    className="flex-1 flex items-center justify-center space-x-2"
-                                    variant="primary"
-                                >
-                                    <Save className="w-4 h-4" />
-                                    <span>Save & Generate AI Response</span>
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* AI Response Display */}
-                    {checkInStep === 'complete' && (
-                        <div className="w-full max-w-2xl space-y-6">
-
-                            {/* Completion Message */}
-                            <div className="text-center bg-green-900/20 border border-green-600/30 rounded-lg p-6">
-                                <Heart className="w-8 h-8 text-green-400 mx-auto mb-3" />
-                                <h3 className="text-xl font-medium text-green-300 mb-2">
-                                    Well done for sharing your mind with me!
-                                </h3>
-                                <p className="text-gray-300">
-                                    I've analyzed your thoughts and prepared some insights for you.
-                                </p>
-                            </div>
-
-                            {/* AI Analysis */}
-                            {aiAnalysis && (
-                                <div className="bg-gray-800 rounded-lg p-6">
-                                    <div className="flex items-center space-x-2 mb-4">
-                                        <Brain className="w-5 h-5 text-purple-400" />
-                                        <h3 className="text-lg font-medium">AI Analysis</h3>
-                                    </div>
-                                    <div className="bg-gray-900 rounded-lg p-4">
-                                        <p className="text-gray-300 leading-relaxed">{aiAnalysis}</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Video Response */}
-                            {aiVideoUrl === 'generating' ? (
-                                <div className="bg-gray-800 rounded-lg p-6">
-                                    <div className="flex items-center space-x-2 mb-4">
-                                        <Volume2 className="w-5 h-5 text-blue-400" />
-                                        <h3 className="text-lg font-medium">Your Personal Video Response</h3>
-                                    </div>
-                                    <div className="bg-gray-900 rounded-lg p-4 text-center">
-                                        <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-                                        </div>
-                                        <h4 className="text-xl font-medium mb-2">Video Response Generating</h4>
-                                        <p className="text-gray-400 mb-2">
-                                            Your personalized video response is being created in the background.
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            This takes 2-5 minutes. Visit your Journal in a few minutes to see the completed video.
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : aiVideoUrl ? (
-                                <div className="bg-gray-800 rounded-lg p-6">
-                                    <div className="flex items-center space-x-2 mb-4">
-                                        <Volume2 className="w-5 h-5 text-blue-400" />
-                                        <h3 className="text-lg font-medium">Your Personal Video Response</h3>
-                                    </div>
-                                    <div className="bg-gray-900 rounded-lg p-4">
-                                        <WeeklyVideoPlayer
-                                            videoUrl={aiVideoUrl}
-                                            title="Personal AI Response"
-                                            onGenerateNewVideo={() => { }}
-                                            isGenerating={false}
-                                        />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="bg-gray-800 rounded-lg p-6">
-                                    <div className="flex items-center space-x-2 mb-4">
-                                        <Volume2 className="w-5 h-5 text-blue-400" />
-                                        <h3 className="text-lg font-medium">Video Response</h3>
-                                    </div>
-                                    <div className="bg-gray-900 rounded-lg p-4 text-center">
-                                        <p className="text-gray-400 mb-2">
-                                            Your video response will be generated for your next check-in.
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            We're continuously improving our video generation system.
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex space-x-4">
-                                <button
-                                    onClick={resetCheckIn}
-                                    className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                                >
-                                    Start New Check-in
-                                </button>
-                                <button
-                                    onClick={() => navigate('/journal')}
-                                    className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-                                >
-                                    View Journal
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                </div>
-
-                {/* Right Sidebar - Quick Actions & Weekly Video */}
-                <div className="lg:w-80 p-6 space-y-6">
-
-                    {/* Weekly Therapy Video */}
-                    <div className="bg-gray-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">This Week's Therapy Session</h3>
-                        <WeeklyVideoSection userId={profile?.id || ''} />
-                    </div>
-
-                    {/* Quick Stats */}
-                    <div className="bg-gray-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">Your Progress</h3>
-                        <div className="space-y-3">
-                            <div className="flex justify-between">
-                                <span className="text-sm text-gray-300">Total Entries</span>
-                                <span className="text-sm font-medium text-blue-400">
-                                    {dashboardData?.userAnalytics.totalEntries || 0}
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm text-gray-300">Active Days</span>
-                                <span className="text-sm font-medium text-green-400">
-                                    {dashboardData?.userAnalytics.activeDays || 0}
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm text-gray-300">Longest Streak</span>
-                                <span className="text-sm font-medium text-purple-400">
-                                    {dashboardData?.streakInfo.longest || 0} days
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Mood Insights */}
-                    <div className="bg-gray-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">Mood Insights</h3>
-                        <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                                <div className={`w-3 h-3 rounded-full ${getMoodColor(dashboardData?.userAnalytics.dominantMood || 'content')}`}></div>
-                                <span className="text-sm text-gray-300">Dominant mood:</span>
-                                <span className="text-sm font-medium capitalize">
-                                    {dashboardData?.userAnalytics.dominantMood || 'content'}
-                                </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <TrendingUp className="w-3 h-3 text-blue-400" />
-                                <span className="text-sm text-gray-300">Trend:</span>
-                                <span className={`text-sm font-medium ${dashboardData?.userAnalytics.moodTrend === 'improving' ? 'text-green-400' :
-                                    dashboardData?.userAnalytics.moodTrend === 'declining' ? 'text-red-400' :
-                                        'text-blue-400'
-                                    }`}>
-                                    {dashboardData?.userAnalytics.moodTrend || 'stable'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+            <div>
+                <RecentEntriesList entries={dashboardData?.recentEntries || []} />
             </div>
-
-            {/* AI Settings Modal */}
-            <AISettingsModal
-                isOpen={isAISettingsOpen}
-                onClose={() => setIsAISettingsOpen(false)}
-            />
         </div>
     );
 } 

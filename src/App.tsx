@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Layout } from "./components/Layout";
-import { LandingPage } from "./pages/LandingPage";
+import LandingPage from "./pages/LandingPage";
 import { AuthPage } from "./pages/AuthPage";
 import { Dashboard } from "./pages/Dashboard";
 import { CheckInPage } from "./pages/CheckInPage";

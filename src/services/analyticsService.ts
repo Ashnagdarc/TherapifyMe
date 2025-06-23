@@ -35,6 +35,7 @@ export interface MinimalEntry {
     mood_tag: string;
     created_at: string;
     text_summary: string;
+    transcription: string;
 }
 
 export class AnalyticsService {
@@ -221,7 +222,7 @@ export class AnalyticsService {
         try {
             const { data, error } = await supabase
                 .from('entries')
-                .select('id, mood_tag, created_at, text_summary')
+                .select('id, mood_tag, created_at, text_summary, transcription')
                 .eq('user_id', userId)
                 .order('created_at', { ascending: false })
                 .limit(5);
