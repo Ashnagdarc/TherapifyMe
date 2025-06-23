@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { TranscriptionService } from "../../services/transcriptionService";
 import { EnhancedAIService } from "../../services/enhancedAIService";
 import { TavusService } from "../../services/tavusService";
+import { ElevenLabsService } from "../../services/elevenLabsService";
 import { MoodTag } from "../../types/database";
 import Orb from "../Orb";
 import { Button } from "../ui/Button";
@@ -51,6 +53,7 @@ interface CheckInProps {
 
 export default function CheckIn({ onCheckInComplete }: CheckInProps) {
     const { profile, user } = useAuth();
+    const navigate = useNavigate();
     const [step, setStep] = useState<CheckInStep>("idle");
     const [error, setError] = useState<string | null>(null);
     const [processingMessage, setProcessingMessage] = useState("");
@@ -171,6 +174,22 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
             setProcessingMessage("Generating AI insights...");
             const { finalResponse, videoScript } = await EnhancedAIService.generateEnhancedResponse(editedTranscription);
 
+            setProcessingMessage("Creating AI audio response...");
+            let aiResponseAudioUrl: string | null = null;
+            try {
+                const audioBlob = await ElevenLabsService.textToSpeech(finalResponse);
+                const audioFilePath = `ai-responses/${user.id}/${Date.now()}.mp3`;
+                const { error: audioUploadError } = await supabase.storage
+                    .from("voice-recordings")
+                    .upload(audioFilePath, audioBlob);
+                if (!audioUploadError) {
+                    const { data: { publicUrl: aiAudioUrl } } = supabase.storage.from("voice-recordings").getPublicUrl(audioFilePath);
+                    aiResponseAudioUrl = aiAudioUrl;
+                }
+            } catch (audioError) {
+                console.warn("AI audio generation failed, proceeding without audio:", audioError);
+            }
+
             setProcessingMessage("Uploading voice note...");
             const filePath = `${user.id}/${Date.now()}.webm`;
             const { error: uploadError } = await supabase.storage
@@ -206,22 +225,41 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
             }
 
             setProcessingMessage("Saving your entry...");
-            const { error: insertError } = await supabase.from("entries").insert({
+            const { data: insertData, error: insertError } = await supabase.from("entries").insert({
                 user_id: profile.id,
                 mood_tag: selectedMood,
                 transcription: editedTranscription,
                 voice_note_url: publicUrl,
+                ai_response_url: aiResponseAudioUrl,
                 text_summary: finalResponse,
                 tavus_video_url: tavusVideoUrl,
-            });
+            }).select();
 
             if (insertError) throw new Error(`Failed to save entry: ${insertError.message}`);
 
             setStep("complete");
-            setTimeout(() => {
-                onCheckInComplete();
-                resetState();
-            }, 2000);
+
+            // Navigate to AI response page with audio URL
+            const entryId = insertData?.[0]?.id;
+            if (entryId) {
+                setTimeout(() => {
+                    navigate("/ai-response", {
+                        state: {
+                            entryId,
+                            mood: selectedMood,
+                            transcription: editedTranscription,
+                            aiResponse: finalResponse,
+                            aiResponseAudioUrl,
+                            suggestions: ["Take deep breaths", "Stay present", "Practice gratitude"]
+                        }
+                    });
+                }, 2000);
+            } else {
+                setTimeout(() => {
+                    onCheckInComplete();
+                    resetState();
+                }, 2000);
+            }
 
         } catch (err: any) {
             console.error("Error in handleSave:", err);

@@ -1,35 +1,81 @@
 interface UserProgressProps {
   stats:
-    | {
-        totalEntries: number;
-        activeDays: number;
-        longestStreak: number;
-      }
-    | null
-    | undefined;
+  | {
+    totalEntries: number;
+    activeDays: number;
+    longestStreak: number;
+  }
+  | null
+  | undefined;
 }
 
 export default function UserProgress({ stats }: UserProgressProps) {
+  // Calculate progress percentages for visual indicators
+  const entriesProgress = Math.min((stats?.totalEntries || 0) * 10, 100); // 10 entries = 100%
+  const activeDaysProgress = Math.min((stats?.activeDays || 0) * 20, 100); // 5 days = 100%
+  const streakProgress = Math.min((stats?.longestStreak || 0) * 10, 100); // 10 days = 100%
+
+  const progressItems = [
+    {
+      label: "Entries",
+      value: stats?.totalEntries || 0,
+      suffix: "",
+      progress: entriesProgress,
+      color: "from-blue-400 to-blue-600",
+      icon: "📝"
+    },
+    {
+      label: "Active Days",
+      value: stats?.activeDays || 0,
+      suffix: "",
+      progress: activeDaysProgress,
+      color: "from-emerald-400 to-emerald-600",
+      icon: "📅"
+    },
+    {
+      label: "Best Streak",
+      value: stats?.longestStreak || 0,
+      suffix: "d",
+      progress: streakProgress,
+      color: "from-purple-400 to-purple-600",
+      icon: "🔥"
+    }
+  ];
+
   return (
-    <div className="bg-gray-800/50 p-4 rounded-lg">
-      <h4 className="text-sm text-gray-400 font-medium mb-3">Your Progress</h4>
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-300">Total Entries</span>
-          <span className="text-white font-medium">
-            {stats?.totalEntries || 0}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-300">Active Days</span>
-          <span className="text-white font-medium">
-            {stats?.activeDays || 0}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-300">Longest Streak</span>
-          <span className="text-white font-medium">
-            {stats?.longestStreak || 0} days
+    <div className="bg-gradient-to-br from-slate-700/10 to-slate-800/20 p-3 rounded-xl border border-slate-600/20 backdrop-blur-sm">
+      <h4 className="text-xs text-slate-300 font-medium mb-2 text-center">Your Progress</h4>
+      <div className="space-y-2">
+        {progressItems.map((item, index) => (
+          <div key={index} className="space-y-1">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-1.5">
+                <span className="text-xs">{item.icon}</span>
+                <span className="text-xs text-slate-300">{item.label}</span>
+              </div>
+              <span className="text-xs font-semibold text-slate-100">
+                {item.value}{item.suffix}
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+              <div
+                className={`h-1.5 bg-gradient-to-r ${item.color} rounded-full transition-all duration-700 ease-out`}
+                style={{ width: `${item.progress}%` }}
+              ></div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Summary badge */}
+      <div className="mt-2 p-2 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 rounded-lg border border-emerald-500/20">
+        <div className="text-center">
+          <span className="text-xs text-emerald-300 font-medium">
+            {stats?.totalEntries === 0 ? "🌱 Start!" :
+              stats?.totalEntries && stats.totalEntries >= 10 ? "🎉 Great!" :
+                "📈 Keep going!"}
           </span>
         </div>
       </div>

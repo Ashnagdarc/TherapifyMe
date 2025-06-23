@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/Select";
+import { AnalyticsService } from "../services/analyticsService";
 import {
   Search,
   Play,
@@ -19,6 +20,7 @@ import {
   Download,
   Trash2,
   MoreHorizontal,
+  AlertTriangle,
 } from "lucide-react";
 
 const MOOD_OPTIONS = [
@@ -47,6 +49,21 @@ export default function JournalPage() {
   // Audio player state
   const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null);
   const [videoPlayer, setVideoPlayer] = useState<{ [key: string]: boolean }>({});
+
+  // Delete confirmation state
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    entryId: string | null;
+    entryMood: string;
+    entryDate: string;
+  }>({
+    isOpen: false,
+    entryId: null,
+    entryMood: "",
+    entryDate: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
 
   useEffect(() => {
     if (profile) fetchEntries();
@@ -107,10 +124,87 @@ export default function JournalPage() {
     }
   };
 
-  const deleteEntry = async (id: string) => {
-    const { error } = await supabase.from("entries").delete().eq("id", id);
-    if (error) console.error("Error deleting entry", error);
-    else fetchEntries();
+  const openDeleteConfirmation = (entry: Entry) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      entryId: entry.id,
+      entryMood: entry.mood_tag,
+      entryDate: new Date(entry.created_at).toLocaleDateString(),
+    });
+  };
+
+  const closeDeleteConfirmation = () => {
+    setDeleteConfirmation({
+      isOpen: false,
+      entryId: null,
+      entryMood: "",
+      entryDate: "",
+    });
+  };
+
+  const deleteEntry = async () => {
+    if (!deleteConfirmation.entryId || !profile) return;
+
+    setIsDeleting(true);
+
+    try {
+      // First, get the entry to check for file URLs
+      const { data: entryData, error: fetchError } = await supabase
+        .from("entries")
+        .select("voice_note_url, ai_response_url, tavus_video_url")
+        .eq("id", deleteConfirmation.entryId)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching entry for deletion:", fetchError);
+        return;
+      }
+
+      // Delete associated files from storage
+      const filesToDelete: string[] = [];
+
+      if (entryData.voice_note_url) {
+        const voiceFilePath = entryData.voice_note_url.split('/voice-recordings/')[1];
+        if (voiceFilePath) filesToDelete.push(voiceFilePath);
+      }
+
+      if (entryData.ai_response_url) {
+        const aiFilePath = entryData.ai_response_url.split('/voice-recordings/')[1];
+        if (aiFilePath) filesToDelete.push(aiFilePath);
+      }
+
+      // Delete files from storage (ignore errors - files may already be deleted)
+      if (filesToDelete.length > 0) {
+        await supabase.storage.from("voice-recordings").remove(filesToDelete);
+      }
+
+      // Delete the database entry
+      const { error } = await supabase.from("entries").delete().eq("id", deleteConfirmation.entryId);
+
+      if (error) {
+        console.error("Error deleting entry:", error);
+        return;
+      }
+
+      // Invalidate analytics cache to update dashboard
+      const analyticsService = AnalyticsService.getInstance();
+      analyticsService.invalidateUserCache(profile.id);
+
+      // Refresh the entries list
+      await fetchEntries();
+
+      // Close confirmation dialog
+      closeDeleteConfirmation();
+
+      // Show success message
+      setDeleteSuccess(true);
+      setTimeout(() => setDeleteSuccess(false), 3000);
+
+    } catch (error) {
+      console.error("Unexpected error during deletion:", error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const renderEntryMedia = (entry: Entry) => {
@@ -162,6 +256,18 @@ export default function JournalPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans p-8">
+      {/* Success notification */}
+      {deleteSuccess && (
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg animate-in slide-in-from-right">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
+              <span className="text-green-600 text-sm">✓</span>
+            </div>
+            <span className="font-medium">Entry deleted successfully</span>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -247,8 +353,13 @@ export default function JournalPage() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="p-2 h-auto">
-                    <MoreHorizontal size={20} />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-2 h-auto text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                    onClick={() => openDeleteConfirmation(entry)}
+                  >
+                    <Trash2 size={16} />
                   </Button>
                 </div>
                 <div className="space-y-3 text-sm">
@@ -282,6 +393,63 @@ export default function JournalPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 border border-gray-700">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-2 bg-red-900/30 rounded-lg">
+                <AlertTriangle className="w-6 h-6 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Delete Entry</h3>
+                <p className="text-sm text-gray-400">This action cannot be undone</p>
+              </div>
+            </div>
+
+            <div className="mb-6 p-4 bg-gray-900/50 rounded-lg">
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="text-xl">{getMoodEmoji(deleteConfirmation.entryMood)}</span>
+                <span className="font-medium text-gray-300 capitalize">{deleteConfirmation.entryMood}</span>
+              </div>
+              <p className="text-sm text-gray-400">Created on {deleteConfirmation.entryDate}</p>
+              <p className="text-sm text-red-400 mt-2">
+                This will permanently delete the entry, voice recording, AI response audio, and any associated files.
+              </p>
+            </div>
+
+            <div className="flex space-x-3">
+              <Button
+                variant="secondary"
+                onClick={closeDeleteConfirmation}
+                disabled={isDeleting}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={deleteEntry}
+                disabled={isDeleting}
+                className="flex-1 bg-red-600 hover:bg-red-700"
+              >
+                {isDeleting ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Deleting...</span>
+                  </div>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

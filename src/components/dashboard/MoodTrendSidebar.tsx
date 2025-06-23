@@ -14,11 +14,11 @@ export default function MoodTrendSidebar({ trends }: MoodTrendSidebarProps) {
   };
 
   return (
-    <div className="bg-gray-800/50 p-4 rounded-lg">
-      <h4 className="text-sm text-gray-400 font-medium mb-3">
+    <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/20 p-3 rounded-xl border border-blue-500/20 backdrop-blur-sm">
+      <h4 className="text-xs text-blue-300 font-medium mb-2 text-center">
         7-Day Mood Trend
       </h4>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {dayMapping.map((day, index) => {
           const trend = getTrendForDay(index);
           const hasData = trend && trend.count > 0;
@@ -28,16 +28,16 @@ export default function MoodTrendSidebar({ trends }: MoodTrendSidebarProps) {
               key={day}
               className="flex items-center justify-between text-xs"
             >
-              <span className="text-gray-300 w-8">{day}</span>
-              <div className="flex-1 h-1.5 bg-gray-700 rounded-full mx-2">
+              <span className="text-slate-300 w-6 font-medium text-xs">{day}</span>
+              <div className="flex-1 h-1.5 bg-slate-700/50 rounded-full mx-2 overflow-hidden">
                 {hasData && (
                   <div
-                    className="h-1.5 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500"
+                    className="h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-500 ease-out"
                     style={{ width: `${(trend.intensity / 10) * 100}%` }} // Example: intensity 0-10 scale
                   ></div>
                 )}
               </div>
-              <span className="text-gray-500 w-2">-</span>
+              <span className="text-slate-500 w-2">-</span>
             </div>
           );
         })}
