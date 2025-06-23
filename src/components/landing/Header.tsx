@@ -68,6 +68,7 @@ function NavList({ className = "" }) {
     <nav className={className}>
       {navList.map((item) => (
         <a
+          key={item.title}
           href={item.path}
           className=" font-[600]  text-[16px] text-gray-60 hover:text-blue-600 transition-all duration-300 ease-in-out capitalize md:font-[300] md:text-[18px]  "
         >

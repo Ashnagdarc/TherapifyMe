@@ -2,27 +2,45 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Zap } from "lucide-react";
 
-// Placeholder for assets
-const userAvatar1 = "/avatars/avatar1.png";
-const userAvatar2 = "/avatars/avatar2.png";
-const userAvatar3 = "/avatars/avatar3.png";
-const heroImageUrl = "/hero-app-mockup.png";
+//imported image assets
+import userAvatar1 from "../../assets/images/LandingPage/avatar1.png";
+import userAvatar2 from "../../assets/images/LandingPage/avatar2.png";
+import userAvatar3 from "../../assets/images/LandingPage/avatar3.png";
+import userAvatar4 from "../../assets/images/LandingPage/avatar4.png";
+
+const avatarImgPaths = [
+  userAvatar1,
+  userAvatar2,
+  userAvatar3,
+  userAvatar4,
+  userAvatar3,
+];
 
 export default function Hero() {
   const navigate = useNavigate();
 
   return (
     <section id="home" className="py-20 md:py-28 bg-white dotted-background">
-      <div className="container mx-auto px-6 text-center">
-        <div className="flex items-center justify-center space-x-3 mb-6">
-          {/* Decorative Toggle Switch */}
-          <div className="w-14 h-8 flex items-center bg-gray-200 rounded-full p-1 cursor-pointer">
-            <div className="w-6 h-6 bg-white rounded-full shadow-md transform transition-transform"></div>
+      <div className="w-full flex flex-col items-center gap-[1.5rem] px-6 text-center md:px-0 ">
+        <div className="flex flex-col items-center justify-center gap-[0.7rem] md:flex-row md:gap-[0.4rem]">
+          <div className=" w-[111px] h-[31.73] flex items-center">
+            {avatarImgPaths.map((avatar, i) => (
+              <img
+                key={i}
+                src={avatar}
+                alt="a random user avatar"
+                className={`h-[31px] w-[31px] rounded-full border z-[${
+                  i + 1
+                }] ${i !== 0 ? "ml-[-0.6rem]" : ""} `}
+              />
+            ))}
           </div>
+
           <span className="text-sm text-gray-600">
             Join 200+ people enjoying TherapifyMe today
           </span>
         </div>
+
         <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
           Think clearer. Feel
           <br />
