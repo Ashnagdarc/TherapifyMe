@@ -2,37 +2,50 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Zap } from "lucide-react"; // Or any other icon you prefer
 
+import Logo from "../../assets/images/Logo.png";
+
+const navList = [
+  {
+    path: "#home",
+    title: "Home",
+  },
+  {
+    path: "#how-it-works",
+    title: "How it works",
+  },
+  {
+    path: "#why-different",
+    title: "Why it's different",
+  },
+];
+
 export default function Header() {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 bg-white/80 backdrop-blur-md z-50 border-b border-gray-200">
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          {/* Placeholder for logo */}
-          <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
+    <header className="w-full py-4 flex justify-center sticky top-0 z-50">
+      <div className="container h-[68px] bg-white mx-auto px-6 flex justify-between items-center rounded-[1rem] shadow-xl/50 shadow-primery/50">
+        <div className="flex items-center gap-[0.4rem]">
+          <img
+            src={Logo}
+            alt="TherapifyMe Logo"
+            className="w-8 h-8 md:w-[36px] md:h-[36px]"
+          />
+
           <span className="text-2xl font-bold text-gray-900">TherapifyMe</span>
         </div>
+
         <nav className="hidden md:flex items-center space-x-8">
-          <a
-            href="#home"
-            className="text-gray-600 hover:text-blue-600 transition"
-          >
-            Home
-          </a>
-          <a
-            href="#how-it-works"
-            className="text-gray-600 hover:text-blue-600 transition"
-          >
-            How it works
-          </a>
-          <a
-            href="#why-different"
-            className="text-gray-600 hover:text-blue-600 transition"
-          >
-            Why it's different
-          </a>
+          {navList.map((item) => (
+            <a
+              href={item.path}
+              className="text-gray-60  hover:text-blue-600 transition-all duration-300 ease-in-out"
+            >
+              {item.title}
+            </a>
+          ))}
         </nav>
+
         <Button
           onClick={() => navigate("/auth")}
           variant="primary"
