@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ForMindsThatMultitask = () => {
     // Placeholder image URL from Unsplash - captures a similar mood.
-    const backgroundImageUrl = 'https://images.unsplash.com/photo-1542841623-c3905b16c879?q=80&w=2940&auto=format&fit=crop';
+    const backgroundImageUrl = '/12.jpg';
 
     return (
         <section

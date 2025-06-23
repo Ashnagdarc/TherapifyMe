@@ -33,10 +33,12 @@ export const Hero = () => {
                     <Zap className="w-5 h-5 mr-2" />
                     Get Started
                 </Button>
-                <div className="mt-20 px-8">
-                    <div className="max-w-4xl mx-auto h-96 bg-white rounded-2xl border border-gray-200/80 shadow-2xl shadow-gray-200/50 flex items-center justify-center">
-                        <p className="text-gray-400">App Mockup Image</p>
-                    </div>
+                <div className="mt-20 px-8 flex justify-center">
+                    <img
+                        src="/Frame 26.png"
+                        alt="TherapifyMe app interface showing a conversation with the AI assistant"
+                        className="max-w-3xl w-full h-auto"
+                    />
                 </div>
             </div>
         </section>

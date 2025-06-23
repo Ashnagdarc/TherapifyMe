@@ -13,9 +13,9 @@ const LandingPage = () => {
       <Header />
       <main>
         <Hero />
+        <HowItWorks />
         <ForMindsThatMultitask />
         <WhyDifferent />
-        <HowItWorks />
         <ReadyWhenYouAre />
       </main>
       <Footer />
