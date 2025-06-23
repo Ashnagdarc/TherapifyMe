@@ -1,7 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
+  --font-montserrat: "Montserrat", sans-serif;
+
   /* Custom color palette from your original design */
   --color-black: rgb(17 17 17);
   --color-grey: rgb(205 205 205);
