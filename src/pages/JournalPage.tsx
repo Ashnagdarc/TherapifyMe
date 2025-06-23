@@ -108,7 +108,8 @@ export default function JournalPage() {
   const getMoodEmoji = (mood: string) =>
     MOOD_OPTIONS.find((m) => m.value === mood)?.label.split(" ")[0] || "😐";
 
-  const handlePlayAudio = (url: string, id: string) => {
+  const handlePlayAudio = (url: string | null | undefined, id: string) => {
+    if (!url) return;
     if (audioPlayer && playingAudio === id) {
       audioPlayer.pause();
       setPlayingAudio(null);
@@ -208,33 +209,48 @@ export default function JournalPage() {
   };
 
   const renderEntryMedia = (entry: Entry) => {
-    const hasMedia = entry.voice_note_url || entry.ai_response_url || entry.tavus_video_url;
+    const hasVoice = !!entry.voice_note_url;
+    const hasAIAudio = !!entry.ai_response_url;
+    const hasVideo = !!entry.tavus_video_url;
+    const hasText = !!entry.text_summary;
 
-    if (!hasMedia) return null;
+    const hasAnyMedia = hasVoice || hasAIAudio || hasVideo;
+    const showMissingAudio = hasText && !hasAIAudio; // Has AI text but no audio
+
+    if (!hasAnyMedia && !showMissingAudio) return null;
 
     return (
       <div className="mt-4 pt-4 border-t border-gray-700/50 space-y-2">
-        {entry.voice_note_url && (
+        {hasVoice && (
           <Button
             variant="secondary"
-            onClick={() => handlePlayAudio(entry.voice_note_url!, entry.id + "-voice")}
+            onClick={() => handlePlayAudio(entry.voice_note_url, entry.id + "-voice")}
             className="w-full"
           >
             {playingAudio === entry.id + "-voice" ? <Pause size={16} className="mr-2" /> : <Play size={16} className="mr-2" />}
             Your Voice Note
           </Button>
         )}
-        {entry.ai_response_url && (
+
+        {hasAIAudio ? (
           <Button
             variant="secondary"
-            onClick={() => handlePlayAudio(entry.ai_response_url!, entry.id + "-ai")}
+            onClick={() => handlePlayAudio(entry.ai_response_url, entry.id + "-ai")}
             className="w-full"
           >
             {playingAudio === entry.id + "-ai" ? <Pause size={16} className="mr-2" /> : <Play size={16} className="mr-2" />}
             Listen to AI Response
           </Button>
-        )}
-        {entry.tavus_video_url && (
+        ) : showMissingAudio ? (
+          <div className="w-full p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+            <div className="flex items-center space-x-2 text-yellow-400">
+              <span className="text-sm">⚠️</span>
+              <span className="text-xs">AI audio not available (created before audio feature or API key missing)</span>
+            </div>
+          </div>
+        ) : null}
+
+        {hasVideo && (
           <>
             <Button
               variant="secondary"

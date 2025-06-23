@@ -2,10 +2,7 @@ interface TavusVideoRequest {
   script: string;
   background_url?: string;
   replica_id?: string;
-  replica_settings?: {
-    emotion?: 'neutral' | 'happy' | 'sad' | 'angry' | 'fearful' | 'disgusted' | 'surprised';
-    pace?: 'slow' | 'normal' | 'fast';
-  };
+  // replica_settings removed - causing API 400 error
 }
 
 interface TavusVideoResponse {
@@ -26,11 +23,8 @@ export class TavusService {
 
     const requestBody: TavusVideoRequest = {
       script,
-      replica_id: replicaId || 'r6ca16dbe104', // Linda persona from Tavus Library
-      replica_settings: {
-        emotion: 'neutral',
-        pace: 'normal'
-      }
+      replica_id: replicaId || 'r6ca16dbe104' // Linda persona from Tavus Library
+      // Removed replica_settings as it's causing 400 error - API might have changed
     };
 
     try {

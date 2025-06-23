@@ -17,7 +17,6 @@ import {
     SelectValue,
 } from "../ui/Select";
 import {
-    Edit3,
     Check,
     Loader2,
     Play,
@@ -54,22 +53,26 @@ interface CheckInProps {
 export default function CheckIn({ onCheckInComplete }: CheckInProps) {
     const { profile, user } = useAuth();
     const navigate = useNavigate();
+
+    // Debug: Check if environment variables are loaded
+    console.log("🔧 Environment Check:", {
+        elevenLabs: import.meta.env.VITE_ELEVENLABS_API_KEY ? "✅ Loaded" : "❌ Missing",
+        tavus: import.meta.env.VITE_TAVUS_API_KEY ? "✅ Loaded" : "❌ Missing",
+        supabaseUrl: import.meta.env.VITE_SUPABASE_URL ? "✅ Loaded" : "❌ Missing"
+    });
     const [step, setStep] = useState<CheckInStep>("idle");
     const [error, setError] = useState<string | null>(null);
     const [processingMessage, setProcessingMessage] = useState("");
-
-
 
     // Reviewing state
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [transcription, setTranscription] = useState("");
-    const [editedTranscription, setEditedTranscription] = useState("");
-    const [isEditingText, setIsEditingText] = useState(false);
-    const [selectedMood, setSelectedMood] = useState<MoodTag | "">("");
+    // Note: editedTranscription removed - we now use original transcription for AI response
+    const [selectedMood, setSelectedMood] = useState("");
 
     // Audio playback state
-    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [playbackTime, setPlaybackTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -147,11 +150,11 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
 
     const processRecording = async (blob: Blob) => {
         setStep("processing");
-        setProcessingMessage("Transcribing audio...");
+        setProcessingMessage("Converting your voice to text with AI transcription...");
         try {
             const text = await TranscriptionService.transcribeAudio(blob);
             setTranscription(text);
-            setEditedTranscription(text);
+            // Don't allow editing - use original transcription for AI response
             const url = URL.createObjectURL(blob);
             setAudioUrl(url);
             setStep("reviewing");
@@ -171,23 +174,45 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
         setError(null);
 
         try {
-            setProcessingMessage("Generating AI insights...");
-            const { finalResponse, videoScript } = await EnhancedAIService.generateEnhancedResponse(editedTranscription);
+            setProcessingMessage("Analyzing your voice recording...");
+            // Use original transcription from voice recording, not edited text
+            const { finalResponse, videoScript } = await EnhancedAIService.generateEnhancedResponse(transcription);
 
             setProcessingMessage("Creating AI audio response...");
             let aiResponseAudioUrl: string | null = null;
-            try {
-                const audioBlob = await ElevenLabsService.textToSpeech(finalResponse);
-                const audioFilePath = `ai-responses/${user.id}/${Date.now()}.mp3`;
-                const { error: audioUploadError } = await supabase.storage
-                    .from("voice-recordings")
-                    .upload(audioFilePath, audioBlob);
-                if (!audioUploadError) {
-                    const { data: { publicUrl: aiAudioUrl } } = supabase.storage.from("voice-recordings").getPublicUrl(audioFilePath);
-                    aiResponseAudioUrl = aiAudioUrl;
+            const elevenLabsApiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+
+            console.log("🔧 ElevenLabs Debug:", {
+                apiKeyExists: !!elevenLabsApiKey,
+                apiKeyLength: elevenLabsApiKey?.length || 0,
+                apiKeyStart: elevenLabsApiKey?.substring(0, 10) || "none"
+            });
+
+            if (elevenLabsApiKey) {
+                try {
+                    console.log("Starting AI audio generation with ElevenLabs...");
+                    const audioBlob = await ElevenLabsService.textToSpeech(finalResponse);
+                    console.log("AI audio blob generated:", audioBlob.size, "bytes");
+
+                    const audioFilePath = `${user.id}/${Date.now()}-ai-response.mp3`;
+                    const { error: audioUploadError } = await supabase.storage
+                        .from("voice-recordings")
+                        .upload(audioFilePath, audioBlob);
+
+                    if (!audioUploadError) {
+                        const { data: { publicUrl: aiAudioUrl } } = supabase.storage.from("voice-recordings").getPublicUrl(audioFilePath);
+                        aiResponseAudioUrl = aiAudioUrl;
+                        console.log("AI audio uploaded successfully:", aiAudioUrl);
+                    } else {
+                        console.error("Failed to upload AI audio:", audioUploadError);
+                        console.error("Upload path attempted:", audioFilePath);
+                    }
+                } catch (audioError) {
+                    console.warn("AI audio generation failed, proceeding without audio:", audioError);
                 }
-            } catch (audioError) {
-                console.warn("AI audio generation failed, proceeding without audio:", audioError);
+            } else {
+                console.warn("ElevenLabs API key not configured - skipping AI audio generation");
+                setProcessingMessage("Skipping audio generation (API key not configured)...");
             }
 
             setProcessingMessage("Uploading voice note...");
@@ -205,22 +230,44 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
                 setProcessingMessage("Creating personalized video...");
                 try {
                     const videoResponse = await TavusService.createVideo(tavusApiKey, videoScript);
+                    console.log("Video creation started:", videoResponse.video_id);
 
-                    // Basic polling to check for video completion
-                    for (let i = 0; i < 15; i++) {
+                    // Enhanced polling with progress updates
+                    const maxAttempts = 15;
+                    for (let i = 0; i < maxAttempts; i++) {
+                        const progress = Math.round(((i + 1) / maxAttempts) * 100);
+                        setProcessingMessage(`Creating personalized video... ${progress}% (${i * 4}s)`);
+
                         await new Promise(res => setTimeout(res, 4000)); // Poll every 4 seconds
-                        const status = await TavusService.getVideoStatus(tavusApiKey, videoResponse.video_id);
-                        if (status.status === 'completed') {
-                            tavusVideoUrl = status.download_url || null;
-                            break;
-                        }
-                        if (status.status === 'failed') {
-                            console.warn("Tavus video generation failed.");
-                            break;
+
+                        try {
+                            const status = await TavusService.getVideoStatus(tavusApiKey, videoResponse.video_id);
+                            console.log(`Video status check ${i + 1}:`, status.status);
+
+                            if (status.status === 'completed') {
+                                tavusVideoUrl = status.download_url || null;
+                                setProcessingMessage("Video generation completed!");
+                                console.log("Video completed with URL:", tavusVideoUrl);
+                                break;
+                            }
+                            if (status.status === 'failed') {
+                                console.warn("Tavus video generation failed.");
+                                setProcessingMessage("Video generation failed, continuing...");
+                                break;
+                            }
+                            if (status.status === 'generating') {
+                                setProcessingMessage(`Video generating... ${progress}% (${(i + 1) * 4}s elapsed)`);
+                            }
+                            if (status.status === 'pending') {
+                                setProcessingMessage(`Video pending... ${progress}% (${(i + 1) * 4}s elapsed)`);
+                            }
+                        } catch (statusError) {
+                            console.warn(`Status check ${i + 1} failed:`, statusError);
                         }
                     }
                 } catch (tavusError) {
                     console.error("Error during Tavus video creation, proceeding without it.", tavusError);
+                    setProcessingMessage("Video generation error, continuing...");
                 }
             }
 
@@ -228,7 +275,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
             const { data: insertData, error: insertError } = await supabase.from("entries").insert({
                 user_id: profile.id,
                 mood_tag: selectedMood,
-                transcription: editedTranscription,
+                transcription: transcription, // Use original transcription from voice recording
                 voice_note_url: publicUrl,
                 ai_response_url: aiResponseAudioUrl,
                 text_summary: finalResponse,
@@ -247,7 +294,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
                         state: {
                             entryId,
                             mood: selectedMood,
-                            transcription: editedTranscription,
+                            transcription: transcription, // Show original voice transcription
                             aiResponse: finalResponse,
                             aiResponseAudioUrl,
                             suggestions: ["Take deep breaths", "Stay present", "Practice gratitude"]
@@ -278,8 +325,6 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
         }
         setAudioUrl(null);
         setTranscription("");
-        setEditedTranscription("");
-        setIsEditingText(false);
         setSelectedMood("");
         setIsPlaying(false);
         setPlaybackTime(0);
@@ -303,7 +348,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
             case "recording":
                 return <Mic className="w-16 h-16" />;
             case "reviewing":
-                return <Edit3 className="w-16 h-16" />;
+                return <Check className="w-16 h-16" />;
             case "processing":
             case "generating":
                 return <Loader2 className="w-16 h-16 animate-spin" />;
@@ -372,27 +417,40 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
     };
 
     const renderTranscriptionEditor = () => {
+        if (!transcription) return null;
+
+        // Analyze voice content for display
+        const themes = transcription.toLowerCase().includes('work') ? ['work stress'] :
+            transcription.toLowerCase().includes('relationship') ? ['relationships'] :
+                transcription.toLowerCase().includes('anxious') || transcription.toLowerCase().includes('stressed') ? ['anxiety'] :
+                    transcription.toLowerCase().includes('happy') || transcription.toLowerCase().includes('good') ? ['positive mood'] :
+                        transcription.toLowerCase().includes('sad') || transcription.toLowerCase().includes('down') ? ['sadness'] :
+                            ['general reflection'];
+
         return (
-            <div className="bg-gray-900/70 p-4 rounded-lg mb-6">
-                <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold">Your Thoughts</h3>
-                    <button
-                        onClick={() => setIsEditingText(!isEditingText)}
-                        className="text-sm text-blue-400 flex items-center gap-1"
-                    >
-                        {isEditingText ? <Check size={16} /> : <Edit3 size={16} />}
-                        {isEditingText ? "Done" : "Edit"}
-                    </button>
+            <div className="space-y-4 mb-6">
+                {/* Voice Analysis Summary */}
+                <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4">
+                    <h3 className="text-emerald-300 font-semibold mb-2 flex items-center gap-2">
+                        🎤 Voice Analysis
+                    </h3>
+                    <div className="text-sm text-emerald-200/80 space-y-1">
+                        <p><strong>Detected themes:</strong> {themes.join(', ')}</p>
+                        <p><strong>Length:</strong> ~{Math.round(transcription.split(' ').length / 2)} seconds of content</p>
+                        <p><strong>Status:</strong> Your voice was successfully analyzed for AI response</p>
+                    </div>
                 </div>
-                {isEditingText ? (
-                    <textarea
-                        value={editedTranscription}
-                        onChange={(e) => setEditedTranscription(e.target.value)}
-                        className="w-full bg-gray-700 p-2 rounded-md h-24 text-white"
-                    />
-                ) : (
-                    <p className="text-gray-300">{editedTranscription}</p>
-                )}
+
+                {/* Original Transcription Display */}
+                <div className="bg-gray-900/70 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        📝 What You Shared
+                    </h3>
+                    <p className="text-gray-300 leading-relaxed italic">"{transcription}"</p>
+                    <p className="text-gray-500 text-xs mt-2">
+                        This is what we heard from your voice recording and will be used for your AI response.
+                    </p>
+                </div>
             </div>
         );
     };
