@@ -44,7 +44,7 @@ interface ToggleLinkProps {
   setIsSignUp: Dispatch<SetStateAction<boolean>>;
 }
 
-export function AuthPage() {
+export default function AuthPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Form */}

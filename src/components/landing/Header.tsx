@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Zap } from "lucide-react"; // Or any other icon you prefer

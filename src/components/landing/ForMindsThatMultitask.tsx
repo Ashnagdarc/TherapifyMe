@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function ForMindsThatMultitask() {
   // Placeholder image URL from Unsplash - captures a similar mood.
   const backgroundImageUrl = "/12.jpg";

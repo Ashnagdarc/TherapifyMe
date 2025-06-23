@@ -1,31 +1,39 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { MoodTag } from '../types/database';
-import { TranscriptionService } from '../services/transcriptionService';
-import { AIResponseService } from '../services/aiResponseService';
-import { ElevenLabsService } from '../services/elevenLabsService';
-import { CrisisDetectionService } from '../services/crisisDetectionService';
-import { AnalyticsService } from '../services/analyticsService';
-import { Button } from '../components/ui/Button';
-import { Select } from '../components/ui/Select';
-import { Mic, MicOff, Play, Pause, Square, ArrowLeft, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import { MoodTag } from "../types/database";
+import { TranscriptionService } from "../services/transcriptionService";
+import { AIResponseService } from "../services/aiResponseService";
+import { ElevenLabsService } from "../services/elevenLabsService";
+import { CrisisDetectionService } from "../services/crisisDetectionService";
+import { AnalyticsService } from "../services/analyticsService";
+import { Button } from "../components/ui/Button";
+import { Select } from "../components/ui/Select";
+import {
+  Mic,
+  MicOff,
+  Play,
+  Pause,
+  Square,
+  ArrowLeft,
+  Loader2,
+} from "lucide-react";
 
 const MOOD_OPTIONS = [
-  { value: 'happy', label: '😊 Happy' },
-  { value: 'calm', label: '😌 Calm' },
-  { value: 'anxious', label: '😰 Anxious' },
-  { value: 'sad', label: '😢 Sad' },
-  { value: 'stressed', label: '😤 Stressed' },
-  { value: 'excited', label: '🤩 Excited' },
-  { value: 'frustrated', label: '😠 Frustrated' },
-  { value: 'grateful', label: '🙏 Grateful' },
-  { value: 'overwhelmed', label: '😵 Overwhelmed' },
-  { value: 'content', label: '😊 Content' },
+  { value: "happy", label: "😊 Happy" },
+  { value: "calm", label: "😌 Calm" },
+  { value: "anxious", label: "😰 Anxious" },
+  { value: "sad", label: "😢 Sad" },
+  { value: "stressed", label: "😤 Stressed" },
+  { value: "excited", label: "🤩 Excited" },
+  { value: "frustrated", label: "😠 Frustrated" },
+  { value: "grateful", label: "🙏 Grateful" },
+  { value: "overwhelmed", label: "😵 Overwhelmed" },
+  { value: "content", label: "😊 Content" },
 ];
 
-export function CheckInPage() {
+export default function CheckInPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
 
@@ -38,10 +46,10 @@ export function CheckInPage() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   // Form state
-  const [selectedMood, setSelectedMood] = useState<MoodTag | ''>('');
+  const [selectedMood, setSelectedMood] = useState<MoodTag | "">("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStep, setProcessingStep] = useState<string>('');
+  const [processingStep, setProcessingStep] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   // Refs
@@ -57,7 +65,7 @@ export function CheckInPage() {
         clearInterval(timerRef.current);
       }
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
       if (audioUrl) {
         URL.revokeObjectURL(audioUrl);
@@ -84,7 +92,7 @@ export function CheckInPage() {
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/wav' });
+        const blob = new Blob(chunks, { type: "audio/wav" });
         setAudioBlob(blob);
         setHasRecording(true);
 
@@ -97,7 +105,7 @@ export function CheckInPage() {
 
         // Stop all tracks
         if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current.getTracks().forEach((track) => track.stop());
         }
       };
 
@@ -107,12 +115,11 @@ export function CheckInPage() {
 
       // Start timer
       timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        setRecordingTime((prev) => prev + 1);
       }, 1000);
-
     } catch (err) {
-      console.error('Error starting recording:', err);
-      setError('Unable to access microphone. Please check your permissions.');
+      console.error("Error starting recording:", err);
+      setError("Unable to access microphone. Please check your permissions.");
     }
   };
 
@@ -153,42 +160,44 @@ export function CheckInPage() {
     }
   };
 
-  const uploadAudioToStorage = async (audioBlob: Blob): Promise<string | null> => {
+  const uploadAudioToStorage = async (
+    audioBlob: Blob
+  ): Promise<string | null> => {
     try {
       const fileName = `${profile?.id}/voice-note-${Date.now()}.wav`;
 
       const { data, error } = await supabase.storage
-        .from('voice-recordings')
+        .from("voice-recordings")
         .upload(fileName, audioBlob, {
-          contentType: 'audio/wav',
-          upsert: false
+          contentType: "audio/wav",
+          upsert: false,
         });
 
       if (error) {
-        console.error('Storage upload error:', error);
+        console.error("Storage upload error:", error);
         return null;
       }
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('voice-recordings')
+        .from("voice-recordings")
         .getPublicUrl(fileName);
 
       return urlData.publicUrl;
     } catch (error) {
-      console.error('Error uploading audio:', error);
+      console.error("Error uploading audio:", error);
       return null;
     }
   };
 
   const handleSubmit = async () => {
     if (!selectedMood) {
-      setError('Please select how you\'re feeling');
+      setError("Please select how you're feeling");
       return;
     }
 
     if (!profile) {
-      setError('Profile not loaded. Please try again.');
+      setError("Profile not loaded. Please try again.");
       return;
     }
 
@@ -197,42 +206,50 @@ export function CheckInPage() {
     setError(null);
 
     try {
-      let transcription = '';
-      let aiResponseText = '';
+      let transcription = "";
+      let aiResponseText = "";
       let aiResponseAudioUrl = null;
       let voiceNoteUrl = null;
 
       // Upload audio if recording exists
       if (audioBlob) {
-        setProcessingStep('Uploading voice recording...');
+        setProcessingStep("Uploading voice recording...");
         voiceNoteUrl = await uploadAudioToStorage(audioBlob);
         if (!voiceNoteUrl) {
-          throw new Error('Failed to upload voice recording');
+          throw new Error("Failed to upload voice recording");
         }
 
         // Transcribe the audio
-        setProcessingStep('Transcribing your voice...');
+        setProcessingStep("Transcribing your voice...");
         transcription = await TranscriptionService.transcribeAudio(audioBlob);
 
         // Check for crisis indicators in transcription
         if (transcription.trim()) {
-          setProcessingStep('Analyzing content for support resources...');
+          setProcessingStep("Analyzing content for support resources...");
           const crisisDetection = CrisisDetectionService.getInstance();
-          const analysis = await crisisDetection.analyzeText(transcription, profile.id);
+          const analysis = await crisisDetection.analyzeText(
+            transcription,
+            profile.id
+          );
 
           if (analysis.shouldShowResources) {
             // Get user's crisis resources
-            const resources = await crisisDetection.getCrisisResources(profile.id);
+            const resources = await crisisDetection.getCrisisResources(
+              profile.id
+            );
 
             // Show crisis intervention modal if needed
             if (analysis.severity >= 5) {
-              crisisDetection.showCrisisInterventionModal(analysis.severity, resources);
+              crisisDetection.showCrisisInterventionModal(
+                analysis.severity,
+                resources
+              );
 
               // For high severity, we might want to pause processing
               if (analysis.severity >= 8) {
                 setIsSubmitting(false);
                 setIsProcessing(false);
-                setProcessingStep('');
+                setProcessingStep("");
                 return; // Stop processing to let user get help
               }
             }
@@ -241,20 +258,22 @@ export function CheckInPage() {
       }
 
       // Generate AI response
-      setProcessingStep('Generating AI response...');
+      setProcessingStep("Generating AI response...");
       // Import the enhanced AI service
-      const { EnhancedAIService } = await import('../services/enhancedAIService');
+      const { EnhancedAIService } = await import(
+        "../services/enhancedAIService"
+      );
 
       const aiResponse = await EnhancedAIService.generateResponse(
         selectedMood,
         transcription,
-        profile.preferred_tone as 'calm' | 'motivational' | 'reflective',
+        profile.preferred_tone as "calm" | "motivational" | "reflective",
         profile.id
       );
       aiResponseText = aiResponse.response;
 
       // Generate voice response using ElevenLabs
-      setProcessingStep('Creating AI voice response...');
+      setProcessingStep("Creating AI voice response...");
       try {
         const therapeuticVoices = ElevenLabsService.getTherapeuticVoices();
         const selectedVoice = therapeuticVoices[aiResponse.tone];
@@ -266,28 +285,29 @@ export function CheckInPage() {
 
         // Upload AI response audio
         const aiAudioFileName = `${profile.id}/ai-response-${Date.now()}.mp3`;
-        const { data: aiAudioData, error: aiAudioError } = await supabase.storage
-          .from('voice-recordings')
-          .upload(aiAudioFileName, audioBlob, {
-            contentType: 'audio/mpeg',
-            upsert: false
-          });
+        const { data: aiAudioData, error: aiAudioError } =
+          await supabase.storage
+            .from("voice-recordings")
+            .upload(aiAudioFileName, audioBlob, {
+              contentType: "audio/mpeg",
+              upsert: false,
+            });
 
         if (!aiAudioError && aiAudioData) {
           const { data: aiUrlData } = supabase.storage
-            .from('voice-recordings')
+            .from("voice-recordings")
             .getPublicUrl(aiAudioFileName);
           aiResponseAudioUrl = aiUrlData.publicUrl;
         }
       } catch (voiceError) {
-        console.warn('Failed to generate AI voice response:', voiceError);
+        console.warn("Failed to generate AI voice response:", voiceError);
         // Continue without voice response - we still have text
       }
 
       // Create entry in database
-      setProcessingStep('Saving your check-in...');
+      setProcessingStep("Saving your check-in...");
       const { data, error } = await supabase
-        .from('entries')
+        .from("entries")
         .insert({
           user_id: profile.id,
           mood_tag: selectedMood,
@@ -303,46 +323,47 @@ export function CheckInPage() {
         throw error;
       }
 
-      console.log('Entry created:', data);
+      console.log("Entry created:", data);
 
       // Update analytics and session tracking
       try {
         const analyticsService = AnalyticsService.getInstance();
         await analyticsService.updateUserSessionAnalytics(profile.id, {
           mood: selectedMood,
-          date: new Date().toISOString().split('T')[0]
+          date: new Date().toISOString().split("T")[0],
         });
       } catch (analyticsError) {
-        console.warn('Failed to update analytics:', analyticsError);
+        console.warn("Failed to update analytics:", analyticsError);
         // Don't block user flow for analytics failure
       }
 
       // Navigate to AI response page
-      navigate('/ai-response', {
+      navigate("/ai-response", {
         state: {
           entryId: data.id,
           mood: selectedMood,
           transcription,
           aiResponse: aiResponseText,
           aiResponseAudioUrl,
-          suggestions: aiResponse.suggestions
-        }
+          suggestions: aiResponse.suggestions,
+        },
       });
-
     } catch (err) {
-      console.error('Error submitting check-in:', err);
-      setError(err instanceof Error ? err.message : 'Failed to submit check-in');
+      console.error("Error submitting check-in:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to submit check-in"
+      );
     } finally {
       setIsSubmitting(false);
       setIsProcessing(false);
-      setProcessingStep('');
+      setProcessingStep("");
     }
   };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -353,7 +374,7 @@ export function CheckInPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate("/dashboard")}
             className="mr-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -375,7 +396,9 @@ export function CheckInPage() {
 
           {/* Voice Recording Section */}
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-primery mb-4">Voice Recording (Optional)</h3>
+            <h3 className="text-lg font-semibold text-primery mb-4">
+              Voice Recording (Optional)
+            </h3>
 
             <div className="bg-grey-2 rounded-xl p-6 text-center">
               {!hasRecording ? (
@@ -384,10 +407,11 @@ export function CheckInPage() {
                     <button
                       onClick={isRecording ? stopRecording : startRecording}
                       disabled={isSubmitting}
-                      className={`w-24 h-24 rounded-full flex items-center justify-center transition-all transform hover:scale-105 ${isRecording
-                        ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                        : 'bg-main hover:bg-blue-700'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      className={`w-24 h-24 rounded-full flex items-center justify-center transition-all transform hover:scale-105 ${
+                        isRecording
+                          ? "bg-red-500 hover:bg-red-600 animate-pulse"
+                          : "bg-main hover:bg-blue-700"
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       {isRecording ? (
                         <Square className="w-8 h-8 text-white" />
@@ -399,14 +423,24 @@ export function CheckInPage() {
 
                   {isRecording ? (
                     <div>
-                      <p className="text-red-600 font-medium mb-2">Recording...</p>
-                      <p className="text-2xl font-mono text-red-600">{formatTime(recordingTime)}</p>
-                      <p className="text-grey text-sm mt-2">Tap the square to stop</p>
+                      <p className="text-red-600 font-medium mb-2">
+                        Recording...
+                      </p>
+                      <p className="text-2xl font-mono text-red-600">
+                        {formatTime(recordingTime)}
+                      </p>
+                      <p className="text-grey text-sm mt-2">
+                        Tap the square to stop
+                      </p>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-text-black font-medium mb-2">Tap to start recording</p>
-                      <p className="text-grey text-sm">Share how you're feeling in your own words</p>
+                      <p className="text-text-black font-medium mb-2">
+                        Tap to start recording
+                      </p>
+                      <p className="text-grey text-sm">
+                        Share how you're feeling in your own words
+                      </p>
                     </div>
                   )}
                 </div>
@@ -459,7 +493,9 @@ export function CheckInPage() {
               value={selectedMood}
               onChange={(value) => setSelectedMood(value as MoodTag)}
               placeholder="Select your mood"
-              error={!selectedMood && error ? 'Please select your mood' : undefined}
+              error={
+                !selectedMood && error ? "Please select your mood" : undefined
+              }
             />
           </div>
 
@@ -476,7 +512,9 @@ export function CheckInPage() {
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center justify-center mb-2">
                   <Loader2 className="w-5 h-5 mr-2 animate-spin text-blue-600" />
-                  <span className="text-blue-600 font-medium">Processing your check-in...</span>
+                  <span className="text-blue-600 font-medium">
+                    Processing your check-in...
+                  </span>
                 </div>
                 <p className="text-blue-600 text-sm">{processingStep}</p>
               </div>
@@ -492,16 +530,17 @@ export function CheckInPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  {isProcessing ? 'Processing...' : 'Submitting Check-In...'}
+                  {isProcessing ? "Processing..." : "Submitting Check-In..."}
                 </>
               ) : (
-                'Submit Check-In'
+                "Submit Check-In"
               )}
             </Button>
 
             {selectedMood && (
               <p className="text-grey text-sm mt-3">
-                Your {selectedMood} check-in will receive a personalized AI response
+                Your {selectedMood} check-in will receive a personalized AI
+                response
               </p>
             )}
           </div>
@@ -510,8 +549,8 @@ export function CheckInPage() {
         {/* Help Text */}
         <div className="mt-6 text-center">
           <p className="text-grey text-sm">
-            Your voice recording and mood data are private and secure.
-            They will only be used to generate your personalized AI response.
+            Your voice recording and mood data are private and secure. They will
+            only be used to generate your personalized AI response.
           </p>
         </div>
       </div>

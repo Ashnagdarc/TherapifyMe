@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function HowItWorks() {
   return (
     <section id="how-it-works" className="py-24 bg-white">

@@ -1,10 +1,10 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { CheckCircle, Zap, MessageCircle, Cpu } from "lucide-react";
 
-type FeatureCardProps = {
-  icon: React.ReactNode;
+interface FeatureCardProps {
+  icon: ReactNode;
   title: string;
-};
+}
 
 const features = [
   {
