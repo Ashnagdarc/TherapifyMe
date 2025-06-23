@@ -2,343 +2,311 @@ import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { TranscriptionService } from '../../services/transcriptionService';
-import { AIResponseService } from '../../services/aiResponseService';
-import { CrisisDetectionService } from '../../services/crisisDetectionService';
+import { EnhancedAIService } from '../../services/enhancedAIService';
+import { MoodTag } from '../../types/database';
 import Orb from '../Orb';
 import { Button } from '../ui/Button';
-import { Select } from '../ui/Select';
-import type { SelectOption } from '../ui/Select';
-import { MoodTag, User } from '../../types/database';
-import { Mic, Pause, Square, Edit3, Check, Loader2, Play, Volume2, Save, Sparkles } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/Select';
+import { Edit3, Check, Loader2, Play, Pause, Volume2, Mic, AlertTriangle } from 'lucide-react';
 
-const MOOD_OPTIONS: SelectOption[] = [
+type CheckInStep = 'idle' | 'recording' | 'processing' | 'reviewing' | 'generating' | 'complete' | 'error';
+
+const MOOD_OPTIONS = [
     { value: 'happy', label: '😊 Happy' },
     { value: 'calm', label: '😌 Calm' },
     { value: 'anxious', label: '😰 Anxious' },
     { value: 'sad', label: '😢 Sad' },
     { value: 'stressed', label: '😤 Stressed' },
-    { value: 'excited', label: '🤩 Excited' },
+    { value: 'excited', 'label': '🤩 Excited' },
     { value: 'frustrated', label: '😠 Frustrated' },
-    { value: 'grateful', label: '🙏 Grateful' },
-    { value: 'overwhelmed', label: '😵 Overwhelmed' },
     { value: 'content', label: '😊 Content' },
 ];
-
-type CheckInStep = 'idle' | 'recording' | 'processing' | 'reviewing' | 'generating' | 'complete';
 
 interface CheckInProps {
     onCheckInComplete: () => void;
 }
 
 export const CheckIn = ({ onCheckInComplete }: CheckInProps) => {
-    const { profile } = useAuth();
+    const { profile, user } = useAuth();
+    const [step, setStep] = useState<CheckInStep>('idle');
+    const [error, setError] = useState<string | null>(null);
+    const [processingMessage, setProcessingMessage] = useState('');
 
-    // Check-in Flow State
-    const [checkInStep, setCheckInStep] = useState<CheckInStep>('idle');
+    // Recording state
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
-    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-    const [audioUrl, setAudioUrl] = useState<string | null>(null);
-    const [transcription, setTranscription] = useState<string>('');
-    const [editedTranscription, setEditedTranscription] = useState<string>('');
-    const [selectedMood, setSelectedMood] = useState<MoodTag | ''>('');
-    const [isEditingText, setIsEditingText] = useState(false);
-    const [processingStep, setProcessingStep] = useState<string>('');
-    const [aiAnalysis, setAiAnalysis] = useState<string>('');
-    const [checkInError, setCheckInError] = useState<string | null>(null);
-
-    // Refs
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Reviewing state
+    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+    const [audioUrl, setAudioUrl] = useState<string | null>(null);
+    const [transcription, setTranscription] = useState('');
+    const [editedTranscription, setEditedTranscription] = useState('');
+    const [isEditingText, setIsEditingText] = useState(false);
+    const [selectedMood, setSelectedMood] = useState<MoodTag | ''>('');
+
+    // Audio playback state
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [playbackTime, setPlaybackTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+
+    // Cleanup effect
     useEffect(() => {
-        // Cleanup effect
         return () => {
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-            }
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            }
-            if (audioUrl) {
-                URL.revokeObjectURL(audioUrl);
-            }
+            if (timerRef.current) clearInterval(timerRef.current);
+            if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
+            if (audioUrl) URL.revokeObjectURL(audioUrl);
         };
     }, [audioUrl]);
 
     const handleOrbClick = async () => {
-        if (checkInStep === 'idle') {
+        if (step === 'idle' || step === 'error') {
             await startRecording();
-        } else if (checkInStep === 'recording') {
+        } else if (step === 'recording') {
             stopRecording();
         }
     };
 
     const startRecording = async () => {
-        setCheckInError(null);
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            setCheckInError("Your browser doesn't support audio recording.");
-            return;
-        }
-
         try {
+            setError(null);
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
-            const recorder = new MediaRecorder(stream);
+
+            const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
             mediaRecorderRef.current = recorder;
 
-            const audioChunks: Blob[] = [];
-            recorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
-            };
-
+            const chunks: Blob[] = [];
+            recorder.ondataavailable = (event) => chunks.push(event.data);
             recorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                setAudioBlob(audioBlob);
-                processRecording(audioBlob);
+                const blob = new Blob(chunks, { type: 'audio/webm' });
+                setAudioBlob(blob);
+                processRecording(blob);
             };
 
             recorder.start();
             setIsRecording(true);
-            setCheckInStep('recording');
-            timerRef.current = setInterval(() => {
-                setRecordingTime((prev) => prev + 1);
-            }, 1000);
+            setStep('recording');
+            timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
+
         } catch (err) {
-            console.error('Error starting recording:', err);
-            setCheckInError('Could not access microphone. Please check permissions.');
-            setCheckInStep('idle');
+            console.error(err);
+            setError('Could not access microphone. Please check permissions.');
+            setStep('error');
         }
     };
 
     const stopRecording = () => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        if (mediaRecorderRef.current && isRecording) {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
             if (timerRef.current) clearInterval(timerRef.current);
-            setRecordingTime(0);
             streamRef.current?.getTracks().forEach(track => track.stop());
         }
     };
 
     const processRecording = async (blob: Blob) => {
-        setCheckInStep('processing');
-        setProcessingStep('Transcribing audio...');
-
+        setStep('processing');
+        setProcessingMessage('Transcribing audio...');
         try {
-            const transcriptionService = new TranscriptionService();
-            const transcript = await transcriptionService.transcribe(blob);
-            setTranscription(transcript);
-            setEditedTranscription(transcript);
-            setAudioUrl(URL.createObjectURL(blob));
-            setCheckInStep('reviewing');
-        } catch (error) {
-            console.error('Error processing recording:', error);
-            setCheckInError('Failed to transcribe audio. Please try again.');
-            resetCheckIn();
+            const text = await TranscriptionService.transcribeAudio(blob);
+            setTranscription(text);
+            setEditedTranscription(text);
+            const url = URL.createObjectURL(blob);
+            setAudioUrl(url);
+            setStep('reviewing');
+        } catch (err) {
+            console.error(err);
+            setError('Failed to process audio. Please try again.');
+            setStep('error');
         }
     };
 
-    const handleSaveAndGenerate = async () => {
-        if (!selectedMood || !editedTranscription || !profile || !audioBlob) {
-            setCheckInError('Please select a mood and ensure transcription is not empty.');
+    const handleSave = async () => {
+        if (!selectedMood || !profile || !user) {
+            setError('Please select a mood.');
             return;
         }
-
-        setCheckInStep('generating');
-        setProcessingStep('Analyzing your entry...');
+        setStep('generating');
+        setProcessingMessage('Saving entry & generating AI response...');
 
         try {
-            const crisisService = new CrisisDetectionService();
-            const isCrisis = await crisisService.isCrisis(editedTranscription);
-
-            if (isCrisis) {
-                // In a real app, you would show a modal with resources here.
-                console.warn('Crisis keywords detected. Showing resources...');
-                setCheckInError('Important: If you are in a crisis, please seek help.');
-                setCheckInStep('reviewing'); // Go back to review to show the message
-                return;
-            }
-
-            const aiService = AIResponseService.getInstance();
-            const { aiResponse } = await aiService.getAIResponse({
-                mood: selectedMood,
-                transcription: editedTranscription,
-                userProfile: profile as User // Casting because profile can be null but we check it above
-            });
-            setAiAnalysis(aiResponse);
-
-            setProcessingStep('Saving your entry...');
-            const filePath = `${profile.id}/${new Date().toISOString()}.webm`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('voice-recordings')
-                .upload(filePath, audioBlob);
-
+            // 1. Upload audio
+            const filePath = `${user.id}/${Date.now()}.webm`;
+            const { error: uploadError } = await supabase.storage.from('voice-recordings').upload(filePath, audioBlob!);
             if (uploadError) throw uploadError;
 
-            const { data: entry, error: insertError } = await supabase
-                .from('entries')
-                .insert({
-                    user_id: profile.id,
-                    mood_tag: selectedMood,
-                    transcription: editedTranscription,
-                    ai_response: aiResponse,
-                    audio_url: uploadData.path,
-                    text_summary: editedTranscription.slice(0, 150),
-                })
-                .select()
-                .single();
+            const { data: { publicUrl } } = supabase.storage.from('voice-recordings').getPublicUrl(filePath);
 
+            // 2. Generate AI response
+            const aiResponse = await EnhancedAIService.generateResponse(selectedMood, editedTranscription, profile.preferred_tone, user.id);
+
+            // 3. Save entry
+            const { error: insertError } = await supabase.from('entries').insert({
+                user_id: profile.id,
+                mood_tag: selectedMood,
+                transcription: editedTranscription,
+                voice_note_url: publicUrl,
+                text_summary: aiResponse.response,
+                ai_response_url: '' // Assuming no audio response for now
+            });
             if (insertError) throw insertError;
 
-            setProcessingStep('Complete!');
-            setCheckInStep('complete');
-            onCheckInComplete(); // Notify dashboard to refresh data
+            setStep('complete');
+            setTimeout(() => {
+                onCheckInComplete();
+                resetState();
+            }, 2000);
 
-            // Optional: reset after a delay
-            setTimeout(() => resetCheckIn(), 5000);
-
-        } catch (error) {
-            console.error('Error saving and generating:', error);
-            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-            setCheckInError(`Failed to save. ${errorMessage}`);
-            setCheckInStep('reviewing');
+        } catch (err) {
+            console.error(err);
+            setError('Failed to save your check-in. Please try again.');
+            setStep('error');
         }
     };
 
-    const resetCheckIn = () => {
+    const resetState = () => {
+        setStep('idle');
+        setError(null);
+        setProcessingMessage('');
         setIsRecording(false);
-        if (timerRef.current) clearInterval(timerRef.current);
         setRecordingTime(0);
         setAudioBlob(null);
-        if (audioUrl) URL.revokeObjectURL(audioUrl);
         setAudioUrl(null);
         setTranscription('');
         setEditedTranscription('');
-        setSelectedMood('');
         setIsEditingText(false);
-        setCheckInStep('idle');
-        setProcessingStep('');
-        setAiAnalysis('');
-        setCheckInError(null);
-        mediaRecorderRef.current = null;
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
+        setSelectedMood('');
+        setIsPlaying(false);
+        setPlaybackTime(0);
+        setDuration(0);
+    };
+
+    const togglePlayback = () => {
+        if (audioRef.current) {
+            if (isPlaying) {
+                audioRef.current.pause();
+            } else {
+                audioRef.current.play();
+            }
+            setIsPlaying(!isPlaying);
         }
     };
 
-    const formatTime = (seconds: number) => {
-        const minutes = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const getOrbProps = () => {
-        switch (checkInStep) {
-            case 'recording':
-                return { state: 'recording' as const, recordingTime };
+    // Orb display logic
+    const renderOrbContent = () => {
+        switch (step) {
+            case 'recording': return <div className="text-center"><p className="text-2xl font-bold">{new Date(recordingTime * 1000).toISOString().substr(14, 5)}</p></div>;
+            case 'reviewing': return <Edit3 size={40} />;
             case 'processing':
-            case 'generating':
-                return { state: 'processing' as const, processingText: processingStep };
-            case 'reviewing':
-                return { state: 'listening' as const };
-            case 'complete':
-                return { state: 'complete' as const };
-            default:
-                return { state: 'idle' as const };
+            case 'generating': return <Loader2 size={40} className="animate-spin" />;
+            case 'complete': return <Check size={40} />;
+            case 'error': return <AlertTriangle size={40} />;
+            default: return <Mic size={40} />;
         }
-    };
+    }
 
-    const getOrbMessage = () => {
-        switch (checkInStep) {
-            case 'idle':
-                return 'Tap to start your voice check-in';
-            case 'recording':
-                return `Recording... ${formatTime(recordingTime)}`;
-            case 'processing':
-                return processingStep;
-            case 'reviewing':
-                return 'Review your check-in';
-            case 'generating':
-                return processingStep;
-            case 'complete':
-                return 'Your check-in is complete!';
-            default:
-                return 'Ready to check in?';
-        }
-    };
+    if (step !== 'idle' && step !== 'recording') {
+        return (
+            <div className="bg-gray-800/50 p-8 rounded-2xl max-w-2xl mx-auto text-white">
+                <h2 className="text-2xl font-bold text-center mb-2">Hello {profile?.full_name || 'there'}</h2>
+                <p className="text-center text-gray-400 mb-8">Review your transcription, then select your mood</p>
+
+                {/* Audio Player */}
+                <div className="bg-gray-900/70 p-4 rounded-lg mb-6">
+                    <h3 className="font-semibold mb-3">Your Recording</h3>
+                    <div className="flex items-center gap-4">
+                        <button onClick={togglePlayback} className="text-white">
+                            {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                        </button>
+                        <input
+                            type="range"
+                            min="0"
+                            max={duration}
+                            value={playbackTime}
+                            onChange={(e) => {
+                                if (audioRef.current) audioRef.current.currentTime = Number(e.target.value);
+                            }}
+                            className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <div className="text-xs w-20 text-right">{new Date(playbackTime * 1000).toISOString().substr(14, 5)} / {new Date(duration * 1000).toISOString().substr(14, 5)}</div>
+                    </div>
+                    <audio
+                        ref={audioRef}
+                        src={audioUrl || ''}
+                        onLoadedData={() => setDuration(audioRef.current?.duration || 0)}
+                        onTimeUpdate={() => setPlaybackTime(audioRef.current?.currentTime || 0)}
+                        onEnded={() => setIsPlaying(false)}
+                    />
+                </div>
+
+                {/* Transcription */}
+                <div className="bg-gray-900/70 p-4 rounded-lg mb-6">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-semibold">Your Thoughts</h3>
+                        <button onClick={() => setIsEditingText(!isEditingText)} className="text-sm text-blue-400 flex items-center gap-1">
+                            {isEditingText ? <Check size={16} /> : <Edit3 size={16} />}
+                            {isEditingText ? 'Done' : 'Edit'}
+                        </button>
+                    </div>
+                    {isEditingText ? (
+                        <textarea
+                            value={editedTranscription}
+                            onChange={(e) => setEditedTranscription(e.target.value)}
+                            className="w-full bg-gray-700 p-2 rounded-md h-24 text-white"
+                        />
+                    ) : (
+                        <p className="text-gray-300">{editedTranscription}</p>
+                    )}
+                </div>
+
+                {/* Mood Selector */}
+                <div className="mb-8">
+                    <h3 className="font-semibold mb-3">How are you feeling?</h3>
+                    <Select onValueChange={(value) => setSelectedMood(value as MoodTag)}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select your mood" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {MOOD_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-4">
+                    <Button variant="secondary" onClick={resetState} className="w-full">Start Over</Button>
+                    <Button variant="primary" onClick={handleSave} className="w-full" disabled={step === 'generating' || !selectedMood}>
+                        {step === 'generating' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save & Generate AI Response
+                    </Button>
+                </div>
+                {error && <p className="text-red-400 text-sm mt-4 text-center">{error}</p>}
+            </div>
+        )
+    }
 
     return (
-        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-2xl mx-auto text-center border border-gray-100">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">{getOrbMessage()}</h2>
-            <div className="flex justify-center items-center my-6 sm:my-8">
-                <Orb {...getOrbProps()} onClick={handleOrbClick} />
+        <div className="text-center text-white flex flex-col items-center justify-center">
+            <div onClick={handleOrbClick} className="cursor-pointer">
+                <Orb hue={220} forceHoverState={isRecording}>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        {renderOrbContent()}
+                    </div>
+                </Orb>
             </div>
-
-            {checkInError && <p className="text-red-500 my-4 bg-red-50 p-3 rounded-lg">{checkInError}</p>}
-
-            {checkInStep === 'reviewing' && (
-                <div className="text-left animate-fade-in space-y-6">
-                    <h3 className="font-semibold text-xl mb-2 text-gray-700">Review & Refine</h3>
-                    {audioUrl && (
-                        <div className="mb-4">
-                            <audio ref={audioRef} src={audioUrl} controls className="w-full" />
-                        </div>
-                    )}
-                    <div className="mb-4">
-                        <div className="flex justify-between items-center mb-2">
-                            <label htmlFor="transcription" className="font-semibold text-gray-700">Your Thoughts:</label>
-                            <Button variant="outline" size="sm" onClick={() => setIsEditingText(!isEditingText)}>
-                                {isEditingText ? <Check className="w-4 h-4 mr-1" /> : <Edit3 className="w-4 h-4 mr-1" />}
-                                {isEditingText ? 'Save' : 'Edit'}
-                            </Button>
-                        </div>
-                        {isEditingText ? (
-                            <textarea
-                                id="transcription"
-                                value={editedTranscription}
-                                onChange={(e) => setEditedTranscription(e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-md h-40 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        ) : (
-                            <p className="p-3 border border-gray-200 rounded-md bg-gray-50 h-40 overflow-y-auto text-gray-800">{editedTranscription}</p>
-                        )}
-                    </div>
-                    <div className="mb-6">
-                        <label htmlFor="mood" className="font-semibold block mb-2 text-gray-700">How are you feeling?</label>
-                        <Select
-                            value={selectedMood}
-                            onChange={(value) => setSelectedMood(value as MoodTag)}
-                            placeholder="Select a mood..."
-                            options={MOOD_OPTIONS}
-                        />
-                    </div>
-                    <div className="flex justify-between items-center pt-4 border-t">
-                        <Button variant="ghost" onClick={resetCheckIn}>Start Over</Button>
-                        <Button
-                            onClick={handleSaveAndGenerate}
-                            disabled={!selectedMood || !editedTranscription || checkInStep === 'generating'}
-                        >
-                            {checkInStep === 'generating' ? (
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            ) : (
-                                <Save className="w-4 h-4 mr-2" />
-                            )}
-                            Save & Generate AI Response
-                        </Button>
-                    </div>
-                </div>
-            )}
-
-            {checkInStep === 'complete' && aiAnalysis && (
-                <div className="text-left mt-6 bg-blue-50 p-4 rounded-lg animate-fade-in">
-                    <h3 className="font-semibold text-lg mb-2 text-blue-800 flex items-center"><Sparkles className="w-5 h-5 mr-2" />Your AI Insight</h3>
-                    <p className="text-gray-700 whitespace-pre-wrap">{aiAnalysis}</p>
-                </div>
-            )}
+            <h2 className="text-2xl font-bold mt-8">Hello there</h2>
+            <p className="text-gray-400 mt-2">
+                {step === 'idle' && 'Tap the orb to start recording your thoughts'}
+                {step === 'recording' && 'Tap again to stop recording'}
+                {error && <span className="text-red-400">{error}</span>}
+            </p>
+            <p className="text-xs text-gray-600 mt-4">
+                State: {step} | Transcription: {transcription ? 'Yes' : 'No'} | Audio: {audioBlob ? 'Yes' : 'No'}
+            </p>
         </div>
     );
-}; 
+};
