@@ -44,7 +44,7 @@ interface ToggleLinkProps {
   setIsSignUp: Dispatch<SetStateAction<boolean>>;
 }
 
-export function AuthPage() {
+export default function AuthPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Form */}
@@ -322,42 +322,6 @@ function PasswordInput({
       {validationErrors.password && (
         <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
       )}
-      {isSignUp && !validationErrors.password && password && (
-        <div className="mt-1 space-y-1">
-          <div className="flex items-center text-xs">
-            <div
-              className={`w-2 h-2 rounded-full mr-2 ${
-                password.length >= 8 ? "bg-green-500" : "bg-gray-300"
-              }`}
-            ></div>
-            <span
-              className={
-                password.length >= 8 ? "text-green-600" : "text-gray-500"
-              }
-            >
-              At least 8 characters
-            </span>
-          </div>
-          <div className="flex items-center text-xs">
-            <div
-              className={`w-2 h-2 rounded-full mr-2 ${
-                /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
-                  ? "bg-green-500"
-                  : "bg-gray-300"
-              }`}
-            ></div>
-            <span
-              className={
-                /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
-                  ? "text-green-600"
-                  : "text-gray-500"
-              }
-            >
-              Contains uppercase, lowercase & number
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -386,6 +350,7 @@ function PasswordStrengthHint({
             At least 8 characters
           </span>
         </div>
+
         <div className="flex items-center">
           <div
             className={`w-2 h-2 rounded-full mr-2 ${

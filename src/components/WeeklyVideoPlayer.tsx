@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2, Download, Share, Loader2 } from 'lucide-react';
 import { Button } from './ui/Button';
 
@@ -9,7 +9,7 @@ interface WeeklyVideoPlayerProps {
   isGenerating?: boolean;
 }
 
-export function WeeklyVideoPlayer({ 
+export default function WeeklyVideoPlayer({ 
   videoUrl, 
   title, 
   onGenerateNewVideo,

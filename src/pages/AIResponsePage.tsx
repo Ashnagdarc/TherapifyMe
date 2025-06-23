@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
+import { useState, useRef, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/Button";
 import {
   ArrowLeft,
   Play,
@@ -10,8 +10,8 @@ import {
   Download,
   Copy,
   Check,
-  Lightbulb
-} from 'lucide-react';
+  Lightbulb,
+} from "lucide-react";
 
 interface AIResponseState {
   entryId: string;
@@ -22,7 +22,7 @@ interface AIResponseState {
   suggestions: string[];
 }
 
-export function AIResponsePage() {
+export default function AIResponsePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as AIResponseState;
@@ -33,7 +33,7 @@ export function AIResponsePage() {
 
   useEffect(() => {
     if (!state) {
-      navigate('/dashboard');
+      navigate("/dashboard");
       return;
     }
   }, [state, navigate]);
@@ -62,40 +62,40 @@ export function AIResponsePage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy text:', error);
+      console.error("Failed to copy text:", error);
     }
   };
 
   const getMoodEmoji = (mood: string) => {
     const emojiMap: { [key: string]: string } = {
-      happy: '😊',
-      calm: '😌',
-      anxious: '😰',
-      sad: '😢',
-      stressed: '😤',
-      excited: '🤩',
-      frustrated: '😠',
-      grateful: '🙏',
-      overwhelmed: '😵',
-      content: '😊'
+      happy: "😊",
+      calm: "😌",
+      anxious: "😰",
+      sad: "😢",
+      stressed: "😤",
+      excited: "🤩",
+      frustrated: "😠",
+      grateful: "🙏",
+      overwhelmed: "😵",
+      content: "😊",
     };
-    return emojiMap[mood] || '💭';
+    return emojiMap[mood] || "💭";
   };
 
   const getMoodColor = (mood: string) => {
     const colorMap: { [key: string]: string } = {
-      happy: 'bg-yellow-100 text-yellow-800',
-      calm: 'bg-blue-100 text-blue-800',
-      anxious: 'bg-orange-100 text-orange-800',
-      sad: 'bg-gray-100 text-gray-800',
-      stressed: 'bg-red-100 text-red-800',
-      excited: 'bg-purple-100 text-purple-800',
-      frustrated: 'bg-red-100 text-red-800',
-      grateful: 'bg-pink-100 text-pink-800',
-      overwhelmed: 'bg-orange-100 text-orange-800',
-      content: 'bg-green-100 text-green-800'
+      happy: "bg-yellow-100 text-yellow-800",
+      calm: "bg-blue-100 text-blue-800",
+      anxious: "bg-orange-100 text-orange-800",
+      sad: "bg-gray-100 text-gray-800",
+      stressed: "bg-red-100 text-red-800",
+      excited: "bg-purple-100 text-purple-800",
+      frustrated: "bg-red-100 text-red-800",
+      grateful: "bg-pink-100 text-pink-800",
+      overwhelmed: "bg-orange-100 text-orange-800",
+      content: "bg-green-100 text-green-800",
     };
-    return colorMap[mood] || 'bg-gray-100 text-gray-800';
+    return colorMap[mood] || "bg-gray-100 text-gray-800";
   };
 
   return (
@@ -107,7 +107,7 @@ export function AIResponsePage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate("/dashboard")}
               className="mr-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -135,11 +135,7 @@ export function AIResponsePage() {
                 </>
               )}
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center"
-            >
+            <Button variant="ghost" size="sm" className="flex items-center">
               <Share className="w-4 h-4 mr-2" />
               Share
             </Button>
@@ -152,16 +148,26 @@ export function AIResponsePage() {
             {/* Mood Summary */}
             <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-primery">Your Check-In</h2>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getMoodColor(state.mood)}`}>
+                <h2 className="text-lg font-semibold text-primery">
+                  Your Check-In
+                </h2>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getMoodColor(
+                    state.mood
+                  )}`}
+                >
                   {getMoodEmoji(state.mood)} {state.mood}
                 </span>
               </div>
 
               {state.transcription && (
                 <div className="bg-grey-2 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-grey mb-2">What you shared:</h3>
-                  <p className="text-text-black italic">"{state.transcription}"</p>
+                  <h3 className="text-sm font-medium text-grey mb-2">
+                    What you shared:
+                  </h3>
+                  <p className="text-text-black italic">
+                    "{state.transcription}"
+                  </p>
                 </div>
               )}
             </div>
@@ -224,7 +230,10 @@ export function AIResponsePage() {
 
               <div className="space-y-3">
                 {state.suggestions.map((suggestion, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 bg-grey-2 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-start space-x-3 p-3 bg-grey-2 rounded-lg"
+                  >
                     <span className="flex-shrink-0 w-6 h-6 bg-main text-white rounded-full flex items-center justify-center text-sm font-medium">
                       {index + 1}
                     </span>
@@ -236,13 +245,15 @@ export function AIResponsePage() {
 
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
-              <h3 className="text-lg font-semibold text-primery mb-4">Quick Actions</h3>
+              <h3 className="text-lg font-semibold text-primery mb-4">
+                Quick Actions
+              </h3>
 
               <div className="space-y-3">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate('/check-in')}
+                  onClick={() => navigate("/check-in")}
                   className="w-full justify-start"
                 >
                   New Check-In
@@ -251,7 +262,7 @@ export function AIResponsePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate('/journal')}
+                  onClick={() => navigate("/journal")}
                   className="w-full justify-start"
                 >
                   View Journal
@@ -272,10 +283,12 @@ export function AIResponsePage() {
             <div className="bg-gradient-to-br from-main to-purple-600 rounded-2xl p-6 text-white">
               <h3 className="text-lg font-semibold mb-2">Session Complete!</h3>
               <p className="text-blue-100 text-sm mb-4">
-                You've taken an important step in your mental wellness journey today.
+                You've taken an important step in your mental wellness journey
+                today.
               </p>
               <p className="text-xs text-blue-200">
-                Remember to be patient and kind to yourself as you process these insights.
+                Remember to be patient and kind to yourself as you process these
+                insights.
               </p>
             </div>
           </div>

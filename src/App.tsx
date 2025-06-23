@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState, ReactNode } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,21 +6,26 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { Layout } from "./components/Layout";
-import LandingPage from "./pages/LandingPage";
-import { AuthPage } from "./pages/AuthPage";
-import { Dashboard } from "./pages/Dashboard";
-import { CheckInPage } from "./pages/CheckInPage";
-import { AIResponsePage } from "./pages/AIResponsePage";
-import { JournalPage } from "./pages/JournalPage";
-import { SettingsPage } from "./pages/SettingsPage";
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+import Layout from "./components/Layout";
+import LandingPage from "./pages/LandingPage";
+import AuthPage from "./pages/AuthPage";
+import Dashboard from "./pages/Dashboard";
+import CheckInPage from "./pages/CheckInPage";
+import AIResponsePage from "./pages/AIResponsePage";
+import JournalPage from "./pages/JournalPage";
+import SettingsPage from "./pages/SettingsPage";
+
+type ProtectedRouteProps = {
+  children: ReactNode;
+};
+
+function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
-  const [emergencyTimeout, setEmergencyTimeout] = React.useState(false);
+  const [emergencyTimeout, setEmergencyTimeout] = useState(false);
 
   // Emergency timeout to prevent infinite loading
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
         console.warn("ProtectedRoute: Emergency timeout triggered");
@@ -51,12 +56,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return user ? <>{children}</> : <Navigate to="/auth" replace />;
 }
 
-function PublicRoute({ children }: { children: React.ReactNode }) {
+function PublicRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
-  const [emergencyTimeout, setEmergencyTimeout] = React.useState(false);
+  const [emergencyTimeout, setEmergencyTimeout] = useState(false);
 
   // Emergency timeout to prevent infinite loading
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
         console.warn("PublicRoute: Emergency timeout triggered");
