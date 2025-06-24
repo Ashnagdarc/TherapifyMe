@@ -14,12 +14,27 @@ import {
   Ellipsis,
   NotebookPen,
   Search,
+  UserRound,
   PanelRightOpen,
+  ArchiveRestore,
+  Trash2,
   X,
 } from "lucide-react";
 
 interface DashboardContainerProps {
   children: React.ReactNode;
+}
+
+interface ProfileAvatarProps {
+  onProfileToggle?: any;
+}
+
+interface SubNavProps {
+  onToggle?: any;
+}
+
+interface UserProfileNavProps {
+  onProfileToggle?: any;
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -140,12 +155,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     //   </main>
     // </div>
 
-    <div className=" w-full min-h-svh flex flex-row bg-sky-blue/40 font-lato text-text-blue">
+    // Recreated dashboard layout
+
+    <div className="w-full min-h-svh flex flex-row bg-sky-blue/40 font-lato text-text-blue">
       <DashboardContainer />
 
-      <div>{children}</div>
+      <div className="flex-1">{children}</div>
 
-      <div></div>
+      <DashboardNavContainer />
     </div>
   );
 }
@@ -162,7 +179,7 @@ function DashboardContainer({ children }: DashboardContainerProps) {
     <section
       className={`h-svh ${
         !openDash ? "w-[15%] lg:w-[5%]" : "w-[40%] lg:w-[270px]"
-      }  flex flex-col items-center gap-[2rem] py-[1rem] px-[0.5rem] text-[15px] text-black bg-grey-2 md:py-[2rem] md:text-[16px]  transition-all duration-300 ease-in `}
+      }  flex flex-col items-center gap-[2rem] py-[1rem] px-[0.5rem] text-[15px] text-black bg-grey-2 absolute z-[99] md:static md:z-[9] md:py-[2rem] md:text-[16px]  transition-all duration-300 ease-in `}
     >
       <div className="w-full flex items-center justify-between">
         {openDash && (
@@ -206,5 +223,98 @@ function DashboardContainer({ children }: DashboardContainerProps) {
 
       {openDash && children}
     </section>
+  );
+}
+
+function DashboardNavContainer() {
+  const [openNav, setOpenNav] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
+
+  function handleNavToggle() {
+    setOpenNav(!openNav);
+  }
+
+  function handleProfileToggleNav() {
+    setOpenProfile(!openProfile);
+  }
+
+  return (
+    <section className="justify-self-end flex flex-col gap-[2rem] pt-[1rem] px-[1rem]">
+      <div className=" self-end flex items-center gap-[1rem] md:gap-[2rem] ">
+        {!openNav && (
+          <Ellipsis className="cursor-pointer" onClick={handleNavToggle} />
+        )}
+
+        {!openProfile && (
+          <ProfileAvatar onProfileToggle={handleProfileToggleNav} />
+        )}
+      </div>
+
+      {openNav && <SubNav onToggle={handleNavToggle} />}
+
+      {openProfile && (
+        <UserProfileNav onProfileToggle={handleProfileToggleNav} />
+      )}
+    </section>
+  );
+}
+
+function ProfileAvatar({ onProfileToggle }: ProfileAvatarProps) {
+  return (
+    <div
+      className="text-white bg-text-blue p-[0.5rem]  shadow-xl/40 shadow-black border-[2px] border-main rounded-full cursor-pointer"
+      onClick={onProfileToggle}
+    >
+      <UserRound />
+    </div>
+  );
+}
+
+function SubNav({ onToggle }: SubNavProps) {
+  return (
+    <div className="w-[225px] h-[150px] flex flex-col items-start gap-[1rem] bg-grey-2 p-[1rem] rounded-[1rem] shadow-xl/30 shadow-black">
+      <div className="w-[16px] h-[16px] mb-[1rem]">
+        <X className="cursor-pointer" onClick={onToggle} />
+      </div>
+
+      <div className="flex items-center gap-[0.7rem] text-black cursor-pointer">
+        <ArchiveRestore />
+        <p>Archive</p>
+      </div>
+
+      <div className="flex items-center gap-[0.7rem] text-red cursor-pointer">
+        <Trash2 />
+        <p>Delete</p>
+      </div>
+    </div>
+  );
+}
+
+function UserProfileNav({ onProfileToggle }: UserProfileNavProps) {
+  return (
+    <div className=" w-[225px] h-[163px] flex flex-col items-start gap-[1rem] bg-grey-2 p-[1rem] rounded-[1rem] shadow-xl/30 shadow-black ">
+      <div className="flex items-center gap-[0.6rem]">
+        <span onClick={onProfileToggle}>
+          <ProfileAvatar />
+        </span>
+
+        {/* placeholder for user name */}
+        <p className=" Font-[600] text-[16px]">User</p>
+      </div>
+
+      <div className="flex items-center gap-[0.6rem]">
+        <Settings />
+        <a href="#" className="cursor-pointer hover:text-text-black">
+          Settings
+        </a>
+      </div>
+
+      <div className="flex items-center gap-[0.6rem]">
+        <LogOut />
+        <a href="#" className="cursor-pointer hover:text-text-black">
+          Log Out
+        </a>
+      </div>
+    </div>
   );
 }
