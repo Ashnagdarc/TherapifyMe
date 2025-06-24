@@ -6,7 +6,6 @@ import { TranscriptionService } from "../../services/transcriptionService";
 import { EnhancedAIService } from "../../services/enhancedAIService";
 import { TavusService } from "../../services/tavusService";
 import { ElevenLabsService } from "../../services/elevenLabsService";
-import { AmbientMusicService } from "../../services/ambientMusicService";
 import { MoodTag } from "../../types/database";
 import Orb from "../Orb";
 import { Button } from "../ui/Button";
