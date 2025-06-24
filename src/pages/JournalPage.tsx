@@ -35,6 +35,106 @@ const MOOD_OPTIONS = [
   { value: "content", label: "😊 Content" },
 ];
 
+function safeVideoUrl(url: unknown): string | undefined {
+  return typeof url === 'string' && url ? url : undefined;
+}
+
+function TavusVideoCard({ status, videoUrl, userName, mood, onRetry }: {
+  status: 'processing' | 'ready' | 'error',
+  videoUrl?: string,
+  userName?: string,
+  mood?: string,
+  onRetry?: () => void
+}) {
+  // Confetti state
+  const [showConfetti, setShowConfetti] = useState(false);
+  useEffect(() => {
+    if (status === 'ready') {
+      setShowConfetti(true);
+      const t = setTimeout(() => setShowConfetti(false), 2500);
+      return () => clearTimeout(t);
+    }
+  }, [status]);
+
+  // Download handler
+  const handleDownload = () => {
+    if (videoUrl) {
+      const a = document.createElement('a');
+      a.href = videoUrl;
+      a.download = 'Linda-Therapist-Video.mp4';
+      a.click();
+    }
+  };
+
+  // Share handler (Web Share API)
+  const handleShare = () => {
+    if (navigator.share && videoUrl) {
+      navigator.share({
+        title: 'Linda Therapist Video',
+        url: videoUrl
+      });
+    }
+  };
+
+  return (
+    <div className="relative bg-gradient-to-br from-emerald-900/60 via-blue-900/60 to-purple-900/60 rounded-xl p-5 flex flex-col items-center shadow-lg border border-emerald-700/20 animate-in fade-in">
+      {/* Confetti animation */}
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none z-10 animate-bounce">
+          {/* Simple confetti dots */}
+          {[...Array(20)].map((_, i) => (
+            <span key={i} className="absolute text-2xl" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}>
+              🎉
+            </span>
+          ))}
+        </div>
+      )}
+      {/* Avatar or video */}
+      {status === 'processing' && (
+        <>
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400/40 to-blue-400/40 flex items-center justify-center mb-2 animate-pulse">
+            <img src="/avatar-linda.png" alt="Linda the Therapist" className="w-16 h-16 rounded-full object-cover" />
+          </div>
+          <div className="text-lg font-semibold text-emerald-200 mb-1">Linda is preparing your video...</div>
+          <div className="text-xs text-blue-200 mb-2">This usually takes 1-2 minutes. You can continue using the app—we'll let you know when it's ready!</div>
+          <div className="w-full flex justify-center mb-2">
+            <div className="w-32 h-2 bg-emerald-800/40 rounded-full overflow-hidden">
+              <div className="h-2 bg-emerald-400 animate-pulse rounded-full w-1/2"></div>
+            </div>
+          </div>
+          {userName && mood && (
+            <div className="text-xs text-slate-300 mb-1">For <span className="font-bold">{userName}</span> about feeling <span className="italic">{mood}</span></div>
+          )}
+        </>
+      )}
+      {status === 'ready' && videoUrl && (
+        <>
+          <div className="w-full aspect-video rounded-lg overflow-hidden mb-2 shadow-xl border border-emerald-700/30">
+            <video src={videoUrl} controls className="w-full h-full bg-black rounded-lg" />
+          </div>
+          <div className="flex gap-2 mb-2">
+            <Button variant="secondary" onClick={handleDownload}>Download</Button>
+            {typeof navigator.share === 'function' && <Button variant="secondary" onClick={handleShare}>Share</Button>}
+          </div>
+          {userName && mood && (
+            <div className="text-xs text-slate-300 mb-1">For <span className="font-bold">{userName}</span> about feeling <span className="italic">{mood}</span></div>
+          )}
+        </>
+      )}
+      {status === 'error' && (
+        <>
+          <div className="w-20 h-20 rounded-full bg-red-900/40 flex items-center justify-center mb-2">
+            <span className="text-4xl">⚠️</span>
+          </div>
+          <div className="text-lg font-semibold text-red-200 mb-1">Oops! Video failed</div>
+          <div className="text-xs text-red-300 mb-2">Something went wrong creating your video. Please try again.</div>
+          {onRetry && <Button variant="primary" onClick={onRetry}>Retry</Button>}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function JournalPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
@@ -213,11 +313,17 @@ export default function JournalPage() {
     const hasAIAudio = !!entry.ai_response_url;
     const hasVideo = !!entry.tavus_video_url;
     const hasText = !!entry.text_summary;
-
     const hasAnyMedia = hasVoice || hasAIAudio || hasVideo;
-    const showMissingAudio = hasText && !hasAIAudio; // Has AI text but no audio
+    const showMissingAudio = hasText && !hasAIAudio;
+
+    // Determine Tavus video status
+    let tavusStatus: 'processing' | 'ready' | 'error' = 'processing';
+    if (hasVideo) tavusStatus = 'ready';
+    // Optionally, you could track error state if you have a field for it
 
     if (!hasAnyMedia && !showMissingAudio) return null;
+
+    const videoUrlSafe: string | undefined = safeVideoUrl(entry.tavus_video_url);
 
     return (
       <div className="mt-4 pt-4 border-t border-gray-700/50 space-y-2">
@@ -231,7 +337,6 @@ export default function JournalPage() {
             Your Voice Note
           </Button>
         )}
-
         {hasAIAudio ? (
           <Button
             variant="secondary"
@@ -249,22 +354,15 @@ export default function JournalPage() {
             </div>
           </div>
         ) : null}
-
-        {hasVideo && (
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setVideoPlayer(prev => ({ ...prev, [entry.id]: !prev[entry.id] }))}
-              className="w-full"
-            >
-              Watch AI Video
-            </Button>
-            {videoPlayer[entry.id] && (
-              <div className="aspect-video rounded-lg overflow-hidden mt-2">
-                <video src={entry.tavus_video_url} controls autoPlay className="w-full h-full" />
-              </div>
-            )}
-          </>
+        {/* Tavus Video Card: show processing, ready, or error state */}
+        {(hasVideo || entry.tavus_video_url === null) && (
+          <TavusVideoCard
+            status={tavusStatus}
+            videoUrl={videoUrlSafe}
+            userName={profile?.full_name}
+            mood={entry.mood_tag}
+          // onRetry={...} // Optionally implement retry logic
+          />
         )}
       </div>
     );

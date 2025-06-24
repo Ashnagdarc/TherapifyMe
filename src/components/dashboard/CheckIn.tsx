@@ -6,6 +6,7 @@ import { TranscriptionService } from "../../services/transcriptionService";
 import { EnhancedAIService } from "../../services/enhancedAIService";
 import { TavusService } from "../../services/tavusService";
 import { ElevenLabsService } from "../../services/elevenLabsService";
+import { AmbientMusicService } from "../../services/ambientMusicService";
 import { MoodTag } from "../../types/database";
 import Orb from "../Orb";
 import { Button } from "../ui/Button";
@@ -141,9 +142,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
       setMediaRecorder(recorder);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      setError(
-        "Microphone access denied. Please enable microphone permissions."
-      );
+      setError("Microphone access denied. Please enable microphone permissions.");
       setStep("error");
     }
   };
@@ -156,9 +155,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
 
   const processRecording = async (blob: Blob) => {
     setStep("processing");
-    setProcessingMessage(
-      "Converting your voice to text with AI transcription..."
-    );
+    setProcessingMessage("Converting your voice to text with AI transcription...");
     try {
       const text = await TranscriptionService.transcribeAudio(blob);
       setTranscription(text);
@@ -339,12 +336,8 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
               transcription: transcription, // Show original voice transcription
               aiResponse: finalResponse,
               aiResponseAudioUrl,
-              suggestions: [
-                "Take deep breaths",
-                "Stay present",
-                "Practice gratitude",
-              ],
-            },
+              suggestions: ["Take deep breaths", "Stay present", "Practice gratitude"]
+            }
           });
         }, 2000);
       } else {
@@ -353,11 +346,10 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
           resetState();
         }, 2000);
       }
+
     } catch (err: any) {
       console.error("Error in handleSave:", err);
-      setError(
-        err.message || "An unexpected error occurred. Please try again."
-      );
+      setError(err.message || "An unexpected error occurred. Please try again.");
       setStep("error");
     }
   };
@@ -470,17 +462,17 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
     const themes = transcription.toLowerCase().includes("work")
       ? ["work stress"]
       : transcription.toLowerCase().includes("relationship")
-      ? ["relationships"]
-      : transcription.toLowerCase().includes("anxious") ||
-        transcription.toLowerCase().includes("stressed")
-      ? ["anxiety"]
-      : transcription.toLowerCase().includes("happy") ||
-        transcription.toLowerCase().includes("good")
-      ? ["positive mood"]
-      : transcription.toLowerCase().includes("sad") ||
-        transcription.toLowerCase().includes("down")
-      ? ["sadness"]
-      : ["general reflection"];
+        ? ["relationships"]
+        : transcription.toLowerCase().includes("anxious") ||
+          transcription.toLowerCase().includes("stressed")
+          ? ["anxiety"]
+          : transcription.toLowerCase().includes("happy") ||
+            transcription.toLowerCase().includes("good")
+            ? ["positive mood"]
+            : transcription.toLowerCase().includes("sad") ||
+              transcription.toLowerCase().includes("down")
+              ? ["sadness"]
+              : ["general reflection"];
 
     return (
       <div className="space-y-4 mb-6">
@@ -614,8 +606,8 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
           style={{
             pointerEvents:
               step === "processing" ||
-              step === "generating" ||
-              step === "complete"
+                step === "generating" ||
+                step === "complete"
                 ? "none"
                 : "auto",
           }}

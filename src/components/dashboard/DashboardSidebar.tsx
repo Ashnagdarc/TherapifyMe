@@ -10,9 +10,10 @@ interface DashboardSidebarProps {
     dashboardData: DashboardData | null;
     loading: boolean;
     userId: string;
+    onClose?: () => void;
 }
 
-const DashboardSidebar = ({ dashboardData, loading, userId }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ dashboardData, loading, userId, onClose }: DashboardSidebarProps) => {
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour >= 5 && hour < 12) return "Good Morning";
@@ -39,7 +40,17 @@ const DashboardSidebar = ({ dashboardData, loading, userId }: DashboardSidebarPr
     }
 
     return (
-        <div className="col-span-3 space-y-3 p-4 bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-sm rounded-2xl h-full flex flex-col justify-between overflow-y-auto border border-slate-700/50 shadow-2xl">
+        <div className="col-span-3 space-y-3 p-4 bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-sm rounded-2xl h-full flex flex-col justify-between overflow-y-auto border border-slate-700/50 shadow-2xl relative">
+            {/* Close button for mobile */}
+            {onClose && (
+                <button
+                    className="absolute top-3 right-3 lg:hidden p-2 rounded-md bg-slate-700/70 hover:bg-slate-600/80 text-white z-50"
+                    onClick={onClose}
+                    aria-label="Close sidebar"
+                >
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-x"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                </button>
+            )}
             {/* Top section */}
             <div className="space-y-3">
                 <div className="text-center">
