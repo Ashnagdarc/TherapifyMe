@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "../../lib/utils";
 
 const buttonVariants = {
-  primary: "bg-blue-600 text-white hover:bg-blue-700",
+  primary: "bg-main text-white hover:bg-blue-700",
   secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
   ghost: "hover:bg-gray-100 text-gray-800",
   destructive: "bg-red-600 text-white hover:bg-red-700",

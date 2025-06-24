@@ -2,9 +2,11 @@ export default function HowItWorks() {
   return (
     <section id="how-it-works" className="py-24 bg-white">
       <div className="container mx-auto px-6 flex flex-col items-center">
-        <div className="text-center mb-12">
-          <span className="text-blue-600 font-semibold">Step by step</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">
+        <div className=" flex flex-col items-center gap-[1rem] text-center mb-12">
+          <span className="font-[500] text-text-blue leading-[100%] md:text-[17.64px] ">
+            Step by step
+          </span>
+          <h2 className="text-3xl md:text-[80.64px] font-[700] text-text-blue">
             How It Works
           </h2>
         </div>

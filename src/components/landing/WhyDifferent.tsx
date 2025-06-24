@@ -1,5 +1,5 @@
-import React, { ReactNode } from "react";
-import { CheckCircle, Zap, MessageCircle, Cpu } from "lucide-react";
+import React, { ReactNode, ReactElement } from "react";
+import { WandSparkles, Zap, AudioLines, Cpu } from "lucide-react";
 
 interface FeatureCardProps {
   icon: ReactNode;
@@ -8,7 +8,7 @@ interface FeatureCardProps {
 
 const features = [
   {
-    icon: <CheckCircle />,
+    icon: <WandSparkles />,
     title: "Encrypted journaling & secure emotional data",
   },
   {
@@ -16,7 +16,7 @@ const features = [
     title: "Built with ElevenLabs, Tavus & Bolt.new",
   },
   {
-    icon: <MessageCircle />,
+    icon: <AudioLines />,
     title: "Voice-led, not form-led",
   },
   {
@@ -30,11 +30,11 @@ export default function WhyDifferent() {
     <section id="why-different" className="py-24 bg-white">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <p className="text-3xl tracking-[-0.89px] md:text-[80.59px] md:leading-[57.92px] font-[700] text-text-blue-900">
             Why it's different
-          </h2>
+          </p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid justify-center gap-[2rem] md:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, index) => (
             <FeatureCard
               key={index}
@@ -50,18 +50,19 @@ export default function WhyDifferent() {
 
 function FeatureCard({ icon, title }: FeatureCardProps) {
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-lg shadow-gray-200/50 text-center">
-      <div className="flex justify-center items-center mb-5">
-        <div className="bg-blue-100/70 p-3 rounded-full">
-          {React.cloneElement(icon as React.ReactElement, {
-            className: "h-7 w-7 text-blue-600",
+    <div className="w-[270px] h-[206px] flex flex-col items-start justify-center gap-[2rem] bg-white p-6 rounded-2xl border border-gray-200/80 shadow-lg/40 shadow-dark ring ring-main text-left">
+      <div className="flex justify-center items-center">
+        <div className=" h-[50px] w-[50px] flex items-center justify-center bg-main backdrop-blur-md rounded-[9px]  ">
+          {React.cloneElement(icon as ReactElement, {
+            className: "h-7 w-7 text-white",
             strokeWidth: 1.5,
           })}
         </div>
       </div>
-      <h3 className="font-semibold text-gray-800 h-12 flex items-center justify-center">
+
+      <p className="font-[400] text-text-blue text-[16px] h-12 flex items-center justify-center md:text-[20px]">
         {title}
-      </h3>
+      </p>
     </div>
   );
 }

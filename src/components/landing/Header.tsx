@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
-import { Zap, Menu, X } from "lucide-react"; // Or any other icon you prefer
+import { Sparkles, Menu, X } from "lucide-react"; // Or any other icon you prefer
 
 import Logo from "../Logo";
 import { useState } from "react";
@@ -32,13 +32,15 @@ export default function Header() {
       className={`w-full ${
         isOpen &&
         " h-dvh bg-black/20 backdrop-blur-2xl transition-all duration-200 ease-in"
-      } py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:flex-row md:justify-center md:gap-0`}
+      } bg-[#CCE1FF] py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:static md:flex-row md:justify-center md:gap-0`}
     >
-      <div className="w-[95%] h-[68px] flex justify-between items-center bg-white mx-auto px-6  rounded-[1rem] shadow-xl/50 shadow-primery/50">
+      <div className="w-[95%] h-[68px] flex justify-between items-center bg-white mx-auto px-6 rounded-[1rem] shadow-xl/50 shadow-primery/50">
         <div className="flex items-center gap-[0.4rem]">
           <Logo />
 
-          <span className="text-2xl font-bold text-gray-900">TherapifyMe</span>
+          <span className="text-[25px] font-bold text-text-blue">
+            TherapifyMe
+          </span>
         </div>
 
         {!isOpen ? (
@@ -70,7 +72,7 @@ function NavList({ className = "" }) {
         <a
           key={item.title}
           href={item.path}
-          className=" font-[600]  text-[16px] text-gray-60 hover:text-blue-600 transition-all duration-300 ease-in-out capitalize md:font-[300] md:text-[18px]  "
+          className=" font-[500] text-[16px] text-text-blue/70 hover:text-text-blue transition-all duration-300 ease-in-out capitalize md:font-[400] md:text-[17.64px] md:tracking-[-0.5px] md:leading-[25.2px]  "
         >
           {item.title}
         </a>
@@ -88,7 +90,7 @@ function CTAButton({ className = "" }) {
       variant="primary"
       className={className}
     >
-      <Zap className="w-4 h-4" />
+      <Sparkles className="w-4 h-4" />
       Get Started
     </Button>
   );

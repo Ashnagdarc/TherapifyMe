@@ -9,9 +9,11 @@
   --color-black: rgb(17 17 17);
   --color-grey: rgb(205 205 205);
   --color-grey-2: rgb(250 251 253);
-  --color-main: rgb(23 81 209);
+  --color-main: #0093e5;
+  --color-dark: #0a142f;
   --color-primery: rgb(0 13 38);
   --color-red: rgb(255 60 60);
+  --color-text-blue: rgba(34, 46, 83, 1);
   --color-text-black: rgb(57 53 64);
   --color-white: rgb(255 255 255);
   --color-white-2: rgb(255 255 255);
