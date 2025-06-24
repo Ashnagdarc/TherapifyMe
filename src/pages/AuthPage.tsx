@@ -2,7 +2,7 @@ import React, { useState, Dispatch, SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { ValidationUtils } from "../utils/validation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 
 import Logo from "../components/Logo";
 
@@ -187,9 +187,11 @@ function FormContainer() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-white text-left py-4 px-6 rounded-lg font-[400] bg-[linear-gradient(90deg,_#2360E6_-22.42%,_#54BEEB_41.76%,_rgba(254,255,255,0.8)_117.73%)] focus:ring-4 focus:ring-blue-200 transition-all duration-300 ease-in disabled:opacity-50 cursor-pointer"
+            className="w-full flex items-center justify-between text-white text-left py-4 px-6 rounded-lg font-[400] bg-[linear-gradient(to_right,_#2360E6_-22.42%,_#54BEEB_41.76%,_rgba(254,255,255,0.8)_117.73%)] shadow-xl/20 shadow-black hover:bg-[linear-gradient(to_left,_#2360E6_-22.42%,_#54BEEB_41.76%,_rgba(254,255,255,0.8)_117.73%)] hover:text-text-black focus:ring-4 focus:ring-blue-200 transition-all duration-300 ease-in disabled:opacity-50 cursor-pointer"
           >
-            {loading ? "Please wait..." : isSignUp ? "Sign up today" : "Log In"}
+            {loading ? "Please wait..." : isSignUp ? "Sign up today" : "Login"}
+
+            <LogIn />
           </button>
         </form>
 
@@ -438,16 +440,15 @@ function ToggleLink({ isSignUp, setIsSignUp }: ToggleLinkProps) {
 
 function HeroBackgroundComponent() {
   return (
-    <div className="hidden lg:flex relative pr-[1.5rem]">
+    <div className="hidden lg:flex-1 lg:flex relative">
       <div
-        className="w-[601px] h-[801px] self-end bg-cover bg-center bg-no-repeat relative rounded-[1rem] overflow-hidden"
+        className="w-full h-[801px] self-end bg-cover bg-center bg-no-repeat relative rounded-[1rem] overflow-hidden"
         style={{
           backgroundImage: `url('./Rectangle 7.png')`,
         }}
       >
         {/* Testimonials */}
         <div className="absolute bottom-8 left-8 right-8">
-          {/* Main container matching Figma specs */}
           <div className="flex flex-row items-center gap-2 w-[274px] h-[43.61px]">
             {/* Avatars container */}
             <div className="flex flex-row justify-center items-center w-[125.77px] h-[35.93px] relative">
@@ -513,7 +514,7 @@ function HeroBackgroundComponent() {
             </div>
 
             {/* Rating section */}
-            <div className="flex flex-col items-start gap-[5.61px] w-[140.37px] h-[43.61px]">
+            <div className="flex items-center gap-[1rem] w-[140.37px] h-[43.61px]">
               {/* Stars and rating */}
               <div className="flex flex-row items-end gap-[11.23px] w-[140.37px] h-[19px]">
                 {/* Stars */}
