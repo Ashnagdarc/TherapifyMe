@@ -31,8 +31,8 @@ export default function Header() {
     <header
       className={`w-full ${
         isOpen &&
-        " h-dvh bg-black/20 backdrop-blur-2xl transition-all duration-200 ease-in"
-      } bg-[#CCE1FF] py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:flex-row md:justify-center md:gap-0`}
+        " h-dvh bg-sky-blue/30 backdrop-blur-2xl transition-all duration-200 ease-in"
+      } bg-sky-blue py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:flex-row md:justify-center md:gap-0`}
     >
       <div className="w-[95%] h-[68px] flex justify-between items-center bg-white mx-auto px-6 rounded-[1rem] shadow-xl/50 shadow-primery/50">
         <div className="flex items-center gap-[0.4rem]">

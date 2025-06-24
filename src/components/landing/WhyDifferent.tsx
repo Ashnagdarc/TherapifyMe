@@ -52,19 +52,21 @@ export default function WhyDifferent() {
 
 function FeatureCard({ icon, title }: FeatureCardProps) {
   return (
-    <div className="w-[270px] h-[206px] flex flex-col items-start justify-center gap-[2rem] bg-white p-6 rounded-2xl border border-gray-200/80 shadow-lg/40 shadow-dark ring ring-main text-left">
-      <div className="flex justify-center items-center">
-        <div className=" h-[50px] w-[50px] flex items-center justify-center bg-main backdrop-blur-md rounded-[9px]  ">
-          {React.cloneElement(icon as ReactElement, {
-            className: "h-7 w-7 text-white",
-            strokeWidth: 1.5,
-          })}
+    <div className=" px-[1px] pb-[1px] rounded-2xl bg-[linear-gradient(to_bottom,_#ffffff,_#0093e5)] shadow-lg/40 shadow-dark">
+      <div className="w-[270px] h-[206px] flex flex-col items-start justify-center gap-[2rem] p-6 text-left bg-white rounded-2xl ">
+        <div className="flex justify-center items-center">
+          <div className=" h-[50px] w-[50px] flex items-center justify-center bg-main backdrop-blur-md rounded-[9px]  ">
+            {React.cloneElement(icon as ReactElement, {
+              className: "h-7 w-7 text-white",
+              strokeWidth: 1.5,
+            })}
+          </div>
         </div>
-      </div>
 
-      <p className="font-[400] text-text-blue text-[16px] h-12 flex items-center justify-center md:text-[20px]">
-        {title}
-      </p>
+        <p className="font-[400] text-text-blue text-[16px] h-12 flex items-center justify-center md:text-[20px]">
+          {title}
+        </p>
+      </div>
     </div>
   );
 }
