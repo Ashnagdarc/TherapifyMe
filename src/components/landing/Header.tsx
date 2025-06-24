@@ -1,47 +1,97 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
-import { Zap } from "lucide-react"; // Or any other icon you prefer
+import { Sparkles, Menu, X } from "lucide-react"; // Or any other icon you prefer
+
+import Logo from "../Logo";
+
+const navList = [
+  {
+    path: "#home",
+    title: "Home",
+  },
+  {
+    path: "#how-it-works",
+    title: "How it works",
+  },
+  {
+    path: "#why-different",
+    title: "Why it's different",
+  },
+];
 
 export default function Header() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  function handleNavToggle() {
+    setIsOpen(!isOpen);
+  }
+
+  return (
+    <header
+      className={`w-full ${
+        isOpen &&
+        " h-dvh bg-black/20 backdrop-blur-2xl transition-all duration-200 ease-in"
+      } bg-[#CCE1FF] py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:flex-row md:justify-center md:gap-0`}
+    >
+      <div className="w-[95%] h-[68px] flex justify-between items-center bg-white mx-auto px-6 rounded-[1rem] shadow-xl/50 shadow-primery/50">
+        <div className="flex items-center gap-[0.4rem]">
+          <Logo />
+
+          <span className="text-[25px] font-bold text-text-blue">
+            TherapifyMe
+          </span>
+        </div>
+
+        {!isOpen ? (
+          <Menu className="md:hidden" onClick={handleNavToggle} />
+        ) : (
+          <X className="md:hidden" onClick={handleNavToggle} />
+        )}
+
+        <NavList className="hidden md:flex items-center gap-[2rem]" />
+
+        <CTAButton className="hidden md:flex gap-[0.5rem] bg-gray-900 hover:bg-gray-800" />
+      </div>
+
+      {isOpen && (
+        <div className="w-[80%] h-[35svh] flex flex-col items-center justify-between py-[1rem] bg-white rounded-[0.6rem] shadow-xl/50 shadow-black/70 md:hidden">
+          <NavList className="flex flex-col items-center gap-[1rem]" />
+
+          <CTAButton className="flex items-center gap-[0.5rem] bg-gray-900 hover:bg-gray-800 " />
+        </div>
+      )}
+    </header>
+  );
+}
+
+function NavList({ className = "" }) {
+  return (
+    <nav className={className}>
+      {navList.map((item) => (
+        <a
+          key={item.title}
+          href={item.path}
+          className=" font-[500] text-[16px] text-text-blue/70 hover:text-text-blue transition-all duration-300 ease-in-out capitalize md:font-[400] md:text-[17.64px] md:tracking-[-0.5px] md:leading-[25.2px]  "
+        >
+          {item.title}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function CTAButton({ className = "" }) {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 bg-white/80 backdrop-blur-md z-50 border-b border-gray-200">
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          {/* Placeholder for logo */}
-          <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
-          <span className="text-2xl font-bold text-gray-900">TherapifyMe</span>
-        </div>
-        <nav className="hidden md:flex items-center space-x-8">
-          <a
-            href="#home"
-            className="text-gray-600 hover:text-blue-600 transition"
-          >
-            Home
-          </a>
-          <a
-            href="#how-it-works"
-            className="text-gray-600 hover:text-blue-600 transition"
-          >
-            How it works
-          </a>
-          <a
-            href="#why-different"
-            className="text-gray-600 hover:text-blue-600 transition"
-          >
-            Why it's different
-          </a>
-        </nav>
-        <Button
-          onClick={() => navigate("/auth")}
-          variant="primary"
-          className="hidden md:flex bg-gray-900 hover:bg-gray-800"
-        >
-          <Zap className="w-4 h-4 mr-2" />
-          Get Started
-        </Button>
-      </div>
-    </header>
+    <Button
+      onClick={() => navigate("/auth")}
+      variant="primary"
+      className={className}
+    >
+      <Sparkles className="w-4 h-4" />
+      Get Started
+    </Button>
   );
 }

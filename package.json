@@ -13,11 +13,13 @@
     "@radix-ui/react-select": "^2.2.5",
     "@supabase/supabase-js": "^2.50.0",
     "clsx": "2.1.1",
+    "framer-motion": "^12.19.1",
     "lucide-react": "^0.453.0",
     "ogl": "^1.0.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.49.3",
+    "react-intersection-observer": "^9.16.0",
     "react-router-dom": "^6.8.1",
     "tailwind-merge": "2.5.4",
     "zod": "^3.22.4"

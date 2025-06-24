@@ -1,14 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-lato: "Lato", sans-serif;
+
   /* Custom color palette from your original design */
   --color-black: rgb(17 17 17);
   --color-grey: rgb(205 205 205);
   --color-grey-2: rgb(250 251 253);
-  --color-main: rgb(23 81 209);
+  --color-main: #0093e5;
+  --color-dark: #0a142f;
   --color-primery: rgb(0 13 38);
   --color-red: rgb(255 60 60);
+  --color-text-blue: rgba(34, 46, 83, 1);
   --color-text-black: rgb(57 53 64);
   --color-white: rgb(255 255 255);
   --color-white-2: rgb(255 255 255);
