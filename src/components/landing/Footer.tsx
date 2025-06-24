@@ -8,6 +8,8 @@ const socialIcons = [
   { icon: <Twitter /> },
 ];
 
+const year = new Date().getFullYear();
+
 export default function Footer() {
   return (
     <footer className="py-12 bg-white border-t border-gray-200">
@@ -21,7 +23,7 @@ export default function Footer() {
         </div>
 
         <span className="text-dark text-[12.26px] mb-4 md:mb-0">
-          &copy; 2025 TherapifyMe. All rights reserved.
+          &copy; {year} TherapifyMe. All rights reserved.
         </span>
 
         <div className="flex items-center gap-[1.3rem]">
