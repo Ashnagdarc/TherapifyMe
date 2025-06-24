@@ -53,7 +53,7 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  return user ? <>{children}</> : <Navigate to="/auth" replace />;
+  return user ? <Layout>{children}</Layout> : <Navigate to="/auth" replace />;
 }
 
 function PublicRoute({ children }: { children: ReactNode }) {

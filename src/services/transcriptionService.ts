@@ -1,5 +1,6 @@
 export class TranscriptionService {
   private static readonly OPENAI_API_URL = 'https://api.openai.com/v1/audio/transcriptions';
+  private static readonly ASSEMBLYAI_API_URL = 'https://api.assemblyai.com/v2';
 
   static async transcribeAudio(audioBlob: Blob): Promise<string> {
     console.log('TranscriptionService: Starting transcription process');
@@ -14,11 +15,19 @@ export class TranscriptionService {
         throw new Error('Invalid audio blob provided');
       }
 
-      // For now, we'll use a simple simulation
-      // In production, you'd want to use OpenAI Whisper, ElevenLabs, or similar
-      const result = await this.transcribeWithSimulation(audioBlob);
-      console.log('TranscriptionService: Transcription completed successfully');
-      return result;
+      const assemblyAIKey = import.meta.env.VITE_ASSEMBLYAI_API_KEY;
+
+      if (assemblyAIKey) {
+        console.log('TranscriptionService: Using AssemblyAI for real transcription');
+        const result = await this.transcribeWithAssemblyAI(audioBlob, assemblyAIKey);
+        console.log('TranscriptionService: Real transcription completed successfully');
+        return result;
+      } else {
+        console.warn('TranscriptionService: No AssemblyAI key found, falling back to simulation');
+        const result = await this.transcribeWithSimulation(audioBlob);
+        console.log('TranscriptionService: Simulation transcription completed');
+        return result;
+      }
     } catch (error) {
       console.error('TranscriptionService: Transcription error:', error);
       throw new Error(`Failed to transcribe audio: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -64,6 +73,85 @@ export class TranscriptionService {
         }
       }, processingTime);
     });
+  }
+
+  // Real transcription using AssemblyAI
+  private static async transcribeWithAssemblyAI(audioBlob: Blob, apiKey: string): Promise<string> {
+    try {
+      // Step 1: Upload audio file to AssemblyAI
+      console.log('TranscriptionService: Uploading audio to AssemblyAI...');
+      const uploadResponse = await fetch(`${this.ASSEMBLYAI_API_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          'authorization': apiKey,
+          'content-type': 'application/octet-stream',
+        },
+        body: audioBlob,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload audio: ${uploadResponse.statusText}`);
+      }
+
+      const { upload_url } = await uploadResponse.json();
+      console.log('TranscriptionService: Audio uploaded, starting transcription...');
+
+      // Step 2: Request transcription
+      const transcriptResponse = await fetch(`${this.ASSEMBLYAI_API_URL}/transcript`, {
+        method: 'POST',
+        headers: {
+          'authorization': apiKey,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          audio_url: upload_url,
+          language_code: 'en_us',
+        }),
+      });
+
+      if (!transcriptResponse.ok) {
+        throw new Error(`Failed to request transcription: ${transcriptResponse.statusText}`);
+      }
+
+      const { id } = await transcriptResponse.json();
+      console.log(`TranscriptionService: Transcription job created with ID: ${id}`);
+
+      // Step 3: Poll for completion
+      let transcriptData;
+      let attempts = 0;
+      const maxAttempts = 30; // 30 seconds max wait time
+
+      while (attempts < maxAttempts) {
+        const pollResponse = await fetch(`${this.ASSEMBLYAI_API_URL}/transcript/${id}`, {
+          headers: {
+            'authorization': apiKey,
+          },
+        });
+
+        if (!pollResponse.ok) {
+          throw new Error(`Failed to check transcription status: ${pollResponse.statusText}`);
+        }
+
+        transcriptData = await pollResponse.json();
+
+        if (transcriptData.status === 'completed') {
+          console.log('TranscriptionService: Transcription completed successfully');
+          return transcriptData.text || 'No speech detected in the recording.';
+        } else if (transcriptData.status === 'error') {
+          throw new Error(`Transcription failed: ${transcriptData.error}`);
+        }
+
+        // Wait 1 second before next poll
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
+        console.log(`TranscriptionService: Polling attempt ${attempts}/${maxAttempts}, status: ${transcriptData.status}`);
+      }
+
+      throw new Error('Transcription timed out after 30 seconds');
+    } catch (error) {
+      console.error('TranscriptionService: AssemblyAI error:', error);
+      throw error;
+    }
   }
 
   // Future implementation for OpenAI Whisper

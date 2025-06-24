@@ -1,7 +1,14 @@
-export default function TherapySession() {
+import WeeklyVideoSection from "../WeeklyVideoSection";
+
+interface TherapySessionProps {
+  userId: string;
+}
+
+export default function TherapySession({ userId }: TherapySessionProps) {
   return (
-    <div className="bg-gray-800/50 p-4 rounded-lg h-32 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-dashed border-gray-600 rounded-full animate-spin"></div>
+    <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/20 p-3 rounded-xl border border-indigo-500/20 backdrop-blur-sm">
+      <h4 className="text-xs text-indigo-300 font-medium mb-2 text-center">Weekly Video</h4>
+      <WeeklyVideoSection userId={userId} />
     </div>
   );
 }

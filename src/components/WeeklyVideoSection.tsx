@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { WeeklyVideoService } from "../services/weeklyVideoService";
-import { WeeklyVideoPlayer } from "./WeeklyVideoPlayer";
+import WeeklyVideoPlayer from "./WeeklyVideoPlayer";
 import { TavusVideo } from "../types/database";
 import { Button } from "./ui/Button";
 import { Play, Loader2, Calendar } from "lucide-react";
