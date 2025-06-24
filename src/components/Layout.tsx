@@ -25,6 +25,10 @@ interface DashboardContainerProps {
   children: React.ReactNode;
 }
 
+interface DashboardNavContainerProps {
+  onSignOut?: any;
+}
+
 interface ProfileAvatarProps {
   onProfileToggle?: any;
 }
@@ -35,6 +39,7 @@ interface SubNavProps {
 
 interface UserProfileNavProps {
   onProfileToggle?: any;
+  signOut?: any;
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -160,9 +165,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="w-full min-h-svh flex flex-row bg-sky-blue/40 font-lato text-text-blue">
       <DashboardContainer />
 
-      <div className="flex-1">{children}</div>
+      <main className="flex-1 h-svh overflow-scroll">{children}</main>
 
-      <DashboardNavContainer />
+      <DashboardNavContainer onSignOut={handleSignOut} />
     </div>
   );
 }
@@ -226,7 +231,7 @@ function DashboardContainer({ children }: DashboardContainerProps) {
   );
 }
 
-function DashboardNavContainer() {
+function DashboardNavContainer({ onSignOut }: DashboardNavContainerProps) {
   const [openNav, setOpenNav] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
 
@@ -253,7 +258,10 @@ function DashboardNavContainer() {
       {openNav && <SubNav onToggle={handleNavToggle} />}
 
       {openProfile && (
-        <UserProfileNav onProfileToggle={handleProfileToggleNav} />
+        <UserProfileNav
+          signOut={onSignOut}
+          onProfileToggle={handleProfileToggleNav}
+        />
       )}
     </section>
   );
@@ -290,10 +298,10 @@ function SubNav({ onToggle }: SubNavProps) {
   );
 }
 
-function UserProfileNav({ onProfileToggle }: UserProfileNavProps) {
+function UserProfileNav({ signOut, onProfileToggle }: UserProfileNavProps) {
   return (
-    <div className=" w-[225px] h-[163px] flex flex-col items-start gap-[1rem] bg-grey-2 p-[1rem] rounded-[1rem] shadow-xl/30 shadow-black ">
-      <div className="flex items-center gap-[0.6rem]">
+    <div className=" w-[225px] h-[170px] flex flex-col items-start gap-[1rem] bg-grey-2 p-[1rem] rounded-[1rem] shadow-xl/30 shadow-black ">
+      <div className="flex items-center gap-[0.6rem] mb-[1rem] ">
         <span onClick={onProfileToggle}>
           <ProfileAvatar />
         </span>
@@ -304,16 +312,20 @@ function UserProfileNav({ onProfileToggle }: UserProfileNavProps) {
 
       <div className="flex items-center gap-[0.6rem]">
         <Settings />
-        <a href="#" className="cursor-pointer hover:text-text-black">
+        <NavLink
+          to="/settings"
+          className="cursor-pointer hover:text-text-black"
+        >
           Settings
-        </a>
+        </NavLink>
       </div>
 
-      <div className="flex items-center gap-[0.6rem]">
+      <div
+        className="flex items-center gap-[0.6rem] cursor-pointer"
+        onClick={signOut}
+      >
         <LogOut />
-        <a href="#" className="cursor-pointer hover:text-text-black">
-          Log Out
-        </a>
+        <p className=" hover:text-text-black">Log Out</p>
       </div>
     </div>
   );
