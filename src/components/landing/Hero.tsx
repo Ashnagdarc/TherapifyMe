@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Sparkles } from "lucide-react";
 
+import FadeInOnScroll from "../ui/FadeIn";
+
 //imported image assets
 import userAvatar1 from "../../assets/images/LandingPage/avatar1.png";
 import userAvatar2 from "../../assets/images/LandingPage/avatar2.png";
@@ -21,7 +23,7 @@ export default function Hero() {
   const navigate = useNavigate();
 
   return (
-    <section
+    <FadeInOnScroll
       id="home"
       className="py-20 md:py-28 bg-[linear-gradient(to_bottom,_#CCE1FF_0%,_#CCE1FF_30%,_#E0EEFF_100%)]"
     >
@@ -71,6 +73,6 @@ export default function Hero() {
           />
         </div>
       </div>
-    </section>
+    </FadeInOnScroll>
   );
 }

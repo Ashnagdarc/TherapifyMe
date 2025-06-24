@@ -2,11 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Sparkles } from "lucide-react";
 
+import FadeInOnScroll from "../ui/FadeIn";
+
 export default function ReadyWhenYouAre() {
   const navigate = useNavigate();
 
   return (
-    <section className="py-24 bg-gray-50 dotted-background">
+    <FadeInOnScroll className="py-24 bg-gray-50 dotted-background">
       <div className="container mx-auto px-6 text-center">
         <p className="text-3xl md:text-[67.24px] font-bold text-text-blue">
           Ready when you are.
@@ -25,6 +27,6 @@ export default function ReadyWhenYouAre() {
           Get Started
         </Button>
       </div>
-    </section>
+    </FadeInOnScroll>
   );
 }

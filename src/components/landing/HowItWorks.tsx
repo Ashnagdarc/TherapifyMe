@@ -1,6 +1,8 @@
+import FadeInOnScroll from "../ui/FadeIn";
+
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 bg-white">
+    <FadeInOnScroll id="how-it-works" className="py-24 bg-white">
       <div className="container mx-auto px-6 flex flex-col items-center">
         <div className=" flex flex-col items-center gap-[1rem] text-center mb-12">
           <span className="font-[500] text-text-blue leading-[100%] md:text-[17.64px] ">
@@ -16,6 +18,6 @@ export default function HowItWorks() {
           className="max-w-4xl w-full h-auto"
         />
       </div>
-    </section>
+    </FadeInOnScroll>
   );
 }

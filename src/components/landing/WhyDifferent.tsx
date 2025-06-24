@@ -1,6 +1,8 @@
 import React, { ReactNode, ReactElement } from "react";
 import { WandSparkles, Zap, AudioLines, Cpu } from "lucide-react";
 
+import FadeInOnScroll from "../ui/FadeIn";
+
 interface FeatureCardProps {
   icon: ReactNode;
   title: string;
@@ -27,7 +29,7 @@ const features = [
 
 export default function WhyDifferent() {
   return (
-    <section id="why-different" className="py-24 bg-white">
+    <FadeInOnScroll id="why-different" className="py-24 bg-white">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <p className="text-3xl tracking-[-0.89px] md:text-[80.59px] md:leading-[57.92px] font-[700] text-text-blue-900">
@@ -44,7 +46,7 @@ export default function WhyDifferent() {
           ))}
         </div>
       </div>
-    </section>
+    </FadeInOnScroll>
   );
 }
 
