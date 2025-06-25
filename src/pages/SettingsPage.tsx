@@ -394,11 +394,10 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-grey-2 text-gray-200 p-4 sm:p-6 lg:p-8">
       <div className="w-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 mt-[1rem] lg:mt-0 ">
           <Button
-            variant="ghost"
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 text-gray-400 hover:text-white"
+            className="flex items-center gap-2 text-grey-2 text-[12px] hover:text-grey-2/70 md:text-[16px]  "
           >
             <ArrowLeft className="w-5 h-5" /> Back to Dashboard
           </Button>
