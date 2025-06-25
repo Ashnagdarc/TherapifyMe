@@ -67,7 +67,7 @@ export default function WeeklyVideoSection({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+        <Loader2 className="w-6 h-6 text-main animate-spin" />
       </div>
     );
   }
@@ -90,17 +90,20 @@ export default function WeeklyVideoSection({
 
   if (!weeklyVideo) {
     return (
-      <div className="text-center py-6">
-        <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+      <div className="flex flex-col items-center text-center gap-[1rem]">
+        <div className="w-12 h-12 bg-purple-200/20 rounded-full flex items-center justify-center mx-auto mb-3">
           <Calendar className="w-6 h-6 text-purple-400" />
         </div>
-        <p className="text-gray-400 text-sm mb-3">
+
+        <p className="text-grey-2 text-sm mb-3">
           No therapy video for week {currentWeek} yet
         </p>
-        <p className="text-gray-500 text-xs mb-4">
+
+        <p className="text-grey-2/60 text-xs mb-4">
           Complete a few check-ins this week to generate your personalized
           therapy session
         </p>
+
         <Button
           onClick={handleGenerateVideo}
           disabled={generating}

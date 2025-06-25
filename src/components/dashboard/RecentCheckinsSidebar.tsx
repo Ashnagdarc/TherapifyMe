@@ -14,7 +14,7 @@ const moodEmojis: { [key: string]: string } = {
   stressed: "😓",
   frustrated: "😤",
   angry: "😠",
-  overwhelmed: "🤯"
+  overwhelmed: "🤯",
 };
 
 const moodColors: { [key: string]: string } = {
@@ -27,7 +27,7 @@ const moodColors: { [key: string]: string } = {
   stressed: "text-red-400",
   frustrated: "text-red-500",
   angry: "text-red-600",
-  overwhelmed: "text-pink-400"
+  overwhelmed: "text-pink-400",
 };
 
 export default function RecentCheckinsSidebar({
@@ -36,7 +36,9 @@ export default function RecentCheckinsSidebar({
   const formatTimeAgo = (dateString: string) => {
     const now = new Date();
     const past = new Date(dateString);
-    const diffInMinutes = Math.floor((now.getTime() - past.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.floor(
+      (now.getTime() - past.getTime()) / (1000 * 60)
+    );
 
     if (diffInMinutes < 1) return "Now";
     if (diffInMinutes < 60) return `${diffInMinutes}m`;
@@ -49,20 +51,27 @@ export default function RecentCheckinsSidebar({
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-600/10 to-slate-700/20 p-3 rounded-xl border border-slate-600/20 backdrop-blur-sm">
-      <h4 className="text-xs text-slate-300 font-medium mb-2 text-center">
+    <div className="bg-gradient-to-br from-slate-600 to-slate-400 p-3 rounded-xl  backdrop-blur-sm shadow-lg/40 shadow-black">
+      <h4 className="text-xs text-grey-2 font-medium mb-2 text-center">
         Recent Check-ins
       </h4>
       {entries && entries.length > 0 ? (
         <div className="space-y-1.5">
           {entries.slice(0, 3).map((entry) => (
-            <div key={entry.id} className="flex items-center justify-between p-2 bg-slate-800/30 rounded-lg border border-slate-600/20">
+            <div
+              key={entry.id}
+              className="flex items-center justify-between p-2 bg-slate-800/30 rounded-lg border border-slate-600/20"
+            >
               <div className="flex items-center space-x-2">
                 <span className="text-sm">
                   {moodEmojis[entry.mood_tag] || "💭"}
                 </span>
                 <div>
-                  <span className={`text-xs font-medium capitalize ${moodColors[entry.mood_tag] || "text-slate-300"}`}>
+                  <span
+                    className={`text-xs font-medium capitalize ${
+                      moodColors[entry.mood_tag] || "text-slate-300"
+                    }`}
+                  >
                     {entry.mood_tag}
                   </span>
                   <p className="text-xs text-slate-400">

@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { AnalyticsService, DashboardData } from "../services/analyticsService";
+import { AmbientMusicService } from "../services/ambientMusicService";
+
+import DashboardSidebar from "./dashboard/DashboardSidebar";
 import { Button } from "./ui/Button";
 
 import Logo from "./Logo";
@@ -23,6 +27,10 @@ import {
 
 interface DashboardContainerProps {
   children: React.ReactNode;
+  dashboardData: DashboardData | null;
+  loading: boolean;
+  profile: User | null;
+  isRefreshing: boolean;
 }
 
 interface DashboardNavContainerProps {
@@ -43,28 +51,61 @@ interface UserProfileNavProps {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(true);
 
-  const handleSignOut = async () => {
+  const { profile, loading: authLoading } = useAuth();
+  const { signOut } = useAuth();
+
+  const navigate = useNavigate();
+
+  const fetchDashboardData = useCallback(async () => {
+    if (!profile) return;
+
+    try {
+      setIsRefreshing(true);
+      const analyticsService = AnalyticsService.getInstance();
+      const data = await analyticsService.getDashboardData(profile.id);
+      setDashboardData(data);
+      setLastUpdated(new Date());
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch dashboard data", error);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (authLoading || !profile) return;
+
+    fetchDashboardData();
+    AmbientMusicService.initialize();
+
+    setTimeout(() => {
+      AmbientMusicService.startMusic();
+    }, 1000);
+  }, [profile, authLoading, fetchDashboardData]);
+
+  useEffect(() => {
+    if (!profile || loading) return;
+    const interval = setInterval(() => {
+      fetchDashboardData();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [profile, loading, fetchDashboardData]);
+
+  async function handleSignOut() {
     await signOut();
     navigate("/auth");
-  };
-
-  const navLinks = [
-    {
-      to: "/dashboard",
-      icon: <LayoutDashboard className="w-5 h-5" />,
-      text: "Dashboard",
-    },
-    { to: "/journal", icon: <BookOpen className="w-5 h-5" />, text: "Journal" },
-    {
-      to: "/settings",
-      icon: <Settings className="w-5 h-5" />,
-      text: "Settings",
-    },
-  ];
+  }
 
   return (
     // <div className="min-h-screen bg-gray-900 text-white font-sans">
@@ -163,7 +204,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     // Recreated dashboard layout
 
     <div className="w-full min-h-svh flex flex-row bg-sky-blue/40 font-lato text-text-blue">
-      <DashboardContainer />
+      <DashboardContainer
+        dashboardData={dashboardData}
+        loading={loading}
+        profile={profile}
+        isRefreshing={isRefreshing}
+      />
 
       <main className="flex-1 h-svh overflow-scroll">{children}</main>
 
@@ -172,7 +218,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function DashboardContainer({ children }: DashboardContainerProps) {
+function DashboardContainer({
+  dashboardData,
+  loading,
+  isRefreshing,
+  profile,
+}: DashboardContainerProps) {
   const [openDash, setOpenDash] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -226,7 +277,13 @@ function DashboardContainer({ children }: DashboardContainerProps) {
         </div>
       )}
 
-      {openDash && children}
+      {openDash && (
+        <DashboardSidebar
+          dashboardData={dashboardData}
+          loading={loading || isRefreshing}
+          userId={profile.id}
+        />
+      )}
     </section>
   );
 }

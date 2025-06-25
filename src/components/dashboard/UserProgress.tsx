@@ -1,12 +1,12 @@
 interface UserProgressProps {
   stats:
-  | {
-    totalEntries: number;
-    activeDays: number;
-    longestStreak: number;
-  }
-  | null
-  | undefined;
+    | {
+        totalEntries: number;
+        activeDays: number;
+        longestStreak: number;
+      }
+    | null
+    | undefined;
 }
 
 export default function UserProgress({ stats }: UserProgressProps) {
@@ -22,7 +22,7 @@ export default function UserProgress({ stats }: UserProgressProps) {
       suffix: "",
       progress: entriesProgress,
       color: "from-blue-400 to-blue-600",
-      icon: "📝"
+      icon: "📝",
     },
     {
       label: "Active Days",
@@ -30,7 +30,7 @@ export default function UserProgress({ stats }: UserProgressProps) {
       suffix: "",
       progress: activeDaysProgress,
       color: "from-emerald-400 to-emerald-600",
-      icon: "📅"
+      icon: "📅",
     },
     {
       label: "Best Streak",
@@ -38,23 +38,27 @@ export default function UserProgress({ stats }: UserProgressProps) {
       suffix: "d",
       progress: streakProgress,
       color: "from-purple-400 to-purple-600",
-      icon: "🔥"
-    }
+      icon: "🔥",
+    },
   ];
 
   return (
-    <div className="bg-gradient-to-br from-slate-700/10 to-slate-800/20 p-3 rounded-xl border border-slate-600/20 backdrop-blur-sm">
-      <h4 className="text-xs text-slate-300 font-medium mb-2 text-center">Your Progress</h4>
-      <div className="space-y-2">
+    <div className="w-full flex flex-col items-center gap-[1rem] bg-gradient-to-br from-slate-600 to-slate-800 p-3 rounded-xl borderbackdrop-blur-sm shadow-lg/40 shadow-black">
+      <h4 className="text-xs text-slate-300 font-medium text-center">
+        Your Progress
+      </h4>
+
+      <div className="w-full flex flex-col items-center gap-[1rem]">
         {progressItems.map((item, index) => (
-          <div key={index} className="space-y-1">
+          <div key={index} className="w-full flex flex-col gap-[0.5rem] ">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-1.5">
                 <span className="text-xs">{item.icon}</span>
                 <span className="text-xs text-slate-300">{item.label}</span>
               </div>
               <span className="text-xs font-semibold text-slate-100">
-                {item.value}{item.suffix}
+                {item.value}
+                {item.suffix}
               </span>
             </div>
 
@@ -70,12 +74,14 @@ export default function UserProgress({ stats }: UserProgressProps) {
       </div>
 
       {/* Summary badge */}
-      <div className="mt-2 p-2 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 rounded-lg border border-emerald-500/20">
+      <div className="p-2 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 rounded-lg border border-emerald-500/20">
         <div className="text-center">
           <span className="text-xs text-emerald-300 font-medium">
-            {stats?.totalEntries === 0 ? "🌱 Start!" :
-              stats?.totalEntries && stats.totalEntries >= 10 ? "🎉 Great!" :
-                "📈 Keep going!"}
+            {stats?.totalEntries === 0
+              ? "🌱 Start!"
+              : stats?.totalEntries && stats.totalEntries >= 10
+              ? "🎉 Great!"
+              : "📈 Keep going!"}
           </span>
         </div>
       </div>
