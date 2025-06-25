@@ -430,42 +430,44 @@ export default function SettingsPage() {
           {/* Left Column: Profile & Preferences */}
           <div className="lg:col-span-2 space-y-8">
             {/* User Profile Card */}
-            <div className="bg-gray-800/50 rounded-2xl p-6 shadow-lg border border-gray-700/50">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <User className="w-8 h-8 text-blue-400" />
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl p-6 shadow-2xl/50 shadow-black ">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex flex-col items-start gap-4 md:flex-row ">
+                  <User className="w-8 h-8 text-main " />
                   <h2 className="text-2xl font-semibold text-white">
                     Your Profile
                   </h2>
                 </div>
                 {isEditing ? (
-                  <div className="flex gap-2">
+                  <div className="flex flex-col items-end gap-2 md:flex-row md:items-center">
                     <Button
                       onClick={() => setIsEditing(false)}
                       variant="secondary"
+                      className="shadow-xl/40 shadow-black"
                     >
-                      Cancel
+                      <small>Cancel</small>
                     </Button>
                     <Button
                       onClick={handleSave}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-[0.4rem] shadow-xl/40 shadow-black"
                       disabled={isSaving}
                     >
                       {isSaving ? (
-                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className="h-4 w-4" />
                       )}
-                      Save Changes
+                      <small>Save Changes</small>
                     </Button>
                   </div>
                 ) : (
                   <Button
                     onClick={() => setIsEditing(true)}
                     variant="outline"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 shadow-xl/40 shadow-black "
                   >
-                    <Edit3 className="w-4 h-4" /> Edit Profile
+                    <Edit3 className="w-4 h-4" />
+                    <small>Edit Profile</small>
                   </Button>
                 )}
               </div>
