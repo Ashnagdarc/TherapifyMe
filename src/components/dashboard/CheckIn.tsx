@@ -378,7 +378,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
     setDuration(0);
   }, [audioUrl]);
 
-  const togglePlayback = () => {
+  function togglePlayback() {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
@@ -387,47 +387,44 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
       }
       setIsPlaying(!isPlaying);
     }
-  };
+  }
 
   // Orb display logic
-  const renderOrbContent = () => {
-    switch (step) {
-      case "recording":
-        return <Mic className="w-16 h-16" />;
-      case "reviewing":
-        return <Check className="w-16 h-16" />;
-      case "processing":
-      case "generating":
-        return <Loader2 className="w-16 h-16 animate-spin" />;
-      case "complete":
-        return <Check className="w-16 h-16" />;
-      case "error":
-        return <AlertTriangle className="w-16 h-16" />;
-      default:
-        return <Mic className="w-16 h-16" />;
+  function renderOrbContent() {
+    if (step === "recording") {
+      return <Mic className="w-13 h-13 md:w-16 md:h-16" />;
+    } else if (step === "reviewing") {
+      return <Check className="w-13 h-13 md:w-16 md:h-16" />;
+    } else if (step === "processing" || step === "generating") {
+      return <Loader2 className="w-13 h-13 md:w-16 md:h-16 animate-spin" />;
+    } else if (step === "complete") {
+      return <Check className="w-13 h-13 md:w-16 md:h-16" />;
+    } else if (step === "error") {
+      return <AlertTriangle className="w-13 h-13 md:w-16 md:h-16" />;
+    } else {
+      return <Mic className=" w-13 h-13 md:w-16 md:h-16" />;
     }
-  };
+  }
 
-  const getHelperText = () => {
-    switch (step) {
-      case "idle":
-        return "Tap the orb to start recording your thoughts";
-      case "recording":
-        return "Tap again to stop recording";
-      case "processing":
-        return "Processing audio...";
-      case "generating":
-        return "Generating AI response...";
-      case "complete":
-        return "Check-in completed successfully!";
-      case "error":
-        return error || "An unexpected error occurred. Please try again.";
-      default:
-        return "";
+  function getHelperText() {
+    if (step === "idle") {
+      return "Tap the orb to start recording your thoughts";
+    } else if (step === "recording") {
+      return "Tap again to stop recording";
+    } else if (step === "processing") {
+      return "Processing audio...";
+    } else if (step === "generating") {
+      return "Generating AI response...";
+    } else if (step === "complete") {
+      return "Check-in completed successfully!";
+    } else if (step === "error") {
+      return error || "An unexpected error occurred. Please try again.";
+    } else {
+      return "";
     }
-  };
+  }
 
-  const renderAudioPlayer = () => {
+  function renderAudioPlayer() {
     return (
       <div className="bg-gray-900/70 p-4 rounded-lg mb-6">
         <h3 className="font-semibold mb-3">Your Recording</h3>
@@ -461,9 +458,9 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
         />
       </div>
     );
-  };
+  }
 
-  const renderTranscriptionEditor = () => {
+  function renderTranscriptionEditor() {
     if (!transcription) return null;
 
     // Analyze voice content for display
@@ -523,7 +520,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
         </div>
       </div>
     );
-  };
+  }
 
   function renderMoodSelector() {
     return (
@@ -608,7 +605,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
 
   return (
     <div className="text-center p-4 flex flex-col items-center justify-center h-full">
-      <div className="relative w-96 h-96 mx-auto mb-8">
+      <div className="relative w-[300px] h-96 flex items-center justify-center mb-8 lg:w-96">
         <div
           onClick={handleOrbClick}
           className="cursor-pointer w-[60%] h-full lg:w-full"
@@ -621,15 +618,15 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
                 : "auto",
           }}
         >
-          <Orb {...getOrbProps()} />
+          <Orb {...getOrbProps()} hue={280} />
         </div>
-        <div className="absolute inset-0 flex items-center justify-center text-white pointer-events-none">
+        <div className="w-full absolute inset-0 flex items-center justify-center text-dark/70 pointer-events-none">
           {renderOrbContent()}
         </div>
       </div>
-      <p className="mt-6 text-lg text-gray-300 h-10">{getHelperText()}</p>
+      <p className="mt-6 text-lg text-text-blue h-10">{getHelperText()}</p>
       {processingMessage && (
-        <p className="mt-2 text-sm text-blue-400">{processingMessage}</p>
+        <p className="mt-2 text-sm text-main">{processingMessage}</p>
       )}
     </div>
   );
