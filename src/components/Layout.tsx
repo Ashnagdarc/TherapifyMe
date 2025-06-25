@@ -233,57 +233,72 @@ function DashboardContainer({
 
   return (
     <section
-      className={`h-svh ${
-        !openDash ? "w-[15%] lg:w-[5%]" : "w-[40%] lg:w-[270px]"
-      }  flex flex-col items-center gap-[2rem] py-[1rem] px-[0.5rem] text-[15px] text-black bg-grey-2 absolute z-[99] md:static md:z-[9] md:py-[2rem] md:text-[16px]  transition-all duration-300 ease-in `}
+      className={`${
+        openDash && "w-full absolute z-[99] lg:w-[270px]"
+      } w-[10%] h-full flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
     >
-      <div className="w-full flex items-center justify-between">
+      <div
+        className={`h-svh ${
+          !openDash ? "w-full" : "w-[50%] lg:w-[270px] "
+        }  flex flex-col items-center gap-[2rem] py-[1rem] px-[0.5rem] text-[15px] text-black bg-grey-2  md:py-[2rem] md:text-[16px]  transition-all duration-300 ease-in `}
+      >
+        <div className="w-full flex items-center justify-between">
+          {openDash && (
+            <div className="flex items-center gap-[0.3rem]">
+              <Logo />
+              <p className="hidden md:block font-[600] text-[24px] text-text-blue leading-[100%]">
+                Therapify
+              </p>
+            </div>
+          )}
+
+          <PanelRightOpen
+            className="cursor-pointer"
+            onClick={handleDashToggle}
+          />
+        </div>
+
         {openDash && (
-          <div className="flex items-center gap-[0.3rem]">
-            <Logo />
-            <p className="hidden md:block font-[600] text-[24px] text-text-blue leading-[100%]">
-              Therapify
-            </p>
+          <div
+            className={`w-full flex flex-col items-start gap-[1rem] capitalize ${
+              !openDash ? "opacity-0" : "opacity-100"
+            } transition-opacity delay-100 duration-300 ease-in `}
+          >
+            {/* New Entry button */}
+            <div className="flex items-center gap-[0.5rem] cursor-pointer ">
+              <NotebookPen />
+              <p>New Entry</p>
+            </div>
+
+            {/* Search bar */}
+            <div className=" w-full flex items-center gap-[0.5rem] overflow-hidden ">
+              <Search className="cursor-pointer" />
+
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search Entry"
+                className="w-[70%] focus:outline-main ps-[0.5rem] py-[0.3rem] md:ps-[1rem]"
+              />
+            </div>
           </div>
         )}
 
-        <PanelRightOpen className="cursor-pointer" onClick={handleDashToggle} />
+        {openDash && (
+          <DashboardSidebar
+            dashboardData={dashboardData}
+            loading={loading || isRefreshing}
+            userId={profile.id}
+          />
+        )}
       </div>
 
-      {openDash && (
-        <div
-          className={`w-full flex flex-col items-start gap-[1rem] capitalize ${
-            !openDash ? "opacity-0" : "opacity-100"
-          } transition-opacity delay-100 duration-300 ease-in `}
-        >
-          {/* New Entry button */}
-          <div className="flex items-center gap-[0.5rem] cursor-pointer ">
-            <NotebookPen />
-            <p>New Entry</p>
-          </div>
-
-          {/* Search bar */}
-          <div className=" w-full flex items-center gap-[0.5rem] overflow-hidden ">
-            <Search className="cursor-pointer" />
-
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search Entry"
-              className="w-[70%] focus:outline-main ps-[0.5rem] py-[0.3rem] md:ps-[1rem]"
-            />
-          </div>
-        </div>
-      )}
-
-      {openDash && (
-        <DashboardSidebar
-          dashboardData={dashboardData}
-          loading={loading || isRefreshing}
-          userId={profile.id}
-        />
-      )}
+      <div
+        className={`${
+          !openDash ? "hidden" : "flex"
+        } bg-black/40 w-[60%] h-full lg:hidden`}
+      ></div>
     </section>
   );
 }

@@ -115,7 +115,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-sky-blue/40 font-lato text-text-blue">
+    <div className="min-h-screen bg-sky-blue/20 font-lato text-text-blue">
       {/* Real-time status bar and header */}
       <div className="relative z-10 p-4">
         <div className="container mx-auto flex justify-between items-center">
