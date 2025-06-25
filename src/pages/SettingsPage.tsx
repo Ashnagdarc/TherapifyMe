@@ -31,6 +31,8 @@ import {
 } from "lucide-react";
 import { Input } from "../components/ui/Input";
 
+import DeleteIcon from "../assets/images/DeleteBin.png";
+
 const TIMEZONE_OPTIONS = [
   { value: "UTC", label: "UTC (Coordinated Universal Time)" },
   { value: "America/New_York", label: "Eastern Time (ET)" },
@@ -464,7 +466,7 @@ export default function SettingsPage() {
                   <Button
                     onClick={() => setIsEditing(true)}
                     variant="outline"
-                    className="flex items-center gap-2 shadow-xl/40 shadow-black "
+                    className="flex items-center gap-2 shadow-xl/40 shadow-black hover:text-dark hover:border-dark"
                   >
                     <Edit3 className="w-4 h-4" />
                     <small>Edit Profile</small>
@@ -494,7 +496,7 @@ export default function SettingsPage() {
                       handleInputChange("timezone", e.target.value)
                     }
                     disabled={!isEditing}
-                    className="w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    className="w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white cursor-pointer"
                   >
                     {TIMEZONE_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -507,7 +509,7 @@ export default function SettingsPage() {
             </div>
 
             {/* AI Preferences */}
-            <div className="bg-gray-800/50 rounded-2xl p-6 shadow-lg border border-gray-700/50">
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl p-6 shadow-2xl/40 shadow-black ">
               <div className="flex items-center gap-4 mb-6">
                 <Brain className="w-8 h-8 text-purple-400" />
                 <h2 className="text-2xl font-semibold text-white">
@@ -547,7 +549,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Advanced AI Settings */}
-            <div className="bg-gray-800/50 rounded-2xl p-6 shadow-lg border border-gray-700/50">
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl p-6 shadow-2xl/40 shadow-black">
               <div className="flex items-center gap-4 mb-4">
                 <Zap className="w-8 h-8 text-yellow-400" />
                 <h2 className="text-2xl font-semibold text-white">
@@ -637,7 +639,7 @@ export default function SettingsPage() {
 
           {/* Right Column: Diagnostics & Data */}
           <div className="lg:col-span-1 space-y-8">
-            <div className="bg-gray-800/50 rounded-2xl p-6 shadow-lg border border-gray-700/50">
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl p-6 shadow-2xl/40 shadow-black">
               <div className="flex items-center gap-4 mb-4">
                 <TestTube className="w-8 h-8 text-cyan-400" />
                 <h2 className="text-2xl font-semibold text-white">
@@ -689,7 +691,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="bg-gray-800/50 rounded-2xl p-6 shadow-lg border border-gray-700/50">
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl p-6 shadow-2xl/40 shadow-black">
               <div className="flex items-center gap-4 mb-4">
                 <Shield className="w-8 h-8 text-red-400" />
                 <h2 className="text-2xl font-semibold text-white">
@@ -718,25 +720,30 @@ export default function SettingsPage() {
       </div>
 
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl border border-red-500/50">
-            <div className="flex items-center gap-4">
-              <AlertTriangle className="w-10 h-10 text-red-400" />
-              <h2 className="text-2xl font-bold text-white">
+        <div className=" w-[320px] h-svh flex items-center justify-center bg-black/40 backdrop-blur-xl absolute top-0 z-99 lg:w-[92%] ">
+          <div className=" w-[90%] flex flex-col items-center gap-[1.5rem] bg-grey-2 rounded-2xl p-[1rem] shadow-2xl border border-red-500/50 md:p-[2rem] lg:w-[400px] lg:gap-[2rem] lg:border-[0.3rem] lg:border-red ">
+            <div className="flex flex-col items-center gap-4">
+              <img src={DeleteIcon} alt="delete bin image" />
+
+              <h2 className="text-2xl font-bold text-text-blue text-center">
                 Are you absolutely sure?
               </h2>
             </div>
-            <p className="text-gray-400 mt-4">
+
+            <p className="text-text-blue/70 text-center">
               This action cannot be undone. All of your journal entries, AI
               responses, and personal settings will be permanently deleted.
             </p>
-            <div className="mt-8 flex justify-end gap-4">
+
+            <div className="w-[90%] flex flex-col items-center gap-[1.3rem] lg:w-full lg:flex-row lg:justify-center ">
               <Button
                 variant="secondary"
                 onClick={() => setShowDeleteConfirm(false)}
+                className="w-[90%] md:w-auto"
               >
                 Cancel
               </Button>
+
               <Button variant="destructive" onClick={handleDeleteAccount}>
                 Yes, Delete My Account
               </Button>

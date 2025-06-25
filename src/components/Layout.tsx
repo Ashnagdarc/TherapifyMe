@@ -297,7 +297,7 @@ function DashboardContainer({
       <div
         className={`${
           !openDash ? "hidden" : "flex"
-        } bg-black/40 w-[60%] h-full lg:hidden`}
+        } bg-black/40 backdrop-blur-xl w-[60%] h-full lg:hidden`}
       ></div>
     </section>
   );
