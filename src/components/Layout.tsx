@@ -16,7 +16,7 @@ import {
   Search,
   UserRound,
   PanelRightOpen,
-  ArchiveRestore,
+  Archive,
   Trash2,
   X,
 } from "lucide-react";
@@ -286,7 +286,7 @@ function SubNav({ onToggle }: SubNavProps) {
       </div>
 
       <div className="flex items-center gap-[0.7rem] text-black cursor-pointer">
-        <ArchiveRestore />
+        <Archive />
         <p>Archive</p>
       </div>
 
