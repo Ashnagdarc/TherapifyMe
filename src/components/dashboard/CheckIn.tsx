@@ -141,7 +141,9 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
       setMediaRecorder(recorder);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      setError("Microphone access denied. Please enable microphone permissions.");
+      setError(
+        "Microphone access denied. Please enable microphone permissions."
+      );
       setStep("error");
     }
   };
@@ -154,7 +156,9 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
 
   const processRecording = async (blob: Blob) => {
     setStep("processing");
-    setProcessingMessage("Converting your voice to text with AI transcription...");
+    setProcessingMessage(
+      "Converting your voice to text with AI transcription..."
+    );
     try {
       const text = await TranscriptionService.transcribeAudio(blob);
       setTranscription(text);
@@ -335,8 +339,12 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
               transcription: transcription, // Show original voice transcription
               aiResponse: finalResponse,
               aiResponseAudioUrl,
-              suggestions: ["Take deep breaths", "Stay present", "Practice gratitude"]
-            }
+              suggestions: [
+                "Take deep breaths",
+                "Stay present",
+                "Practice gratitude",
+              ],
+            },
           });
         }, 2000);
       } else {
@@ -345,10 +353,11 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
           resetState();
         }, 2000);
       }
-
     } catch (err: any) {
       console.error("Error in handleSave:", err);
-      setError(err.message || "An unexpected error occurred. Please try again.");
+      setError(
+        err.message || "An unexpected error occurred. Please try again."
+      );
       setStep("error");
     }
   };
@@ -461,17 +470,17 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
     const themes = transcription.toLowerCase().includes("work")
       ? ["work stress"]
       : transcription.toLowerCase().includes("relationship")
-        ? ["relationships"]
-        : transcription.toLowerCase().includes("anxious") ||
-          transcription.toLowerCase().includes("stressed")
-          ? ["anxiety"]
-          : transcription.toLowerCase().includes("happy") ||
-            transcription.toLowerCase().includes("good")
-            ? ["positive mood"]
-            : transcription.toLowerCase().includes("sad") ||
-              transcription.toLowerCase().includes("down")
-              ? ["sadness"]
-              : ["general reflection"];
+      ? ["relationships"]
+      : transcription.toLowerCase().includes("anxious") ||
+        transcription.toLowerCase().includes("stressed")
+      ? ["anxiety"]
+      : transcription.toLowerCase().includes("happy") ||
+        transcription.toLowerCase().includes("good")
+      ? ["positive mood"]
+      : transcription.toLowerCase().includes("sad") ||
+        transcription.toLowerCase().includes("down")
+      ? ["sadness"]
+      : ["general reflection"];
 
     return (
       <div className="space-y-4 mb-6">
@@ -480,15 +489,18 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
           <h3 className="text-emerald-300 font-semibold mb-2 flex items-center gap-2">
             🎤 Voice Analysis
           </h3>
+
           <div className="text-sm text-emerald-200/80 space-y-1">
             <p>
               <strong>Detected themes:</strong> {themes.join(", ")}
             </p>
+
             <p>
               <strong>Length:</strong> ~
               {Math.round(transcription.split(" ").length / 2)} seconds of
               content
             </p>
+
             <p>
               <strong>Status:</strong> Your voice was successfully analyzed for
               AI response
@@ -513,7 +525,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
     );
   };
 
-  const renderMoodSelector = () => {
+  function renderMoodSelector() {
     return (
       <div className="mb-8">
         <h3 className="font-semibold mb-3">How are you feeling?</h3>
@@ -531,7 +543,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
         </Select>
       </div>
     );
-  };
+  }
 
   // Main render logic
   if (step === "reviewing") {
@@ -555,58 +567,56 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
     );
   }
 
-  const getOrbProps = () => {
-    switch (step) {
-      case "recording":
-        return {
-          hue: 0, // Red for recording
-          forceHoverState: true,
-          rotateOnHover: true,
-          hoverIntensity: 0.8,
-        };
-      case "processing":
-      case "generating":
-        return {
-          hue: 60, // Yellow for processing
-          forceHoverState: true,
-          rotateOnHover: true,
-          hoverIntensity: 0.6,
-        };
-      case "complete":
-        return {
-          hue: 120, // Green for complete
-          forceHoverState: true,
-          rotateOnHover: false,
-          hoverIntensity: 0.4,
-        };
-      case "error":
-        return {
-          hue: 0, // Red for error
-          forceHoverState: false,
-          rotateOnHover: false,
-          hoverIntensity: 0.3,
-        };
-      default:
-        return {
-          hue: 220, // Blue for idle/reviewing
-          forceHoverState: false,
-          rotateOnHover: true,
-          hoverIntensity: 0.3,
-        };
+  function getOrbProps() {
+    if (step === "recording") {
+      return {
+        hue: 0, // Red for recording
+        forceHoverState: true,
+        rotateOnHover: true,
+        hoverIntensity: 0.8,
+      };
+    } else if (step === "processing" || step === "generating") {
+      return {
+        hue: 60, // Yellow for processing
+        forceHoverState: true,
+        rotateOnHover: true,
+        hoverIntensity: 0.6,
+      };
+    } else if (step === "complete") {
+      return {
+        hue: 120, // Green for complete
+        forceHoverState: true,
+        rotateOnHover: false,
+        hoverIntensity: 0.4,
+      };
+    } else if (step === "error") {
+      return {
+        hue: 0, // Red for error
+        forceHoverState: false,
+        rotateOnHover: false,
+        hoverIntensity: 0.3,
+      };
+    } else {
+      return {
+        hue: 220, // Blue for idle/reviewing
+        forceHoverState: false,
+        rotateOnHover: true,
+        hoverIntensity: 0.3,
+      };
     }
-  };
+  }
 
   return (
     <div className="text-center p-4 flex flex-col items-center justify-center h-full">
       <div className="relative w-96 h-96 mx-auto mb-8">
         <div
           onClick={handleOrbClick}
-          className="cursor-pointer w-full h-full"
+          className="cursor-pointer w-[60%] h-full lg:w-full"
           style={{
             pointerEvents:
               step === "processing" ||
-                step === "generating" ||
-                step === "complete"
+              step === "generating" ||
+              step === "complete"
                 ? "none"
                 : "auto",
           }}

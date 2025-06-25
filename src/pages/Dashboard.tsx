@@ -115,7 +115,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-sky-blue/20 font-lato text-text-blue">
+    <div className=" w-[350px] min-h-screen bg-sky-blue/20 font-lato text-text-blue md:w-full">
       {/* Real-time status bar and header */}
       <div className="relative z-10 p-4">
         <div className="container mx-auto flex justify-between items-center">
@@ -130,27 +130,6 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center space-x-2">
-            {/* Hamburger for mobile - now on the right */}
-            <button
-              className="lg:hidden p-2 rounded-md bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/40"
-              onClick={() => setSidebarOpen((v) => !v)}
-              aria-label="Open sidebar"
-            >
-              <svg
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="feather feather-menu text-white"
-              >
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
             <button
               onClick={handleMusicToggle}
               className="flex items-center space-x-2 px-3 py-1.5 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600/30 transition-colors"
