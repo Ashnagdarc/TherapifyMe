@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { AnalyticsService, DashboardData } from "../services/analyticsService";
 import { AmbientMusicService } from "../services/ambientMusicService";
@@ -51,6 +51,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { signOut } = useAuth();
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  console.log(currentPath);
 
   const fetchDashboardData = useCallback(async () => {
     if (!profile) return;
@@ -99,14 +103,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     // Recreated dashboard layout
 
     <div className="w-full min-h-svh flex flex-row bg-sky-blue/40 font-lato text-text-blue">
-      <DashboardContainer
-        dashboardData={dashboardData}
-        loading={loading}
-        profile={profile}
-        isRefreshing={isRefreshing}
-      />
+      {/* only displaying the sidebar on the dashboard page */}
+      {currentPath === "/dashboard" && (
+        <DashboardContainer
+          dashboardData={dashboardData}
+          loading={loading}
+          profile={profile}
+          isRefreshing={isRefreshing}
+        />
+      )}
 
-      <main className="flex-1 h-svh overflow-scroll">{children}</main>
+      <main className="w-full h-svh flex overflow-y-scroll">{children}</main>
 
       <DashboardNavContainer onSignOut={handleSignOut} />
     </div>
@@ -128,13 +135,13 @@ function DashboardContainer({
   return (
     <section
       className={`${
-        openDash && "w-full h-full lg:w-[270px]"
+        openDash && "w-full h-full lg:w-[300px]"
       } w-[10%]  absolute z-[999] flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
     >
       <div
         className={`${
           !openDash
-            ? "w-full items-end pt-[0.5rem] "
+            ? "w-full items-end pt-[1rem] "
             : "w-[65%] h-svh items-center bg-grey-2 py-[1rem] md:py-[2rem]  lg:w-[270px] "
         }  flex flex-col gap-[2rem]  px-[0.5rem] text-[15px] text-black  md:pt-[0.7rem] md:text-[16px]  transition-all duration-300 ease-in `}
       >
@@ -151,7 +158,7 @@ function DashboardContainer({
           <div
             className={`${
               !openDash &&
-              " p-[1rem] bg-grey-2 rounded-full border-[3px] border-main shadow-xl/50 shadow-black "
+              " p-[0.5rem] bg-grey-2 rounded-full border-[3px] border-main shadow-xl/50 shadow-black md:p-[1rem] "
             }`}
           >
             <PanelRightOpen
