@@ -25,7 +25,7 @@ export default function Hero() {
   return (
     <FadeInOnScroll
       id="home"
-      className="py-20 md:py-28 bg-[linear-gradient(to_bottom,_#CCE1FF_0%,_#CCE1FF_30%,_#E0EEFF_100%)]"
+      className="py-20 md:py-28 bg-[linear-gradient(to_bottom,_#CCE1FF_0%,_#CCE1FF_30%,_#E0EEFF_100%)] backdrop-blur-2xl "
     >
       <div className="w-full flex flex-col items-center gap-[1.5rem] px-6 text-center md:px-0 ">
         <div className="flex flex-col items-center justify-center gap-[0.7rem] md:flex-row md:gap-[0.4rem]">

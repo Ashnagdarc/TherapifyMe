@@ -42,21 +42,21 @@ export default function AIResponsePage() {
     return null;
   }
 
-  const playAudio = () => {
+  function playAudio() {
     if (audioRef.current && state.aiResponseAudioUrl) {
       audioRef.current.play();
       setIsPlaying(true);
     }
-  };
+  }
 
-  const pauseAudio = () => {
+  function pauseAudio() {
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
     }
-  };
+  }
 
-  const copyResponse = async () => {
+  async function copyResponse() {
     try {
       await navigator.clipboard.writeText(state.aiResponse);
       setCopied(true);
@@ -64,9 +64,9 @@ export default function AIResponsePage() {
     } catch (error) {
       console.error("Failed to copy text:", error);
     }
-  };
+  }
 
-  const getMoodEmoji = (mood: string) => {
+  function getMoodEmoji(mood: string) {
     const emojiMap: { [key: string]: string } = {
       happy: "😊",
       calm: "😌",
@@ -80,9 +80,9 @@ export default function AIResponsePage() {
       content: "😊",
     };
     return emojiMap[mood] || "💭";
-  };
+  }
 
-  const getMoodColor = (mood: string) => {
+  function getMoodColor(mood: string) {
     const colorMap: { [key: string]: string } = {
       happy: "bg-yellow-100 text-yellow-800",
       calm: "bg-blue-100 text-blue-800",
@@ -96,27 +96,29 @@ export default function AIResponsePage() {
       content: "bg-green-100 text-green-800",
     };
     return colorMap[mood] || "bg-gray-100 text-gray-800";
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50">
-      <div className="max-w-4xl mx-auto p-6">
+    <div className="w-full min-h-screen bg-grey-2">
+      <div className=" w-full flex flex-col items-center gap-[2rem] p-6">
+        <Button
+          size="sm"
+          onClick={() => navigate("/dashboard")}
+          className="self-start"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          <small>Back to Dashboard</small>
+        </Button>
+
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className=" w-full flex flex-col items-center gap-[1.5rem] lg:flex-row lg:justify-between">
           <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/dashboard")}
-              className="mr-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-2xl font-bold text-primery">AI Response</h1>
+            <h1 className="text-2xl font-bold text-primery lg:text-[30px] ">
+              AI Response
+            </h1>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-[1rem]">
             <Button
               variant="ghost"
               size="sm"
@@ -146,9 +148,9 @@ export default function AIResponsePage() {
           {/* Main AI Response */}
           <div className="lg:col-span-2 space-y-6">
             {/* Mood Summary */}
-            <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl shadow-2xl/40 shadow-black p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-primery">
+                <h2 className="text-lg font-semibold text-grey-2">
                   Your Check-In
                 </h2>
                 <span
@@ -161,21 +163,19 @@ export default function AIResponsePage() {
               </div>
 
               {state.transcription && (
-                <div className="bg-grey-2 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-grey mb-2">
+                <div className="bg-grey-2 backdrop-blur-2xl rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-text-blue mb-2">
                     What you shared:
                   </h3>
-                  <p className="text-text-black italic">
-                    "{state.transcription}"
-                  </p>
+                  <p className="text-main italic">"{state.transcription}"</p>
                 </div>
               )}
             </div>
 
             {/* AI Response */}
-            <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-primery flex items-center">
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl shadow-2xl/40 shadow-black p-6">
+              <div className="flex flex-col gap-[0.5rem] lg:flex-row lg:items-center lg:justify-between mb-6">
+                <h2 className="text-lg font-semibold text-grey-2 flex items-center">
                   <Volume2 className="w-5 h-5 mr-2 text-main" />
                   AI Therapist Response
                 </h2>
@@ -184,7 +184,7 @@ export default function AIResponsePage() {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={isPlaying ? pauseAudio : playAudio}
-                      className="flex items-center space-x-2 px-4 py-2 bg-main hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      className="flex items-center space-x-2 px-4 py-2 bg-main hover:bg-blue-700 text-white rounded-lg transition-colors duration-300 ease-in cursor-pointer"
                     >
                       {isPlaying ? (
                         <>
@@ -203,7 +203,7 @@ export default function AIResponsePage() {
               </div>
 
               <div className="prose prose-lg max-w-none">
-                <p className="text-text-black leading-relaxed text-lg">
+                <p className="text-grey-2 leading-relaxed text-lg">
                   {state.aiResponse}
                 </p>
               </div>
@@ -222,8 +222,8 @@ export default function AIResponsePage() {
           {/* Sidebar - Suggestions */}
           <div className="space-y-6">
             {/* Personalized Suggestions */}
-            <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
-              <h3 className="text-lg font-semibold text-primery flex items-center mb-4">
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl shadow-2xl/40 shadow-black p-6">
+              <h3 className="text-lg font-semibold text-grey-2 flex items-center mb-4">
                 <Lightbulb className="w-5 h-5 mr-2 text-yellow-500" />
                 Suggested Actions
               </h3>
@@ -244,12 +244,12 @@ export default function AIResponsePage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-xs border border-grey p-6">
-              <h3 className="text-lg font-semibold text-primery mb-4">
+            <div className="bg-gradient-to-br from-dark to-black rounded-2xl shadow-2xl/40 shadow-black p-6">
+              <h3 className="text-lg font-semibold text-grey-2 mb-4">
                 Quick Actions
               </h3>
 
-              <div className="space-y-3">
+              <div className="flex flex-col gap-[1rem] text-grey-2 ">
                 <Button
                   variant="outline"
                   size="sm"
@@ -280,7 +280,7 @@ export default function AIResponsePage() {
             </div>
 
             {/* Session Info */}
-            <div className="bg-gradient-to-br from-main to-purple-600 rounded-2xl p-6 text-white">
+            <div className="bg-gradient-to-br from-main to-purple-600 rounded-2xl shadow-2xl/40 shadow-black p-6 text-white">
               <h3 className="text-lg font-semibold mb-2">Session Complete!</h3>
               <p className="text-blue-100 text-sm mb-4">
                 You've taken an important step in your mental wellness journey
