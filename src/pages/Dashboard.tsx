@@ -92,7 +92,7 @@ export default function Dashboard() {
   return (
     <div className="w-full min-h-screen bg-sky-blue/20 font-lato text-text-blue md:w-full">
       {/* Real-time status bar and header */}
-      <div className="relative z-10 p-4">
+      <div className="z-10 p-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
@@ -107,16 +107,16 @@ export default function Dashboard() {
       </div>
 
       {/* Responsive grid layout */}
-      <div className="relative w-[300px] h-full p-4 flex flex-col gap-[0.5rem] md:w-full">
+      <div className="w-[300px] h-full p-4 flex flex-col gap-[0.5rem] md:w-full">
         {/* Main content: orb area, responsive */}
-        <div className="col-span-1 md:col-span-9 flex items-center justify-center relative min-h-[60vh]">
+        <div className=" w-full h-full flex items-center justify-center relative">
           {/* Soft ambient glow behind orb */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-72 h-72 md:w-96 md:h-96 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
           </div>
 
           {/* Main Orb Component */}
-          <div className="relative z-10 w-full flex items-center justify-center ">
+          <div className="relative z-10 w-full h-full flex items-center justify-center ">
             <CheckIn onCheckInComplete={handleCheckInComplete} />
           </div>
         </div>

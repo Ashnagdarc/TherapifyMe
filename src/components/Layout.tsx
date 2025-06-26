@@ -128,13 +128,15 @@ function DashboardContainer({
   return (
     <section
       className={`${
-        openDash && "w-full absolute z-[99] lg:w-[270px]"
-      } w-[10%] h-full flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
+        openDash && "w-full h-full lg:w-[270px]"
+      } w-[10%]  absolute z-[999] flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
     >
       <div
-        className={`h-svh ${
-          !openDash ? "w-full" : "w-[50%] lg:w-[270px] "
-        }  flex flex-col items-center gap-[2rem] py-[1rem] px-[0.5rem] text-[15px] text-black bg-grey-2  md:py-[2rem] md:text-[16px]  transition-all duration-300 ease-in `}
+        className={`${
+          !openDash
+            ? "w-full items-end pt-[0.5rem] "
+            : "w-[65%] h-svh items-center bg-grey-2 py-[1rem] md:py-[2rem]  lg:w-[270px] "
+        }  flex flex-col gap-[2rem]  px-[0.5rem] text-[15px] text-black  md:pt-[0.7rem] md:text-[16px]  transition-all duration-300 ease-in `}
       >
         <div className="w-full flex items-center justify-between">
           {openDash && (
@@ -146,10 +148,17 @@ function DashboardContainer({
             </div>
           )}
 
-          <PanelRightOpen
-            className="cursor-pointer"
-            onClick={handleDashToggle}
-          />
+          <div
+            className={`${
+              !openDash &&
+              " p-[1rem] bg-grey-2 rounded-full border-[3px] border-main shadow-xl/50 shadow-black "
+            }`}
+          >
+            <PanelRightOpen
+              className="cursor-pointer"
+              onClick={handleDashToggle}
+            />
+          </div>
         </div>
 
         {openDash && (
@@ -158,7 +167,7 @@ function DashboardContainer({
               !openDash ? "opacity-0" : "opacity-100"
             } transition-opacity delay-100 duration-300 ease-in `}
           >
-            {/* New Entry button */}
+            {/* Move to Journal button */}
             <div className="flex items-center gap-[0.5rem] cursor-pointer ">
               <BookOpen />
               <NavLink to="/journal" onClick={() => setOpenDash(!openDash)}>
@@ -180,7 +189,7 @@ function DashboardContainer({
       <div
         className={`${
           !openDash ? "hidden" : "flex"
-        } bg-black/40 backdrop-blur-xl w-[60%] h-full lg:hidden`}
+        } bg-black/40 backdrop-blur-xl w-[35%] h-full lg:hidden`}
       ></div>
     </section>
   );
