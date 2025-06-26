@@ -63,7 +63,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       setLastUpdated(new Date());
       setLoading(false);
     } catch (err) {
-      console.error("Failed to fetch dashboard data", error);
+      console.error("Failed to fetch dashboard data", err);
     } finally {
       setLoading(false);
       setIsRefreshing(false);
