@@ -294,7 +294,7 @@ function DashboardNavContainer({ onSignOut }: DashboardNavContainerProps) {
     <section
       className={`justify-self-end flex flex-col gap-[2rem] pt-[1rem] px-[1rem] absolute top-0 right-0 left-[0.5rem] z-[99]`}
     >
-      <div className=" self-end flex items-center gap-[1rem] bg-grey-2 py-[0.5rem] px-[1rem] rounded-[3rem] shadow-xl/30 shadow-black md:gap-[2rem] ">
+      <div className=" self-end flex items-center ">
         {!openProfile && (
           <ProfileAvatar onProfileToggle={handleProfileToggleNav} />
         )}
