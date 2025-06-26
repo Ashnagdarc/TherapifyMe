@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { AnalyticsService, DashboardData } from "../services/analyticsService";
-import { AmbientMusicService } from "../services/ambientMusicService";
 
 import DashboardSidebar from "./dashboard/DashboardSidebar";
 import { Button } from "./ui/Button";
@@ -45,7 +44,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [musicEnabled, setMusicEnabled] = useState(true);
 
   const { profile, loading: authLoading } = useAuth();
   const { signOut } = useAuth();
@@ -76,11 +74,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (authLoading || !profile) return;
 
     fetchDashboardData();
-    AmbientMusicService.initialize();
-
-    setTimeout(() => {
-      AmbientMusicService.startMusic();
-    }, 1000);
   }, [profile, authLoading, fetchDashboardData]);
 
   useEffect(() => {
