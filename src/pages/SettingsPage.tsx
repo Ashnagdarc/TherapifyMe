@@ -720,7 +720,7 @@ export default function SettingsPage() {
       </div>
 
       {showDeleteConfirm && (
-        <div className=" w-[320px] h-svh flex items-center justify-center bg-black/40 backdrop-blur-xl absolute top-0 z-99 lg:w-[92%] ">
+        <div className=" w-full h-svh flex items-center justify-center bg-black/40 backdrop-blur-xl absolute top-0 left-0 z-[999] ">
           <div className=" w-[90%] flex flex-col items-center gap-[1.5rem] bg-grey-2 rounded-2xl p-[1rem] shadow-2xl border border-red-500/50 md:p-[2rem] lg:w-[400px] lg:gap-[2rem] lg:border-[0.3rem] lg:border-red ">
             <div className="flex flex-col items-center gap-4">
               <img src={DeleteIcon} alt="delete bin image" />
@@ -730,7 +730,7 @@ export default function SettingsPage() {
               </h2>
             </div>
 
-            <p className="text-text-blue/70 text-center">
+            <p className="text-red text-center">
               This action cannot be undone. All of your journal entries, AI
               responses, and personal settings will be permanently deleted.
             </p>

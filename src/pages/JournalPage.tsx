@@ -383,7 +383,7 @@ export default function JournalPage() {
     );
 
     return (
-      <div className="mt-4 pt-4 border-t border-gray-700/50 space-y-2">
+      <div className="flex flex-col items-center gap-[1rem] mt-4 pt-4 border-t border-gray-700/50">
         {hasVoice && (
           <Button
             variant="secondary"
@@ -400,6 +400,7 @@ export default function JournalPage() {
             Your Voice Note
           </Button>
         )}
+
         {hasAIAudio ? (
           <Button
             variant="secondary"
@@ -426,6 +427,7 @@ export default function JournalPage() {
             </div>
           </div>
         ) : null}
+
         {/* Tavus Video Card: show processing, ready, or error state */}
         {(hasVideo || entry.tavus_video_url === null) && (
           <TavusVideoCard
@@ -441,10 +443,10 @@ export default function JournalPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white font-sans p-8">
+    <div className="min-h-screen bg-grey-2 text-text-blue font-sans p-8">
       {/* Success notification */}
       {deleteSuccess && (
-        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg animate-in slide-in-from-right">
+        <div className="fixed top-4 right-4 z-50 bg-gradient-to-br from-green-600 to-black/70 text-white px-6 py-3 rounded-lg shadow-xl/40 shadow-black animate-in slide-in-from-right">
           <div className="flex items-center space-x-2">
             <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
               <span className="text-green-600 text-sm">✓</span>
@@ -454,15 +456,16 @@ export default function JournalPage() {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full flex flex-col gap-[2rem] ">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
+        <div className="flex flex-col items-center gap-[1rem] lg:w-[95%] lg:gap-0 lg:flex-row lg:justify-between ">
+          <div className="flex flex-col items-center gap-[0.5rem]">
             <h1 className="text-3xl font-bold">Journal</h1>
-            <p className="text-gray-400">
+            <p className="text-text-blue/60">
               {filteredEntries.length} of {entries.length} entries
             </p>
           </div>
+
           <div className="flex gap-4">
             <Button
               variant="secondary"
@@ -488,14 +491,15 @@ export default function JournalPage() {
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setSearchTerm(e.target.value)
             }
-            className="md:col-span-1"
+            className=" bg-gradient-to-br from-dark to-black md:col-span-1"
             icon={<Search size={16} className="text-gray-400" />}
           />
+
           <Select
             value={selectedMood}
             onValueChange={(v: MoodTag | "all") => setSelectedMood(v)}
           >
-            <SelectTrigger className="md:col-span-1">
+            <SelectTrigger className=" bg-gradient-to-br from-dark to-black md:col-span-1">
               <SelectValue placeholder="All Moods" />
             </SelectTrigger>
             <SelectContent>
@@ -506,32 +510,37 @@ export default function JournalPage() {
               ))}
             </SelectContent>
           </Select>
+
           <Input
             type="date"
             value={dateFilter}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setDateFilter(e.target.value)
             }
-            className="md:col-span-1"
+            className=" bg-gradient-to-br from-dark to-black md:col-span-1"
           />
         </div>
 
         {/* Entries List */}
         {loading ? (
           <div className="text-center p-8">
-            <span className="text-gray-400">Loading entries...</span>
+            <span className="text-text-blue">Loading entries...</span>
           </div>
         ) : (
           <div className="space-y-6">
             {filteredEntries.map((entry) => (
-              <div key={entry.id} className="bg-gray-800/50 p-6 rounded-lg">
-                <div className="flex justify-between items-start mb-4">
+              <div
+                key={entry.id}
+                className=" flex flex-col gap-[1.5rem] bg-gradient-to-br from-dark to-black p-6 rounded-2xl shadow-2xl/40 shadow-black"
+              >
+                <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">
                       {getMoodEmoji(entry.mood_tag)}
                     </span>
+
                     <div>
-                      <h2 className="font-bold text-lg capitalize">
+                      <h2 className="font-bold text-lg text-grey-2 capitalize">
                         {entry.mood_tag}
                       </h2>
                       <p className="text-xs text-gray-400">
@@ -539,27 +548,29 @@ export default function JournalPage() {
                       </p>
                     </div>
                   </div>
+
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-2 h-auto text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                    className="p-2 h-auto text-red-600 hover:text-red-400 hover:bg-red-900/20"
                     onClick={() => openDeleteConfirmation(entry)}
                   >
                     <Trash2 size={16} />
                   </Button>
                 </div>
+
                 <div className="space-y-3 text-sm">
                   {entry.text_summary && (
                     <div>
-                      <h4 className="font-semibold text-blue-400 mb-1">
+                      <h4 className="font-semibold text-main mb-[0.5rem]">
                         AI Summary
                       </h4>
-                      <p className="text-gray-300">{entry.text_summary}</p>
+                      <p className="text-grey-2">{entry.text_summary}</p>
                     </div>
                   )}
                   {entry.transcription && (
-                    <div>
-                      <h4 className="font-semibold text-gray-400 mb-1">
+                    <div className="flex flex-col gap-[0.5rem]">
+                      <h4 className="font-semibold text-gray-400">
                         Your Words
                       </h4>
                       <p className="text-gray-300 italic">
@@ -568,11 +579,12 @@ export default function JournalPage() {
                     </div>
                   )}
                 </div>
+
                 {renderEntryMedia(entry)}
               </div>
             ))}
             {filteredEntries.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-grey-2">
                 <p>No entries match your filters.</p>
               </div>
             )}
