@@ -54,8 +54,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  console.log(currentPath);
-
   const fetchDashboardData = useCallback(async () => {
     if (!profile) return;
 
