@@ -41,10 +41,6 @@ interface ProfileAvatarProps {
   onProfileToggle?: any;
 }
 
-interface SubNavProps {
-  onToggle?: any;
-}
-
 interface UserProfileNavProps {
   onProfileToggle?: any;
   signOut?: any;
@@ -183,15 +179,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     //           </NavLink>
     //         ))}
     //         <div className="border-t border-gray-700 my-2"></div>
-    //         <Button
-    //           onClick={handleSignOut}
-    //           variant="ghost"
-    //           size="sm"
-    //           className="w-full flex justify-start items-center px-3 py-2"
-    //         >
-    //           <LogOut className="w-5 h-5 mr-3" />
-    //           Sign Out
-    //         </Button>
     //       </div>
     //     )}
     //   </header>
@@ -225,7 +212,6 @@ function DashboardContainer({
   profile,
 }: DashboardContainerProps) {
   const [openDash, setOpenDash] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   function handleDashToggle() {
     setOpenDash(!openDash);
@@ -266,21 +252,10 @@ function DashboardContainer({
           >
             {/* New Entry button */}
             <div className="flex items-center gap-[0.5rem] cursor-pointer ">
-              <NotebookPen />
-              <p>New Entry</p>
-            </div>
-
-            {/* Search bar */}
-            <div className=" w-full flex items-center gap-[0.5rem] overflow-hidden ">
-              <Search className="cursor-pointer" />
-
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Entry"
-                className="w-[70%] focus:outline-main ps-[0.5rem] py-[0.3rem] md:ps-[1rem]"
-              />
+              <BookOpen />
+              <NavLink to="/journal" onClick={() => setOpenDash(!openDash)}>
+                Journal Entries
+              </NavLink>
             </div>
           </div>
         )}
@@ -329,8 +304,6 @@ function DashboardNavContainer({ onSignOut }: DashboardNavContainerProps) {
         )}
       </div>
 
-      {openNav && <SubNav onToggle={handleNavToggle} />}
-
       {openProfile && (
         <UserProfileNav
           signOut={onSignOut}
@@ -348,26 +321,6 @@ function ProfileAvatar({ onProfileToggle }: ProfileAvatarProps) {
       onClick={onProfileToggle}
     >
       <UserRound />
-    </div>
-  );
-}
-
-function SubNav({ onToggle }: SubNavProps) {
-  return (
-    <div className="w-[225px] h-[150px] flex flex-col items-start gap-[1rem] bg-grey-2 p-[1rem] rounded-[1rem] shadow-xl/30 shadow-black">
-      <div className="w-[16px] h-[16px] mb-[1rem]">
-        <X className="cursor-pointer" onClick={onToggle} />
-      </div>
-
-      <div className="flex items-center gap-[0.7rem] text-black cursor-pointer">
-        <Archive />
-        <p>Archive</p>
-      </div>
-
-      <div className="flex items-center gap-[0.7rem] text-red cursor-pointer">
-        <Trash2 />
-        <p>Delete</p>
-      </div>
     </div>
   );
 }
