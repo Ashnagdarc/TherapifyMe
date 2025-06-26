@@ -21,6 +21,7 @@ import {
   Trash2,
   MoreHorizontal,
   AlertTriangle,
+  ArrowLeft,
 } from "lucide-react";
 
 import DeleteBinIcon from "../assets/images/DeleteBin.png";
@@ -443,7 +444,7 @@ export default function JournalPage() {
   };
 
   return (
-    <div className="min-h-screen bg-grey-2 text-text-blue font-sans p-8">
+    <div className="min-h-screen bg-grey-2 text-text-blue font-sans px-8 py-[0.5rem]">
       {/* Success notification */}
       {deleteSuccess && (
         <div className="fixed top-4 right-4 z-50 bg-gradient-to-br from-green-600 to-black/70 text-white px-6 py-3 rounded-lg shadow-xl/40 shadow-black animate-in slide-in-from-right">
@@ -457,6 +458,18 @@ export default function JournalPage() {
       )}
 
       <div className="w-full flex flex-col gap-[2rem] ">
+        {/* back to dashboard button */}
+        <div className="flex items-center justify-between mb-8 mt-[1rem] lg:mt-0 ">
+          <Button
+            onClick={() => navigate("/dashboard")}
+            className="flex items-center gap-2 text-grey-2 text-[12px] hover:text-grey-2/70 md:text-[16px]  "
+          >
+            <ArrowLeft className="w-5 h-5" />
+
+            <small>Back to Dashboard</small>
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="flex flex-col items-center gap-[1rem] lg:w-[95%] lg:gap-0 lg:flex-row lg:justify-between ">
           <div className="flex flex-col items-center gap-[0.5rem]">
