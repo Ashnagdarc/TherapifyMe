@@ -426,8 +426,8 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
 
   function renderAudioPlayer() {
     return (
-      <div className="bg-gray-900/70 p-4 rounded-lg mb-6">
-        <h3 className="font-semibold mb-3">Your Recording</h3>
+      <div className="w-full flex flex-col gap-[0.7rem] bg-gray-900/70 p-4 rounded-lg lg:w-[90%] ">
+        <h3 className="font-semibold">Your Recording</h3>
         <div className="flex items-center gap-4">
           <button onClick={togglePlayback} className="text-white">
             {isPlaying ? <Pause size={20} /> : <Play size={20} />}
@@ -480,7 +480,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
       : ["general reflection"];
 
     return (
-      <div className="space-y-4 mb-6">
+      <div className="w-full flex flex-col gap-[1rem] lg:w-[90%] ">
         {/* Voice Analysis Summary */}
         <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4">
           <h3 className="text-emerald-300 font-semibold mb-2 flex items-center gap-2">
@@ -524,7 +524,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
 
   function renderMoodSelector() {
     return (
-      <div className="mb-8">
+      <div className=" w-full flex flex-col gap-[1rem] mb-8 lg:w-[40%] lg:self-start lg:relative lg:left-[4.5rem] ">
         <h3 className="font-semibold mb-3">How are you feeling?</h3>
         <Select onValueChange={(value) => setSelectedMood(value as MoodTag)}>
           <SelectTrigger>
@@ -545,17 +545,27 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
   // Main render logic
   if (step === "reviewing") {
     return (
-      <div className="w-full max-w-2xl mx-auto p-4 bg-gray-800 rounded-lg">
+      <div className="w-[300px] flex flex-col items-center gap-[1rem]  text-grey-2/80 bg-gradient-to-br from-dark to-black rounded-2xl p-4 lg:w-[90%] ">
         <h2 className="text-2xl font-bold mb-4 text-center">Review & Save</h2>
         {renderAudioPlayer()}
         {renderTranscriptionEditor()}
         {renderMoodSelector()}
-        <div className="flex justify-center mt-6 space-x-4">
-          <Button onClick={handleSave} disabled={!selectedMood}>
+
+        <div className="flex flex-col items-center gap-[0.6rem] lg:flex-row lg:items-center ">
+          <Button
+            onClick={handleSave}
+            disabled={!selectedMood}
+            className="cursor-pointer"
+          >
             <Check className="mr-2" />
             Save & Generate AI Response
           </Button>
-          <Button variant="outline" onClick={resetState}>
+
+          <Button
+            variant="outline"
+            onClick={resetState}
+            className="w-full lg:w-auto hover:text-dark "
+          >
             Discard
           </Button>
         </div>
