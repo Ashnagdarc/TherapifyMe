@@ -10,19 +10,11 @@ import { Button } from "./ui/Button";
 import Logo from "./Logo";
 
 import {
-  LayoutDashboard,
   BookOpen,
   Settings,
   LogOut,
-  Menu,
-  Ellipsis,
-  NotebookPen,
-  Search,
   UserRound,
   PanelRightOpen,
-  Archive,
-  Trash2,
-  X,
 } from "lucide-react";
 
 interface DashboardContainerProps {
@@ -104,90 +96,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    // <div className="min-h-screen bg-gray-900 text-white font-sans">
-    //   <header className="sticky top-0 bg-gray-900/80 backdrop-blur-md z-50 border-b border-gray-700">
-    //     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-    //       <div className="flex items-center justify-between h-16">
-    //         <div className="flex items-center space-x-2">
-    //           {/* <img src="/therapifyme-logo.svg" alt="TherapifyMe Logo" className="h-8 w-8" /> */}
-    //           <span className="text-xl font-bold">TherapifyMe</span>
-    //         </div>
-
-    //         {/* Desktop Navigation */}
-    //         <nav className="hidden md:flex md:space-x-2">
-    //           {navLinks.map((link) => (
-    //             <NavLink
-    //               key={link.to}
-    //               to={link.to}
-    //               className={({ isActive }) =>
-    //                 `flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive
-    //                   ? "bg-blue-500/20 text-blue-300"
-    //                   : "text-gray-300 hover:bg-gray-800 hover:text-white"
-    //                 }`
-    //               }
-    //             >
-    //               {link.icon}
-    //               <span className="ml-2">{link.text}</span>
-    //             </NavLink>
-    //           ))}
-    //         </nav>
-
-    //         <div className="flex items-center space-x-4">
-    //           <Button
-    //             onClick={handleSignOut}
-    //             variant="ghost"
-    //             size="sm"
-    //             className="hidden md:flex"
-    //           >
-    //             <LogOut className="w-4 h-4 mr-2" />
-    //             Sign Out
-    //           </Button>
-    //           <div className="md:hidden">
-    //             <Button
-    //               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-    //               variant="ghost"
-    //               size="sm"
-    //             >
-    //               {isMobileMenuOpen ? (
-    //                 <X className="w-6 h-6" />
-    //               ) : (
-    //                 <Menu className="w-6 h-6" />
-    //               )}
-    //             </Button>
-    //           </div>
-    //         </div>
-    //       </div>
-    //     </div>
-
-    //     {/* Mobile Navigation */}
-    //     {isMobileMenuOpen && (
-    //       <div className="md:hidden pt-2 pb-3 space-y-1 sm:px-3 bg-gray-900">
-    //         {navLinks.map((link) => (
-    //           <NavLink
-    //             key={link.to}
-    //             to={link.to}
-    //             onClick={() => setIsMobileMenuOpen(false)}
-    //             className={({ isActive }) =>
-    //               `flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors ${isActive
-    //                 ? "bg-blue-500/20 text-blue-300"
-    //                 : "text-gray-300 hover:bg-gray-800"
-    //               }`
-    //             }
-    //           >
-    //             {link.icon}
-    //             <span className="ml-3">{link.text}</span>
-    //           </NavLink>
-    //         ))}
-    //         <div className="border-t border-gray-700 my-2"></div>
-    //       </div>
-    //     )}
-    //   </header>
-    //   <main>
-    //     {/* The container and padding are removed from here to allow pages to control their own layout */}
-    //     {children}
-    //   </main>
-    // </div>
-
     // Recreated dashboard layout
 
     <div className="w-full min-h-svh flex flex-row bg-sky-blue/40 font-lato text-text-blue">
