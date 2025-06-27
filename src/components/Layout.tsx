@@ -215,30 +215,22 @@ function DashboardNavContainer({ onSignOut, onSidebarToggle, showSidebarToggle }
 
             {/* Dropdown Menu */}
             {openMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 py-3 z-50 animate-in slide-in-from-top-2 duration-200">
                 <NavLink
                   to="/settings"
                   onClick={() => setOpenMenu(false)}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-white/50 transition-all duration-200 rounded-xl mx-2"
                 >
                   <Settings className="w-4 h-4" />
                   Settings
                 </NavLink>
-                <NavLink
-                  to="/journal"
-                  onClick={() => setOpenMenu(false)}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <BookOpen className="w-4 h-4" />
-                  Journal Entries
-                </NavLink>
-                <hr className="my-2 border-gray-200" />
+                <hr className="my-2 border-white/30 mx-2" />
                 <button
                   onClick={() => {
                     setOpenMenu(false);
                     onSignOut();
                   }}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50/70 transition-all duration-200 w-full text-left rounded-xl mx-2"
                 >
                   <LogOut className="w-4 h-4" />
                   Log Out
