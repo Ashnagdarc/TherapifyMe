@@ -3,13 +3,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { AnalyticsService, DashboardData } from "../services/analyticsService";
-import { AmbientMusicService } from "../services/ambientMusicService";
 
 // imported UI components
 import CheckIn from "../components/dashboard/CheckIn";
-
-// imported database component
-import { Entry } from "../types/database";
 
 export default function Dashboard() {
   const { profile, loading: authLoading } = useAuth();
@@ -19,15 +15,12 @@ export default function Dashboard() {
   );
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [musicEnabled, setMusicEnabled] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     if (!profile) return;
 
     try {
-      setIsRefreshing(true);
       const analyticsService = AnalyticsService.getInstance();
       const data = await analyticsService.getDashboardData(profile.id);
       setDashboardData(data);
@@ -37,7 +30,7 @@ export default function Dashboard() {
       console.error("Failed to fetch dashboard data:", error);
       setLoading(false);
     } finally {
-      setIsRefreshing(false);
+      setLoading(false);
     }
   }, [profile]);
 
@@ -47,44 +40,26 @@ export default function Dashboard() {
       navigate("/auth");
       return;
     }
-
     fetchDashboardData();
-
-    // Initialize and start ambient music when user logs in
-    AmbientMusicService.initialize();
-    // Start music after a small delay to allow user interaction
-    setTimeout(() => {
-      AmbientMusicService.startMusic();
-    }, 1000);
   }, [profile, authLoading, navigate, fetchDashboardData]);
 
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    if (!profile || loading) return;
+  // Auto-refresh every 30 seconds (keep for future use)
 
-    const interval = setInterval(() => {
-      fetchDashboardData();
-    }, 30000); // 30 seconds
+  // useEffect(() => {
+  //   if (!profile || loading) return;
 
-    return () => clearInterval(interval);
-  }, [profile, loading, fetchDashboardData]);
+  //   const interval = setInterval(() => {
+  //     fetchDashboardData();
+  //   }, 30000); // 30 seconds
+
+  //   return () => clearInterval(interval);
+  // }, [profile, loading, fetchDashboardData]);
 
   function handleCheckInComplete() {
     // Invalidate cache and refresh immediately
     const analyticsService = AnalyticsService.getInstance();
     analyticsService.invalidateUserCache(profile?.id || "");
     fetchDashboardData();
-  }
-
-  function handleManualRefresh() {
-    const analyticsService = AnalyticsService.getInstance();
-    analyticsService.invalidateUserCache(profile?.id || "");
-    fetchDashboardData();
-  }
-
-  function handleMusicToggle() {
-    const newMusicState = AmbientMusicService.toggleMusic();
-    setMusicEnabled(newMusicState);
   }
 
   function formatLastUpdated() {
@@ -103,10 +78,10 @@ export default function Dashboard() {
 
   if (loading || !profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-grey-2 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-main/70 mx-auto"></div>
-          <p className="text-slate-400 mt-4 text-sm">
+          <p className="text-text-blue/70 mt-4 text-sm">
             Loading your dashboard...
           </p>
         </div>
@@ -117,7 +92,7 @@ export default function Dashboard() {
   return (
     <div className="w-full min-h-screen bg-sky-blue/20 font-lato text-text-blue md:w-full">
       {/* Real-time status bar and header */}
-      <div className="relative z-10 p-4">
+      <div className="z-10 p-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
@@ -128,50 +103,20 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleMusicToggle}
-              className="flex items-center space-x-2 px-3 py-1.5 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600/30 transition-colors"
-              title={
-                musicEnabled
-                  ? "Turn off ambient music"
-                  : "Turn on ambient music"
-              }
-            >
-              <span className="text-sm">{musicEnabled ? "🎵" : "🔇"}</span>
-              <span className="text-xs text-slate-300">
-                {musicEnabled ? "Music On" : "Music Off"}
-              </span>
-            </button>
-
-            <button
-              onClick={handleManualRefresh}
-              disabled={isRefreshing}
-              className="flex items-center space-x-2 px-3 py-1.5 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600/30 transition-colors disabled:opacity-50"
-            >
-              <span className={`text-sm ${isRefreshing ? "animate-spin" : ""}`}>
-                🔄
-              </span>
-              <span className="text-xs text-slate-300">
-                {isRefreshing ? "Refreshing..." : "Refresh"}
-              </span>
-            </button>
-          </div>
         </div>
       </div>
 
       {/* Responsive grid layout */}
-      <div className="relative w-[300px] h-full p-4 flex flex-col gap-[0.5rem] md:w-full">
+      <div className="w-[300px] h-full p-4 flex flex-col gap-[0.5rem] md:w-full">
         {/* Main content: orb area, responsive */}
-        <div className="col-span-1 md:col-span-9 flex items-center justify-center relative min-h-[60vh]">
+        <div className=" w-full h-full flex items-center justify-center relative">
           {/* Soft ambient glow behind orb */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-72 h-72 md:w-96 md:h-96 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
           </div>
 
           {/* Main Orb Component */}
-          <div className="relative z-10 w-full flex items-center justify-center ">
+          <div className="relative z-10 w-full h-full flex items-center justify-center ">
             <CheckIn onCheckInComplete={handleCheckInComplete} />
           </div>
         </div>

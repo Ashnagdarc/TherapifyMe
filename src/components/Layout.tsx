@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { AnalyticsService, DashboardData } from "../services/analyticsService";
-import { AmbientMusicService } from "../services/ambientMusicService";
 
 import DashboardSidebar from "./dashboard/DashboardSidebar";
 import { Button } from "./ui/Button";
@@ -45,12 +44,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [musicEnabled, setMusicEnabled] = useState(true);
 
   const { profile, loading: authLoading } = useAuth();
   const { signOut } = useAuth();
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   const fetchDashboardData = useCallback(async () => {
     if (!profile) return;
@@ -74,11 +74,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (authLoading || !profile) return;
 
     fetchDashboardData();
-    AmbientMusicService.initialize();
-
-    setTimeout(() => {
-      AmbientMusicService.startMusic();
-    }, 1000);
   }, [profile, authLoading, fetchDashboardData]);
 
   useEffect(() => {
@@ -99,14 +94,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     // Recreated dashboard layout
 
     <div className="w-full min-h-svh flex flex-row bg-sky-blue/40 font-lato text-text-blue">
-      <DashboardContainer
-        dashboardData={dashboardData}
-        loading={loading}
-        profile={profile}
-        isRefreshing={isRefreshing}
-      />
+      {/* only displaying the sidebar on the dashboard page */}
+      {currentPath === "/dashboard" && (
+        <DashboardContainer
+          dashboardData={dashboardData}
+          loading={loading}
+          profile={profile}
+          isRefreshing={isRefreshing}
+        />
+      )}
 
-      <main className="flex-1 h-svh overflow-scroll">{children}</main>
+      <main className="w-full h-svh flex overflow-y-scroll">{children}</main>
 
       <DashboardNavContainer onSignOut={handleSignOut} />
     </div>
@@ -128,13 +126,15 @@ function DashboardContainer({
   return (
     <section
       className={`${
-        openDash && "w-full absolute z-[99] lg:w-[270px]"
-      } w-[10%] h-full flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
+        openDash && "w-full h-full lg:w-[300px]"
+      } w-[10%]  absolute z-[999] flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
     >
       <div
-        className={`h-svh ${
-          !openDash ? "w-full" : "w-[50%] lg:w-[270px] "
-        }  flex flex-col items-center gap-[2rem] py-[1rem] px-[0.5rem] text-[15px] text-black bg-grey-2  md:py-[2rem] md:text-[16px]  transition-all duration-300 ease-in `}
+        className={`${
+          !openDash
+            ? "w-full items-end pt-[1rem] "
+            : "w-[65%] h-svh items-center bg-grey-2 py-[1rem] md:py-[2rem]  lg:w-[270px] "
+        }  flex flex-col gap-[2rem]  px-[0.5rem] text-[15px] text-black  md:pt-[0.7rem] md:text-[16px]  transition-all duration-300 ease-in `}
       >
         <div className="w-full flex items-center justify-between">
           {openDash && (
@@ -146,10 +146,17 @@ function DashboardContainer({
             </div>
           )}
 
-          <PanelRightOpen
-            className="cursor-pointer"
-            onClick={handleDashToggle}
-          />
+          <div
+            className={`${
+              !openDash &&
+              " p-[0.5rem] bg-grey-2 rounded-full border-[3px] border-main shadow-xl/50 shadow-black md:p-[1rem] "
+            }`}
+          >
+            <PanelRightOpen
+              className="cursor-pointer"
+              onClick={handleDashToggle}
+            />
+          </div>
         </div>
 
         {openDash && (
@@ -158,7 +165,7 @@ function DashboardContainer({
               !openDash ? "opacity-0" : "opacity-100"
             } transition-opacity delay-100 duration-300 ease-in `}
           >
-            {/* New Entry button */}
+            {/* Move to Journal button */}
             <div className="flex items-center gap-[0.5rem] cursor-pointer ">
               <BookOpen />
               <NavLink to="/journal" onClick={() => setOpenDash(!openDash)}>
@@ -180,7 +187,7 @@ function DashboardContainer({
       <div
         className={`${
           !openDash ? "hidden" : "flex"
-        } bg-black/40 backdrop-blur-xl w-[60%] h-full lg:hidden`}
+        } bg-black/40 backdrop-blur-xl w-[35%] h-full lg:hidden`}
       ></div>
     </section>
   );
