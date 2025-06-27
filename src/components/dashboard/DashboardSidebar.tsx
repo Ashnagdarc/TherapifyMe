@@ -1,9 +1,5 @@
 import CurrentStreak from "./CurrentStreak";
-import MoodTrendSidebar from "./MoodTrendSidebar";
 import RecentCheckinsSidebar from "./RecentCheckinsSidebar";
-import TherapySession from "./TherapySession";
-import UserProgress from "./UserProgress";
-import MoodInsights from "./MoodInsights";
 import { DashboardData } from "../../services/analyticsService";
 
 interface DashboardSidebarProps {
@@ -29,52 +25,54 @@ export default function DashboardSidebar({
 
   if (loading || !dashboardData) {
     return (
-      <div className="col-span-3 space-y-3 p-4 bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-sm rounded-2xl h-full flex flex-col justify-between border border-slate-700/50 shadow-2xl">
+      <div className="w-full flex flex-col gap-4 p-4">
         <div className="animate-pulse">
-          <div className="h-16 bg-slate-700/60 rounded-xl"></div>
-          <div className="mt-3 h-32 bg-slate-700/60 rounded-xl"></div>
-          <div className="mt-3 h-24 bg-slate-700/60 rounded-xl"></div>
-        </div>
-        <div className="animate-pulse">
-          <div className="h-12 bg-slate-700/60 rounded-xl"></div>
-          <div className="mt-3 h-16 bg-slate-700/60 rounded-xl"></div>
-          <div className="mt-3 h-12 bg-slate-700/60 rounded-xl"></div>
+          <div className="h-12 bg-gray-200 rounded-lg"></div>
+          <div className="mt-3 h-20 bg-gray-200 rounded-lg"></div>
+          <div className="mt-3 h-16 bg-gray-200 rounded-lg"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className=" w-full flex flex-col items-center gap-[2rem] rounded-[0.4rem] h-full overflow-y-auto shadow-2xl relative transition-all duration-300 ease-in ">
-      {/* Top section */}
-      <div className=" w-full flex flex-col items-center ">
-        <div className="text-center">
-          <p className=" font-medium text-[18px] text-text-blue mb-1 md:text-[20px]">
-            {getGreeting()}
-          </p>
-          <div className="w-12 h-0.5 bg-gradient-to-r from-emerald-400 to-blue-400 mx-auto rounded-full"></div>
-        </div>
-
-        <div className="w-full flex flex-col gap-[1rem] lg:w-[90%] ">
-          <CurrentStreak days={dashboardData.streakInfo?.current || 0} />
-          <MoodTrendSidebar trends={dashboardData.moodTrends || []} />
-          <RecentCheckinsSidebar entries={dashboardData.recentEntries || []} />
-        </div>
+    <div className="w-full flex flex-col gap-6 p-4 h-full overflow-y-auto">
+      {/* Greeting */}
+      <div className="text-center">
+        <p className="font-medium text-lg text-gray-800">
+          {getGreeting()}
+        </p>
+        <div className="w-12 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full mt-2"></div>
       </div>
 
-      {/* Bottom section */}
-      <div className="w-full flex flex-col items-center border-t border-slate-700/50">
-        <div className="text-center">
-          <h3 className="text-xs font-medium text-text-blue pt-2 mb-2">
-            This Week's Summary
-          </h3>
-          <div className="w-8 h-0.5 bg-gradient-to-r from-slate-500 to-slate-600 mx-auto rounded-full"></div>
-        </div>
+      {/* Current Streak */}
+      <CurrentStreak days={dashboardData.streakInfo?.current || 0} />
 
-        <div className="w-full flex flex-col gap-[1rem] lg:w-[90%] ">
-          <TherapySession userId={userId} />
-          <UserProgress stats={dashboardData.userAnalytics} />
-          <MoodInsights mood={dashboardData.userAnalytics.dominantMood} />
+      {/* Recent Check-ins */}
+      <RecentCheckinsSidebar entries={dashboardData.recentEntries || []} />
+
+      {/* Quick Stats */}
+      <div className="bg-gray-50 rounded-lg p-4">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Quick Stats</h3>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-gray-600">Total Entries</span>
+            <span className="text-sm font-medium text-gray-800">
+              {dashboardData.userAnalytics.totalEntries}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-gray-600">Active Days</span>
+            <span className="text-sm font-medium text-gray-800">
+              {dashboardData.userAnalytics.activeDays}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-gray-600">Dominant Mood</span>
+            <span className="text-sm font-medium text-gray-800 capitalize">
+              {dashboardData.userAnalytics.dominantMood}
+            </span>
+          </div>
         </div>
       </div>
     </div>

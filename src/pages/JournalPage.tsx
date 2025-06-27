@@ -22,6 +22,12 @@ import {
   MoreHorizontal,
   AlertTriangle,
   ArrowLeft,
+  Calendar,
+  Filter,
+  FileText,
+  Mic,
+  Volume2,
+  Video,
 } from "lucide-react";
 
 import DeleteBinIcon from "../assets/images/DeleteBin.png";
@@ -38,7 +44,7 @@ const MOOD_OPTIONS = [
   { value: "content", label: "😊 Content" },
 ];
 
-function safeVideoUrl(url: unknown): string | undefined {
+function safeVideoUrl(url: string | null | undefined): string | undefined {
   return typeof url === "string" && url ? url : undefined;
 }
 
@@ -87,7 +93,7 @@ function TavusVideoCard({
   }
 
   return (
-    <div className="relative bg-gradient-to-br from-emerald-900/60 via-blue-900/60 to-purple-900/60 rounded-xl p-5 flex flex-col items-center shadow-lg border border-emerald-700/20 animate-in fade-in">
+    <div className="relative bg-gradient-to-br from-emerald-50 to-blue-50 border border-emerald-200/50 rounded-xl p-6 flex flex-col items-center shadow-sm">
       {/* Confetti animation */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none z-10 animate-bounce">
@@ -109,28 +115,24 @@ function TavusVideoCard({
       {/* Avatar or video */}
       {status === "processing" && (
         <>
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400/40 to-blue-400/40 flex items-center justify-center mb-2 animate-pulse">
-            <img
-              src="/avatar-linda.png"
-              alt="Linda the Therapist"
-              className="w-16 h-16 rounded-full object-cover"
-            />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-100 to-blue-100 flex items-center justify-center mb-4 animate-pulse border-2 border-emerald-200">
+            <Video className="w-8 h-8 text-emerald-600" />
           </div>
-          <div className="text-lg font-semibold text-emerald-200 mb-1">
+          <div className="text-lg font-semibold text-emerald-700 mb-2">
             Linda is preparing your video...
           </div>
-          <div className="text-xs text-blue-200 mb-2">
+          <div className="text-sm text-blue-600 mb-4 text-center">
             This usually takes 1-2 minutes. You can continue using the app—we'll
             let you know when it's ready!
           </div>
-          <div className="w-full flex justify-center mb-2">
-            <div className="w-32 h-2 bg-emerald-800/40 rounded-full overflow-hidden">
-              <div className="h-2 bg-emerald-400 animate-pulse rounded-full w-1/2"></div>
+          <div className="w-full flex justify-center mb-4">
+            <div className="w-32 h-2 bg-emerald-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-emerald-500 animate-pulse rounded-full w-1/2"></div>
             </div>
           </div>
           {userName && mood && (
-            <div className="text-xs text-slate-300 mb-1">
-              For <span className="font-bold">{userName}</span> about feeling{" "}
+            <div className="text-sm text-gray-600 text-center">
+              For <span className="font-semibold">{userName}</span> about feeling{" "}
               <span className="italic">{mood}</span>
             </div>
           )}
@@ -138,26 +140,27 @@ function TavusVideoCard({
       )}
       {status === "ready" && videoUrl && (
         <>
-          <div className="w-full aspect-video rounded-lg overflow-hidden mb-2 shadow-xl border border-emerald-700/30">
+          <div className="w-full aspect-video rounded-lg overflow-hidden mb-4 shadow-lg border border-emerald-200">
             <video
               src={videoUrl}
               controls
               className="w-full h-full bg-black rounded-lg"
             />
           </div>
-          <div className="flex gap-2 mb-2">
-            <Button variant="secondary" onClick={handleDownload}>
+          <div className="flex gap-3 mb-3">
+            <Button variant="secondary" onClick={handleDownload} className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border-emerald-300">
+              <Download className="w-4 h-4 mr-2" />
               Download
             </Button>
             {typeof navigator.share === "function" && (
-              <Button variant="secondary" onClick={handleShare}>
+              <Button variant="secondary" onClick={handleShare} className="bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-300">
                 Share
               </Button>
             )}
           </div>
           {userName && mood && (
-            <div className="text-xs text-slate-300 mb-1">
-              For <span className="font-bold">{userName}</span> about feeling{" "}
+            <div className="text-sm text-gray-600 text-center">
+              For <span className="font-semibold">{userName}</span> about feeling{" "}
               <span className="italic">{mood}</span>
             </div>
           )}
@@ -165,17 +168,17 @@ function TavusVideoCard({
       )}
       {status === "error" && (
         <>
-          <div className="w-20 h-20 rounded-full bg-red-900/40 flex items-center justify-center mb-2">
-            <span className="text-4xl">⚠️</span>
+          <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-4 border-2 border-red-200">
+            <AlertTriangle className="w-8 h-8 text-red-600" />
           </div>
-          <div className="text-lg font-semibold text-red-200 mb-1">
+          <div className="text-lg font-semibold text-red-700 mb-2">
             Oops! Video failed
           </div>
-          <div className="text-xs text-red-300 mb-2">
+          <div className="text-sm text-red-600 mb-4 text-center">
             Something went wrong creating your video. Please try again.
           </div>
           {onRetry && (
-            <Button variant="primary" onClick={onRetry}>
+            <Button variant="primary" onClick={onRetry} className="bg-red-600 hover:bg-red-700">
               Retry
             </Button>
           )}
@@ -252,8 +255,12 @@ export default function JournalPage() {
       .select("*")
       .eq("user_id", profile.id)
       .order("created_at", { ascending: false });
-    if (error) console.error("Error fetching entries", error);
-    else setEntries(data || []);
+
+    if (error) {
+      console.error("Error fetching entries:", error);
+    } else {
+      setEntries(data || []);
+    }
     setLoading(false);
   };
 
@@ -262,19 +269,22 @@ export default function JournalPage() {
 
   const handlePlayAudio = (url: string | null | undefined, id: string) => {
     if (!url) return;
-    if (audioPlayer && playingAudio === id) {
-      audioPlayer.pause();
+
+    if (playingAudio === id) {
+      audioPlayer?.pause();
       setPlayingAudio(null);
-    } else {
-      if (audioPlayer) {
-        audioPlayer.pause();
-      }
-      const newAudio = new Audio(url);
-      setAudioPlayer(newAudio);
-      newAudio.play();
-      setPlayingAudio(id);
-      newAudio.onended = () => setPlayingAudio(null);
+      return;
     }
+
+    if (audioPlayer) {
+      audioPlayer.pause();
+    }
+
+    const audio = new Audio(url);
+    audio.onended = () => setPlayingAudio(null);
+    audio.play();
+    setAudioPlayer(audio);
+    setPlayingAudio(id);
   };
 
   const openDeleteConfirmation = (entry: Entry) => {
@@ -296,107 +306,96 @@ export default function JournalPage() {
   };
 
   const deleteEntry = async () => {
-    if (!deleteConfirmation.entryId || !profile) return;
+    if (!deleteConfirmation.entryId) return;
 
     setIsDeleting(true);
-
     try {
-      // First, get the entry to check for file URLs
-      const { data: entryData, error: fetchError } = await supabase
+      // Get entry details first
+      const { data: entry, error: fetchError } = await supabase
         .from("entries")
-        .select("voice_note_url, ai_response_url, tavus_video_url")
+        .select("*")
         .eq("id", deleteConfirmation.entryId)
         .single();
 
-      if (fetchError) {
-        console.error("Error fetching entry for deletion:", fetchError);
-        return;
+      if (fetchError) throw fetchError;
+
+      // Delete files from storage
+      const filesToDelete = [];
+      if (entry.voice_note_url) {
+        const fileName = entry.voice_note_url.split("/").pop();
+        if (fileName) filesToDelete.push(`${entry.user_id}/${fileName}`);
+      }
+      if (entry.ai_response_url) {
+        const fileName = entry.ai_response_url.split("/").pop();
+        if (fileName) filesToDelete.push(`${entry.user_id}/${fileName}`);
+      }
+      if (entry.tavus_video_url) {
+        const fileName = entry.tavus_video_url.split("/").pop();
+        if (fileName) filesToDelete.push(`${entry.user_id}/${fileName}`);
       }
 
-      // Delete associated files from storage
-      const filesToDelete: string[] = [];
-
-      if (entryData.voice_note_url) {
-        const voiceFilePath =
-          entryData.voice_note_url.split("/voice-recordings/")[1];
-        if (voiceFilePath) filesToDelete.push(voiceFilePath);
-      }
-
-      if (entryData.ai_response_url) {
-        const aiFilePath =
-          entryData.ai_response_url.split("/voice-recordings/")[1];
-        if (aiFilePath) filesToDelete.push(aiFilePath);
-      }
-
-      // Delete files from storage (ignore errors - files may already be deleted)
+      // Delete from storage
       if (filesToDelete.length > 0) {
         await supabase.storage.from("voice-recordings").remove(filesToDelete);
       }
 
-      // Delete the database entry
-      const { error } = await supabase
+      // Delete from database
+      const { error: deleteError } = await supabase
         .from("entries")
         .delete()
         .eq("id", deleteConfirmation.entryId);
 
-      if (error) {
-        console.error("Error deleting entry:", error);
-        return;
-      }
+      if (deleteError) throw deleteError;
 
-      // Invalidate analytics cache to update dashboard
+      // Update local state
+      setEntries((prev) =>
+        prev.filter((e) => e.id !== deleteConfirmation.entryId)
+      );
+
+      // Invalidate analytics cache
       const analyticsService = AnalyticsService.getInstance();
-      analyticsService.invalidateUserCache(profile.id);
-
-      // Refresh the entries list
-      await fetchEntries();
-
-      // Close confirmation dialog
-      closeDeleteConfirmation();
+      analyticsService.invalidateUserCache(profile?.id || "");
 
       // Show success message
       setDeleteSuccess(true);
       setTimeout(() => setDeleteSuccess(false), 3000);
+
+      closeDeleteConfirmation();
     } catch (error) {
-      console.error("Unexpected error during deletion:", error);
+      console.error("Error deleting entry:", error);
     } finally {
       setIsDeleting(false);
     }
   };
 
   const renderEntryMedia = (entry: Entry) => {
-    const hasVoice = !!entry.voice_note_url;
-    const hasAIAudio = !!entry.ai_response_url;
-    const hasVideo = !!entry.tavus_video_url;
-    const hasText = !!entry.text_summary;
-    const hasAnyMedia = hasVoice || hasAIAudio || hasVideo;
-    const showMissingAudio = hasText && !hasAIAudio;
+    const hasVoiceRecording = entry.voice_note_url;
+    const hasAIAudio = entry.ai_response_url;
+    const hasVideo = entry.tavus_video_url;
 
-    // Determine Tavus video status
-    let tavusStatus: "processing" | "ready" | "error" = "processing";
-    if (hasVideo) tavusStatus = "ready";
-    // Optionally, you could track error state if you have a field for it
+    // Show missing audio warning for old entries that might not have AI audio
+    const showMissingAudio = !hasAIAudio && entry.text_summary;
 
-    if (!hasAnyMedia && !showMissingAudio) return null;
+    let tavusStatus: "processing" | "ready" | "error" = "ready";
+    if (entry.tavus_video_url === null) tavusStatus = "processing";
+    else if (!entry.tavus_video_url) tavusStatus = "error";
 
-    const videoUrlSafe: string | undefined = safeVideoUrl(
-      entry.tavus_video_url
-    );
+    const videoUrlSafe = safeVideoUrl(entry.tavus_video_url);
 
     return (
-      <div className="flex flex-col items-center gap-[1rem] mt-4 pt-4 border-t border-gray-700/50">
-        {hasVoice && (
+      <div className="space-y-4">
+        {hasVoiceRecording && (
           <Button
             variant="secondary"
             onClick={() =>
-              handlePlayAudio(entry.voice_note_url, entry.id + "-voice")
+              handlePlayAudio(entry.voice_note_url, entry.id)
             }
-            className="w-full"
+            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
           >
-            {playingAudio === entry.id + "-voice" ? (
+            {playingAudio === entry.id ? (
               <Pause size={16} className="mr-2" />
             ) : (
-              <Play size={16} className="mr-2" />
+              <Mic size={16} className="mr-2" />
             )}
             Your Voice Note
           </Button>
@@ -408,22 +407,21 @@ export default function JournalPage() {
             onClick={() =>
               handlePlayAudio(entry.ai_response_url, entry.id + "-ai")
             }
-            className="w-full"
+            className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
           >
             {playingAudio === entry.id + "-ai" ? (
               <Pause size={16} className="mr-2" />
             ) : (
-              <Play size={16} className="mr-2" />
+              <Volume2 size={16} className="mr-2" />
             )}
             Listen to AI Response
           </Button>
         ) : showMissingAudio ? (
-          <div className="w-full p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
-            <div className="flex items-center space-x-2 text-yellow-400">
-              <span className="text-sm">⚠️</span>
-              <span className="text-xs">
-                AI audio not available (created before audio feature or API key
-                missing)
+          <div className="w-full p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center space-x-2 text-amber-700">
+              <AlertTriangle size={16} />
+              <span className="text-sm">
+                AI audio not available (created before audio feature or API key missing)
               </span>
             </div>
           </div>
@@ -433,23 +431,29 @@ export default function JournalPage() {
         {(hasVideo || entry.tavus_video_url === null) && (
           <TavusVideoCard
             status={tavusStatus}
-            videoUrl={videoUrlSafe}
+            videoUrl={entry.tavus_video_url || undefined}
             userName={profile?.full_name}
             mood={entry.mood_tag}
-            // onRetry={...} // Optionally implement retry logic
+          // onRetry={...} // Optionally implement retry logic
           />
         )}
       </div>
     );
   };
 
+  const activeFiltersCount = [
+    searchTerm !== "",
+    selectedMood !== "all",
+    dateFilter !== "",
+  ].filter(Boolean).length;
+
   return (
-    <div className="min-h-screen bg-grey-2 text-text-blue font-sans px-8 py-[0.5rem]">
+    <div className="w-full min-h-screen bg-gray-50 flex justify-center">
       {/* Success notification */}
       {deleteSuccess && (
-        <div className="fixed top-4 right-4 z-50 bg-gradient-to-br from-green-600 to-black/70 text-white px-6 py-3 rounded-lg shadow-xl/40 shadow-black animate-in slide-in-from-right">
-          <div className="flex items-center space-x-2">
-            <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
+        <div className="fixed top-4 right-4 z-50 bg-white border border-green-200 text-green-800 px-6 py-4 rounded-lg shadow-lg animate-in slide-in-from-right">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
               <span className="text-green-600 text-sm">✓</span>
             </div>
             <span className="font-medium">Entry deleted successfully</span>
@@ -457,107 +461,132 @@ export default function JournalPage() {
         </div>
       )}
 
-      <div className="w-full flex flex-col gap-[2rem] ">
-        {/* back to dashboard button */}
-        <div className="flex items-center justify-between mb-8 mt-[1rem] lg:mt-0 ">
+      <div className="w-full max-w-3xl px-6 py-8 pt-24">
+        {/* Header Section */}
+        <div className="mb-8">
           <Button
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 text-grey-2 text-[12px] hover:text-grey-2/70 md:text-[16px]  "
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6 bg-white hover:bg-gray-50 border border-gray-200"
           >
-            <ArrowLeft className="w-5 h-5" />
-
-            <small>Back to Dashboard</small>
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
           </Button>
+
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Journal</h1>
+              <p className="text-lg text-gray-600">
+                {filteredEntries.length} of {entries.length} entries
+                {activeFiltersCount > 0 && (
+                  <span className="ml-2 text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                    {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedMood("all");
+                  setDateFilter("");
+                }}
+                className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Clear Filters
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => navigate("/dashboard")}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                New Check-in
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Header */}
-        <div className="flex flex-col items-center gap-[1rem] lg:w-[95%] lg:gap-0 lg:flex-row lg:justify-between ">
-          <div className="flex flex-col items-center gap-[0.5rem]">
-            <h1 className="text-3xl font-bold">Journal</h1>
-            <p className="text-text-blue/60">
-              {filteredEntries.length} of {entries.length} entries
-            </p>
-          </div>
+        {/* Enhanced Filters Section */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Input
+                placeholder="Search entries..."
+                value={searchTerm}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setSearchTerm(e.target.value)
+                }
+                className="pl-10 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                icon={<Search size={16} className="text-gray-400" />}
+              />
+            </div>
 
-          <div className="flex gap-4">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedMood("all");
-                setDateFilter("");
-              }}
+            <Select
+              value={selectedMood}
+              onValueChange={(v: MoodTag | "all") => setSelectedMood(v)}
             >
-              Clear Filters
-            </Button>
-            <Button variant="primary" onClick={() => navigate("/dashboard")}>
-              New Check-in
-            </Button>
+              <SelectTrigger className="bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                <SelectValue placeholder="All Moods" />
+              </SelectTrigger>
+              <SelectContent>
+                {MOOD_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="relative">
+              <Input
+                type="date"
+                value={dateFilter}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setDateFilter(e.target.value)
+                }
+                className="pl-10 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+              />
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
           </div>
-        </div>
-
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Input
-            placeholder="Search entries..."
-            value={searchTerm}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setSearchTerm(e.target.value)
-            }
-            className=" bg-gradient-to-br from-dark to-black md:col-span-1"
-            icon={<Search size={16} className="text-gray-400" />}
-          />
-
-          <Select
-            value={selectedMood}
-            onValueChange={(v: MoodTag | "all") => setSelectedMood(v)}
-          >
-            <SelectTrigger className=" bg-gradient-to-br from-dark to-black md:col-span-1">
-              <SelectValue placeholder="All Moods" />
-            </SelectTrigger>
-            <SelectContent>
-              {MOOD_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Input
-            type="date"
-            value={dateFilter}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setDateFilter(e.target.value)
-            }
-            className=" bg-gradient-to-br from-dark to-black md:col-span-1"
-          />
         </div>
 
         {/* Entries List */}
         {loading ? (
-          <div className="text-center p-8">
-            <span className="text-text-blue">Loading entries...</span>
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 text-lg">Loading your entries...</p>
           </div>
         ) : (
           <div className="space-y-6">
             {filteredEntries.map((entry) => (
               <div
                 key={entry.id}
-                className=" flex flex-col gap-[1.5rem] bg-gradient-to-br from-dark to-black p-6 rounded-2xl shadow-2xl/40 shadow-black"
+                className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">
+                {/* Entry Header */}
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center text-2xl">
                       {getMoodEmoji(entry.mood_tag)}
-                    </span>
-
+                    </div>
                     <div>
-                      <h2 className="font-bold text-lg text-grey-2 capitalize">
+                      <h3 className="text-xl font-semibold text-gray-900 capitalize mb-1">
                         {entry.mood_tag}
-                      </h2>
-                      <p className="text-xs text-gray-400">
-                        {new Date(entry.created_at).toLocaleString()}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {new Date(entry.created_at).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </p>
                     </div>
                   </div>
@@ -565,77 +594,97 @@ export default function JournalPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-2 h-auto text-red-600 hover:text-red-400 hover:bg-red-900/20"
+                    className="p-2 h-auto text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
                     onClick={() => openDeleteConfirmation(entry)}
                   >
                     <Trash2 size={16} />
                   </Button>
                 </div>
 
-                <div className="space-y-3 text-sm">
+                {/* Entry Content */}
+                <div className="space-y-4 mb-6">
                   {entry.text_summary && (
-                    <div>
-                      <h4 className="font-semibold text-main mb-[0.5rem]">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h4 className="font-semibold text-blue-700 mb-2 flex items-center">
+                        <FileText className="w-4 h-4 mr-2" />
                         AI Summary
                       </h4>
-                      <p className="text-grey-2">{entry.text_summary}</p>
+                      <p className="text-gray-700 leading-relaxed">{entry.text_summary}</p>
                     </div>
                   )}
                   {entry.transcription && (
-                    <div className="flex flex-col gap-[0.5rem]">
-                      <h4 className="font-semibold text-gray-400">
+                    <div className="border-l-4 border-blue-200 pl-4">
+                      <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                        <Mic className="w-4 h-4 mr-2" />
                         Your Words
                       </h4>
-                      <p className="text-gray-300 italic">
+                      <p className="text-gray-600 italic leading-relaxed">
                         "{entry.transcription}"
                       </p>
                     </div>
                   )}
                 </div>
 
+                {/* Media Section */}
                 {renderEntryMedia(entry)}
               </div>
             ))}
+
             {filteredEntries.length === 0 && (
-              <div className="text-center py-12 text-grey-2">
-                <p>No entries match your filters.</p>
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No entries found</h3>
+                <p className="text-gray-500 mb-6">
+                  {entries.length === 0
+                    ? "Start your journey by creating your first check-in."
+                    : "Try adjusting your filters to find what you're looking for."
+                  }
+                </p>
+                <Button
+                  variant="primary"
+                  onClick={() => navigate("/dashboard")}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Create First Entry
+                </Button>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Enhanced Delete Confirmation Modal */}
       {deleteConfirmation.isOpen && (
-        <div className="w-full h-full absolute top-0 left-0 flex items-center justify-center bg-black/40 backdrop-blur-2xl z-[999] lg:w-[full] ">
-          <div className="w-full flex flex-col items-center gap-[1rem] bg-grey-2 rounded-2xl p-6 mx-4 border-2 border-red lg:w-[400px] ">
-            <div className="flex flex-col items-center gap-[0.5rem]">
-              <img src={DeleteBinIcon} alt="delete icon" />
-
-              <div className="flex flex-col items-center gap-[0.3rem]">
-                <h3 className="text-lg font-semibold text-text-blue">
-                  Delete Entry
-                </h3>
-
-                <p className="text-sm text-text-blue/70">
-                  This action cannot be undone
-                </p>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-600" />
               </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Delete Entry
+              </h3>
+              <p className="text-gray-600">
+                This action cannot be undone
+              </p>
             </div>
 
-            <div className="mb-6 p-4 bg-gradient-to-br from-dark to-black rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <span className="text-xl">
+            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+              <div className="flex items-center space-x-3 mb-2">
+                <span className="text-2xl">
                   {getMoodEmoji(deleteConfirmation.entryMood)}
                 </span>
-                <span className="font-medium text-gray-300 capitalize">
+                <span className="font-medium text-gray-900 capitalize">
                   {deleteConfirmation.entryMood}
                 </span>
               </div>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-600 mb-3">
                 Created on {deleteConfirmation.entryDate}
               </p>
-              <p className="text-sm text-red-400 mt-2">
+              <p className="text-sm text-red-600">
                 This will permanently delete the entry, voice recording, AI
                 response audio, and any associated files.
               </p>
@@ -646,7 +695,7 @@ export default function JournalPage() {
                 variant="secondary"
                 onClick={closeDeleteConfirmation}
                 disabled={isDeleting}
-                className="flex-1"
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700"
               >
                 Cancel
               </Button>
@@ -654,17 +703,17 @@ export default function JournalPage() {
                 variant="primary"
                 onClick={deleteEntry}
                 disabled={isDeleting}
-                className="flex-1 bg-red-600 hover:bg-red-700"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
               >
                 {isDeleting ? (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-center space-x-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     <span>Deleting...</span>
                   </div>
                 ) : (
                   <>
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    Delete Entry
                   </>
                 )}
               </Button>

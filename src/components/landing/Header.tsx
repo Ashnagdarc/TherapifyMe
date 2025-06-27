@@ -29,36 +29,38 @@ export default function Header() {
 
   return (
     <header
-      className={`w-full ${
-        isOpen &&
-        " h-dvh bg-sky-blue/30 backdrop-blur-2xl transition-all duration-200 ease-in"
-      } bg-sky-blue py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:flex-row md:justify-center md:gap-0`}
+      className={`w-full ${isOpen &&
+        " h-dvh backdrop-blur-3xl transition-all duration-200 ease-in"
+        } py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:flex-row md:justify-center md:gap-0`}
     >
-      <div className="w-[95%] h-[68px] flex justify-between items-center bg-white mx-auto px-6 rounded-[1rem] shadow-xl/50 shadow-primery/50">
-        <div className="flex items-center gap-[0.4rem]">
-          <Logo />
+      <div className="w-[95%] h-[68px] backdrop-blur-3xl backdrop-saturate-200 mx-auto px-6 rounded-[1.2rem] relative overflow-hidden">
 
-          <span className="text-[25px] font-bold text-text-blue">
-            TherapifyMe
-          </span>
+        <div className="relative z-10 flex justify-between items-center h-full">
+          <div className="flex items-center gap-[0.4rem]">
+            <Logo />
+            <span className="text-[25px] font-bold text-text-blue">
+              TherapifyMe
+            </span>
+          </div>
+
+          {!isOpen ? (
+            <Menu className="md:hidden" onClick={handleNavToggle} />
+          ) : (
+            <X className="md:hidden" onClick={handleNavToggle} />
+          )}
+
+          <NavList className="hidden md:flex items-center gap-[2rem]" />
+
+          <CTAButton className="hidden md:flex gap-[0.5rem] bg-gray-900 hover:bg-gray-800" />
         </div>
-
-        {!isOpen ? (
-          <Menu className="md:hidden" onClick={handleNavToggle} />
-        ) : (
-          <X className="md:hidden" onClick={handleNavToggle} />
-        )}
-
-        <NavList className="hidden md:flex items-center gap-[2rem]" />
-
-        <CTAButton className="hidden md:flex gap-[0.5rem] bg-gray-900 hover:bg-gray-800" />
       </div>
 
       {isOpen && (
-        <div className="w-[80%] h-[35svh] flex flex-col items-center justify-between py-[1rem] bg-white rounded-[0.6rem] shadow-xl/50 shadow-black/70 md:hidden">
-          <NavList className="flex flex-col items-center gap-[1rem]" />
-
-          <CTAButton className="flex items-center gap-[0.5rem] bg-gray-900 hover:bg-gray-800 " />
+        <div className="w-[80%] h-[35svh] backdrop-blur-3xl backdrop-saturate-200 rounded-[1.2rem] relative overflow-hidden md:hidden">
+          <div className="relative z-10 flex flex-col items-center justify-between py-[1rem] h-full">
+            <NavList className="flex flex-col items-center gap-[1rem]" />
+            <CTAButton className="flex items-center gap-[0.5rem] bg-gray-900 hover:bg-gray-800 " />
+          </div>
         </div>
       )}
     </header>

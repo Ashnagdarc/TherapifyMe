@@ -71,9 +71,22 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 pt-24">
+      {/* Greeting Section - Moved above orb */}
+      <div className="text-center mb-12">
+        <h1 className="text-6xl font-bold mb-3 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent animate-pulse">
+          Hello {profile?.name?.split(' ')[0] || 'there'}
+        </h1>
+        <p className="text-xl font-semibold text-gray-600 mb-2">
+          {getGreeting()}
+        </p>
+        <p className="text-lg text-gray-600">
+          How are you feeling today?
+        </p>
+      </div>
+
       {/* Orb Section */}
-      <div className="text-center mb-8">
+      <div className="text-center">
         {/* Soft ambient glow behind orb */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -81,18 +94,10 @@ export default function Dashboard() {
           </div>
 
           {/* Main Orb Component - Preserved exactly as user requested */}
-          <div className="relative z-10 mb-8">
+          <div className="relative z-10">
             <CheckIn onCheckInComplete={handleCheckInComplete} />
           </div>
         </div>
-
-        {/* Greeting */}
-        <h1 className="text-3xl font-light text-gray-800 mb-2">
-          {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'there'}
-        </h1>
-        <p className="text-gray-600 mb-8">
-          How are you feeling today?
-        </p>
       </div>
     </div>
   );
