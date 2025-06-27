@@ -52,7 +52,7 @@ interface ToggleLinkProps {
 
 export default function AuthPage() {
   return (
-    <div className="w-full min-h-screen flex items-center justify-between">
+    <div className="w-screen min-h-screen flex items-stretch">
       {/* Left Side - Form */}
       <FormContainer />
 
@@ -141,7 +141,7 @@ function FormContainer() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center px-8 py-12 font-lato bg-white">
+    <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-12 font-lato bg-white">
       <div className="max-w-md w-full space-y-8">
         <Logo />
 
@@ -239,11 +239,10 @@ function NameInput({ name, setName, validationErrors }: NameInputProps) {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Enter your full name"
-        className={`w-full px-4 py-4 border rounded-lg focus:ring-3 focus:border-transparent transition-focus duration-300 ease-linear outline-hidden text-gray-900 placeholder-gray-400 ${
-          validationErrors.name
-            ? "border-red-300 focus:ring-red-500"
-            : "border-gray-200 focus:ring-blue-500"
-        }`}
+        className={`w-full px-4 py-4 border rounded-lg focus:ring-3 focus:border-transparent transition-focus duration-300 ease-linear outline-hidden text-gray-900 placeholder-gray-400 ${validationErrors.name
+          ? "border-red-300 focus:ring-red-500"
+          : "border-gray-200 focus:ring-blue-500"
+          }`}
         required
       />
       {validationErrors.name && (
@@ -262,11 +261,10 @@ function EmailInput({ email, setEmail, validationErrors }: EmailInputProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
-          className={`w-full px-4 py-4 pr-12 border rounded-lg focus:ring-3 focus:border-transparent transition-focus duration-300 ease-linear outline-hidden text-gray-900 placeholder-gray-400 ${
-            validationErrors.email
-              ? "border-red-300 focus:ring-red-500"
-              : "border-gray-200 focus:ring-blue-500"
-          }`}
+          className={`w-full px-4 py-4 pr-12 border rounded-lg focus:ring-3 focus:border-transparent transition-focus duration-300 ease-linear outline-hidden text-gray-900 placeholder-gray-400 ${validationErrors.email
+            ? "border-red-300 focus:ring-red-500"
+            : "border-gray-200 focus:ring-blue-500"
+            }`}
           required
         />
         <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -296,11 +294,10 @@ function PasswordInput({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-          className={`w-full px-4 py-4 pr-12 border rounded-lg focus:ring-3 focus:border-transparent outline-hidden transition-focus duration-300 ease-linear text-gray-900 placeholder-gray-400 ${
-            validationErrors.password
-              ? "border-red-300 focus:ring-red-500"
-              : "border-gray-200 focus:ring-blue-500"
-          }`}
+          className={`w-full px-4 py-4 pr-12 border rounded-lg focus:ring-3 focus:border-transparent outline-hidden transition-focus duration-300 ease-linear text-gray-900 placeholder-gray-400 ${validationErrors.password
+            ? "border-red-300 focus:ring-red-500"
+            : "border-gray-200 focus:ring-blue-500"
+            }`}
           required
         />
         <button
@@ -327,46 +324,44 @@ function PasswordStrengthHint({
   password,
   validationErrors,
 }: PasswordStrengthHintProps) {
-  return (
-    isSignUp &&
-    !validationErrors.password &&
-    password && (
-      <div className="mt-1 space-y-1 text-xs">
-        <div className="flex items-center">
-          <div
-            className={`w-2 h-2 rounded-full mr-2 ${
-              password.length >= 8 ? "bg-green-500" : "bg-gray-300"
-            }`}
-          />
-          <span
-            className={
-              password.length >= 8 ? "text-green-600" : "text-gray-500"
-            }
-          >
-            At least 8 characters
-          </span>
-        </div>
+  if (!isSignUp || !password || validationErrors.password) {
+    return null;
+  }
 
-        <div className="flex items-center">
-          <div
-            className={`w-2 h-2 rounded-full mr-2 ${
-              /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
-                ? "bg-green-500"
-                : "bg-gray-300"
+  return (
+    <div className="mt-1 space-y-1 text-xs">
+      <div className="flex items-center">
+        <div
+          className={`w-2 h-2 rounded-full mr-2 ${password.length >= 8 ? "bg-green-500" : "bg-gray-300"
             }`}
-          />
-          <span
-            className={
-              /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
-                ? "text-green-600"
-                : "text-gray-500"
-            }
-          >
-            Contains uppercase, lowercase & number
-          </span>
-        </div>
+        />
+        <span
+          className={
+            password.length >= 8 ? "text-green-600" : "text-gray-500"
+          }
+        >
+          At least 8 characters
+        </span>
       </div>
-    )
+
+      <div className="flex items-center">
+        <div
+          className={`w-2 h-2 rounded-full mr-2 ${/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
+            ? "bg-green-500"
+            : "bg-gray-300"
+            }`}
+        />
+        <span
+          className={
+            /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
+              ? "text-green-600"
+              : "text-gray-500"
+          }
+        >
+          Contains uppercase, lowercase & number
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -440,9 +435,9 @@ function ToggleLink({ isSignUp, setIsSignUp }: ToggleLinkProps) {
 
 function HeroBackgroundComponent() {
   return (
-    <div className="hidden lg:flex-1 lg:flex relative">
+    <div className="hidden lg:flex lg:w-1/2 relative">
       <div
-        className="w-full h-[801px] self-end bg-cover bg-center bg-no-repeat relative rounded-[1rem] overflow-hidden"
+        className="w-full h-screen bg-cover bg-center bg-no-repeat relative overflow-hidden"
         style={{
           backgroundImage: `url('./Rectangle 7.png')`,
         }}

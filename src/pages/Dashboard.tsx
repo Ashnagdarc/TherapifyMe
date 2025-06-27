@@ -15,7 +15,6 @@ export default function Dashboard() {
   );
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     if (!profile) return;
@@ -43,18 +42,6 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [profile, authLoading, navigate, fetchDashboardData]);
 
-  // Auto-refresh every 30 seconds (keep for future use)
-
-  // useEffect(() => {
-  //   if (!profile || loading) return;
-
-  //   const interval = setInterval(() => {
-  //     fetchDashboardData();
-  //   }, 30000); // 30 seconds
-
-  //   return () => clearInterval(interval);
-  // }, [profile, loading, fetchDashboardData]);
-
   function handleCheckInComplete() {
     // Invalidate cache and refresh immediately
     const analyticsService = AnalyticsService.getInstance();
@@ -62,18 +49,12 @@ export default function Dashboard() {
     fetchDashboardData();
   }
 
-  function formatLastUpdated() {
-    if (!lastUpdated) return "";
-    const now = new Date();
-    const diffInSeconds = Math.floor(
-      (now.getTime() - lastUpdated.getTime()) / 1000
-    );
-
-    if (diffInSeconds < 30) return "Just updated";
-    if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-
-    return lastUpdated.toLocaleTimeString();
+  function getGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    if (hour < 21) return "Good evening";
+    return "Good night";
   }
 
   if (loading || !profile) {
@@ -90,36 +71,28 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-sky-blue/20 font-lato text-text-blue md:w-full">
-      {/* Real-time status bar and header */}
-      <div className="z-10 p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-
-              <p className="text-xs text-slate-400">
-                Live Data • {formatLastUpdated()}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Responsive grid layout */}
-      <div className="w-[300px] h-full p-4 flex flex-col gap-[0.5rem] md:w-full">
-        {/* Main content: orb area, responsive */}
-        <div className=" w-full h-full flex items-center justify-center relative">
-          {/* Soft ambient glow behind orb */}
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
+      {/* Orb Section */}
+      <div className="text-center mb-8">
+        {/* Soft ambient glow behind orb */}
+        <div className="relative">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-72 h-72 md:w-96 md:h-96 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
+            <div className="w-72 h-72 bg-gradient-to-r from-blue-400/30 via-purple-400/30 to-cyan-400/30 rounded-full blur-3xl"></div>
           </div>
 
-          {/* Main Orb Component */}
-          <div className="relative z-10 w-full h-full flex items-center justify-center ">
+          {/* Main Orb Component - Preserved exactly as user requested */}
+          <div className="relative z-10 mb-8">
             <CheckIn onCheckInComplete={handleCheckInComplete} />
           </div>
         </div>
+
+        {/* Greeting */}
+        <h1 className="text-3xl font-light text-gray-800 mb-2">
+          {getGreeting()}, {profile?.full_name?.split(' ')[0] || 'there'}
+        </h1>
+        <p className="text-gray-600 mb-8">
+          How are you feeling today?
+        </p>
       </div>
     </div>
   );

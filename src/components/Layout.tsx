@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { AnalyticsService, DashboardData } from "../services/analyticsService";
+import { User } from "../types/database";
 
 import DashboardSidebar from "./dashboard/DashboardSidebar";
 import { Button } from "./ui/Button";
@@ -101,7 +102,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           loading={loading}
           profile={profile}
           isRefreshing={isRefreshing}
-        />
+        >
+          {children}
+        </DashboardContainer>
       )}
 
       <main className="w-full h-svh flex overflow-y-scroll">{children}</main>
@@ -125,16 +128,14 @@ function DashboardContainer({
 
   return (
     <section
-      className={`${
-        openDash && "w-full h-full lg:w-[300px]"
-      } w-[10%]  absolute z-[999] flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
+      className={`${openDash && "w-full h-full lg:w-[300px]"
+        } w-[10%]  absolute z-[999] flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
     >
       <div
-        className={`${
-          !openDash
-            ? "w-full items-end pt-[1rem] "
-            : "w-[65%] h-svh items-center bg-grey-2 py-[1rem] md:py-[2rem]  lg:w-[270px] "
-        }  flex flex-col gap-[2rem]  px-[0.5rem] text-[15px] text-black  md:pt-[0.7rem] md:text-[16px]  transition-all duration-300 ease-in `}
+        className={`${!openDash
+          ? "w-full items-end pt-[1rem] "
+          : "w-[65%] h-svh items-center bg-grey-2 py-[1rem] md:py-[2rem]  lg:w-[270px] "
+          }  flex flex-col gap-[2rem]  px-[0.5rem] text-[15px] text-black  md:pt-[0.7rem] md:text-[16px]  transition-all duration-300 ease-in `}
       >
         <div className="w-full flex items-center justify-between">
           {openDash && (
@@ -147,10 +148,9 @@ function DashboardContainer({
           )}
 
           <div
-            className={`${
-              !openDash &&
+            className={`${!openDash &&
               " p-[0.5rem] bg-grey-2 rounded-full border-[3px] border-main shadow-xl/50 shadow-black md:p-[1rem] "
-            }`}
+              }`}
           >
             <PanelRightOpen
               className="cursor-pointer"
@@ -161,9 +161,8 @@ function DashboardContainer({
 
         {openDash && (
           <div
-            className={`w-full flex flex-col items-start gap-[1rem] capitalize ${
-              !openDash ? "opacity-0" : "opacity-100"
-            } transition-opacity delay-100 duration-300 ease-in `}
+            className={`w-full flex flex-col items-start gap-[1rem] capitalize ${!openDash ? "opacity-0" : "opacity-100"
+              } transition-opacity delay-100 duration-300 ease-in `}
           >
             {/* Move to Journal button */}
             <div className="flex items-center gap-[0.5rem] cursor-pointer ">
@@ -175,7 +174,7 @@ function DashboardContainer({
           </div>
         )}
 
-        {openDash && (
+        {openDash && profile && (
           <DashboardSidebar
             dashboardData={dashboardData}
             loading={loading || isRefreshing}
@@ -185,9 +184,8 @@ function DashboardContainer({
       </div>
 
       <div
-        className={`${
-          !openDash ? "hidden" : "flex"
-        } bg-black/40 backdrop-blur-xl w-[35%] h-full lg:hidden`}
+        className={`${!openDash ? "hidden" : "flex"
+          } bg-black/40 backdrop-blur-xl w-[35%] h-full lg:hidden`}
       ></div>
     </section>
   );
