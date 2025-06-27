@@ -260,11 +260,11 @@ export default function CheckInPage() {
       // Generate AI response
       setProcessingStep("Generating AI response...");
       // Import the enhanced AI service
-      const { AIResponseService } = await import(
+      const { EnhancedAIService } = await import(
         "../services/aiResponseService"
       );
 
-      const aiResponse = await AIResponseService.generateResponse(
+      const aiResponse = await EnhancedAIService.generateResponse(
         selectedMood,
         transcription,
         profile.preferred_tone as "calm" | "motivational" | "reflective",

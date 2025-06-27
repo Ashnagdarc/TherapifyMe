@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { TranscriptionService } from "../../services/transcriptionService";
-import { AIResponseService } from "../../services/aiResponseService";
+import { EnhancedAIService } from "../../services/enhancedAIService";
 import { TavusService } from "../../services/tavusService";
 import { ElevenLabsService } from "../../services/elevenLabsService";
 import { MoodTag } from "../../types/database";
@@ -185,7 +185,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
       setProcessingMessage("Analyzing your voice recording...");
       // Use original transcription from voice recording, not edited text
       const { finalResponse, videoScript } =
-        await AIResponseService.generateEnhancedResponse(transcription);
+        await EnhancedAIService.generateEnhancedResponse(transcription);
 
       setProcessingMessage("Creating AI audio response...");
       let aiResponseAudioUrl: string | null = null;

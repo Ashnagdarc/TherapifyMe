@@ -719,23 +719,6 @@ export class AIResponseService {
     console.log('AI configuration updated:', config);
   }
 
-
-  // Method for backward compatibility with CheckIn component
-  static async generateEnhancedResponse(transcription: string): Promise<{
-    finalResponse: string;
-    aiConfidence: number;
-    source: string;
-    videoScript: string;
-  }> {
-    const result = await this.generateResponse("content", transcription, "calm");
-    return {
-      finalResponse: result.response,
-      aiConfidence: 85,
-      source: "Enhanced Templates",
-      videoScript: "Your check-in has been processed with care."
-    };
-  }
-
   static async runDiagnostics(): Promise<{
     huggingFace: { success: boolean; message: string };
     tavus: { success: boolean; message: string };
