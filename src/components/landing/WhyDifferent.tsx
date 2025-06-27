@@ -29,41 +29,49 @@ const features = [
 
 export default function WhyDifferent() {
   return (
-    <FadeInOnScroll id="why-different" className="py-24 bg-white">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <p className="text-3xl tracking-[-0.89px] md:text-[80.59px] md:leading-[57.92px] font-[700] text-text-blue-900">
-            Why it's different
-          </p>
+    <div className="py-24 bg-gradient-to-b from-white via-gray-25 to-gray-50">
+      <FadeInOnScroll id="why-different" className="w-full">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-bold text-slate-800 mb-4">
+              Why it's different
+            </h2>
+          </div>
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl">
+              {features.map((feature, index) => (
+                <FeatureCard
+                  key={index}
+                  icon={feature.icon}
+                  title={feature.title}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="grid justify-center gap-[2rem] md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, index) => (
-            <FeatureCard
-              key={index}
-              icon={feature.icon}
-              title={feature.title}
-            />
-          ))}
-        </div>
-      </div>
-    </FadeInOnScroll>
+      </FadeInOnScroll>
+    </div>
   );
 }
 
 function FeatureCard({ icon, title }: FeatureCardProps) {
   return (
-    <div className=" px-[1px] pb-[1px] rounded-2xl bg-[linear-gradient(to_bottom,_#ffffff,_#0093e5)] shadow-lg/40 shadow-dark">
-      <div className="w-[270px] h-[206px] flex flex-col items-start justify-center gap-[2rem] p-6 text-left bg-white rounded-2xl ">
-        <div className="flex justify-center items-center">
-          <div className=" h-[50px] w-[50px] flex items-center justify-center bg-main backdrop-blur-md rounded-[9px]  ">
+    <div className="group relative">
+      {/* Card with gradient background effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-2xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+      {/* Main card content */}
+      <div className="relative bg-white rounded-2xl p-6 shadow-xl border border-blue-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 min-h-[200px] flex flex-col justify-center items-center text-center">
+        <div className="mb-6">
+          <div className="h-14 w-14 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
             {React.cloneElement(icon as ReactElement, {
               className: "h-7 w-7 text-white",
-              strokeWidth: 1.5,
+              strokeWidth: 2,
             })}
           </div>
         </div>
 
-        <p className="font-[400] text-text-blue text-[16px] h-12 flex items-center justify-center md:text-[20px]">
+        <p className="text-slate-700 text-sm md:text-base font-medium leading-relaxed max-w-[200px]">
           {title}
         </p>
       </div>
