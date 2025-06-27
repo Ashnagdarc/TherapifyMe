@@ -31,10 +31,15 @@ export default function Header() {
     <header
       className={`w-full ${isOpen &&
         " h-dvh backdrop-blur-3xl transition-all duration-200 ease-in"
-        } py-4 flex flex-col items-center gap-[2rem] sticky top-0 z-50 md:flex-row md:justify-center md:gap-0`}
+        } py-2 flex flex-col items-center gap-[1rem] fixed top-2 z-50 md:flex-row md:justify-center md:gap-0`}
     >
-      <div className="w-[95%] h-[68px] backdrop-blur-3xl backdrop-saturate-200 mx-auto px-6 rounded-[1.2rem] relative overflow-hidden">
-
+      <div className="w-[90%] max-w-4xl h-[60px] mx-auto px-4 rounded-2xl relative overflow-hidden border border-white/20"
+        style={{
+          background: 'rgba(255, 255, 255, 0.15)',
+          backdropFilter: 'blur(15px)',
+          WebkitBackdropFilter: 'blur(15px)'
+        }}
+      >
         <div className="relative z-10 flex justify-between items-center h-full">
           <div className="flex items-center gap-[0.4rem]">
             <Logo />
@@ -56,7 +61,7 @@ export default function Header() {
       </div>
 
       {isOpen && (
-        <div className="w-[80%] h-[35svh] backdrop-blur-3xl backdrop-saturate-200 rounded-[1.2rem] relative overflow-hidden md:hidden">
+        <div className="w-[80%] h-[35svh] bg-[linear-gradient(to_bottom,_#CCE1FF_0%,_#CCE1FF_30%,_#E0EEFF_100%)] rounded-[1.2rem] relative overflow-hidden md:hidden">
           <div className="relative z-10 flex flex-col items-center justify-between py-[1rem] h-full">
             <NavList className="flex flex-col items-center gap-[1rem]" />
             <CTAButton className="flex items-center gap-[0.5rem] bg-gray-900 hover:bg-gray-800 " />
