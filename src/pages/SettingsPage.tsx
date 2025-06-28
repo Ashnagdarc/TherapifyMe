@@ -40,7 +40,8 @@ const TONE_OPTIONS = [
   {
     value: "calm",
     label: "Calm & Soothing",
-    description: "Gentle, peaceful responses that help you relax and find balance",
+    description:
+      "Gentle, peaceful responses that help you relax and find balance",
     icon: "😌",
   },
   {
@@ -89,7 +90,9 @@ export default function SettingsPage() {
       setFormData({
         name: profile.name || "",
         timezone: profile.timezone || "UTC",
-        preferred_tone: (profile.preferred_tone as "calm" | "motivational" | "reflective") || "calm",
+        preferred_tone:
+          (profile.preferred_tone as "calm" | "motivational" | "reflective") ||
+          "calm",
       });
       fetchUserStats();
     }
@@ -118,7 +121,8 @@ export default function SettingsPage() {
     });
 
     const mostCommonMood =
-      Object.entries(moodCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || "neutral";
+      Object.entries(moodCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
+      "neutral";
 
     setStats({
       totalEntries,
@@ -180,7 +184,9 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `therapify-me-data-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `therapify-me-data-${
+        new Date().toISOString().split("T")[0]
+      }.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -245,10 +251,11 @@ export default function SettingsPage() {
 
         {message && (
           <div
-            className={`p-4 mb-6 rounded-lg flex items-center gap-3 ${message.type === "success"
-              ? "bg-green-50 text-green-700 border border-green-200"
-              : "bg-red-50 text-red-700 border border-red-200"
-              }`}
+            className={`p-4 mb-6 rounded-lg flex items-center gap-3 ${
+              message.type === "success"
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : "bg-red-50 text-red-700 border border-red-200"
+            }`}
           >
             {message.type === "success" ? (
               <CheckCircle className="w-5 h-5" />
@@ -265,30 +272,32 @@ export default function SettingsPage() {
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-6 pb-[2rem]">
           {/* User Profile Card */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-4">
+            <div className="flex items-start justify-between mb-[2rem]">
+              <div className="flex flex-col md:flex-row  md:items-center gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                   <User className="w-6 h-6 text-white" />
                 </div>
+
                 <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">Your Profile</h2>
-                  <p className="text-gray-600">Personalize your TherapifyMe experience</p>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    Your Profile
+                  </h2>
+                  <p className="text-gray-600">
+                    Personalize your TherapifyMe experience
+                  </p>
                 </div>
               </div>
               {isEditing ? (
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => setIsEditing(false)}
-                    variant="outline"
-                  >
+                <div className="flex flex-col items-end md:flex-row md:items-center gap-2">
+                  <Button onClick={() => setIsEditing(false)} variant="outline">
                     Cancel
                   </Button>
                   <Button
                     onClick={handleSave}
-                    className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                    className="bg-green-600 hover:bg-green-700 text-white text-right flex items-center gap-2 md:text-center"
                     disabled={isSaving}
                   >
                     {isSaving ? (
@@ -303,7 +312,7 @@ export default function SettingsPage() {
                 <Button
                   onClick={() => setIsEditing(true)}
                   variant="outline"
-                  className="flex items-center gap-2"
+                  className="w-full flex items-center gap-2"
                 >
                   <Edit3 className="w-4 h-4" />
                   Edit Profile
@@ -330,7 +339,9 @@ export default function SettingsPage() {
                 </label>
                 <select
                   value={formData.timezone}
-                  onChange={(e) => handleInputChange("timezone", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("timezone", e.target.value)
+                  }
                   disabled={!isEditing}
                   className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                 >
@@ -351,7 +362,9 @@ export default function SettingsPage() {
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-900">AI Response Style</h2>
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  AI Response Style
+                </h2>
                 <p className="text-gray-600">Choose how Aura responds to you</p>
               </div>
             </div>
@@ -360,12 +373,20 @@ export default function SettingsPage() {
               {TONE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => isEditing && handleInputChange("preferred_tone", option.value)}
+                  onClick={() =>
+                    isEditing &&
+                    handleInputChange("preferred_tone", option.value)
+                  }
                   disabled={!isEditing}
-                  className={`p-4 rounded-xl text-left transition-all duration-200 border-2 ${formData.preferred_tone === option.value
-                    ? "border-purple-500 bg-purple-50"
-                    : "border-gray-200 hover:border-purple-300 bg-gray-50"
-                    } ${!isEditing ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+                  className={`p-4 rounded-xl text-left transition-all duration-200 border-2 ${
+                    formData.preferred_tone === option.value
+                      ? "border-purple-500 bg-purple-50"
+                      : "border-gray-200 hover:border-purple-300 bg-gray-50"
+                  } ${
+                    !isEditing
+                      ? "cursor-not-allowed opacity-70"
+                      : "cursor-pointer"
+                  }`}
                 >
                   <div className="text-2xl mb-2">{option.icon}</div>
                   <div className="font-semibold text-gray-900 mb-1">
@@ -385,32 +406,48 @@ export default function SettingsPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Your Journey</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Your Journey
+              </h3>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Total Check-ins</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Total Check-ins
+                  </span>
                 </div>
-                <span className="text-lg font-bold text-gray-900">{stats.totalEntries}</span>
+                <span className="text-lg font-bold text-gray-900">
+                  {stats.totalEntries}
+                </span>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Volume2 className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Active Days</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Active Days
+                  </span>
                 </div>
-                <span className="text-lg font-bold text-gray-900">{stats.totalDays}</span>
+                <span className="text-lg font-bold text-gray-900">
+                  {stats.totalDays}
+                </span>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{getMoodEmoji(stats.averageMood)}</span>
-                  <span className="text-sm font-medium text-gray-700">Common Mood</span>
+                  <span className="text-lg">
+                    {getMoodEmoji(stats.averageMood)}
+                  </span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Common Mood
+                  </span>
                 </div>
-                <span className="text-lg font-bold text-gray-900 capitalize">{stats.averageMood}</span>
+                <span className="text-lg font-bold text-gray-900 capitalize">
+                  {stats.averageMood}
+                </span>
               </div>
             </div>
           </div>
@@ -456,15 +493,19 @@ export default function SettingsPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl border border-red-200">
             <div className="flex flex-col items-center gap-4 mb-6">
-              <img src={DeleteIcon} alt="Delete confirmation" className="w-16 h-16" />
+              <img
+                src={DeleteIcon}
+                alt="Delete confirmation"
+                className="w-16 h-16"
+              />
               <h2 className="text-xl font-bold text-gray-900 text-center">
                 Delete Your Account?
               </h2>
             </div>
 
             <p className="text-gray-600 text-center mb-6">
-              This action cannot be undone. All of your journal entries, AI responses,
-              and personal settings will be permanently deleted.
+              This action cannot be undone. All of your journal entries, AI
+              responses, and personal settings will be permanently deleted.
             </p>
 
             <div className="flex flex-col gap-3">
