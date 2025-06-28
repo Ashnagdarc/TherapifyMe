@@ -56,7 +56,7 @@ export default function Hero() {
           </h1>
 
           {/* Circular Text Badge positioned close to heading */}
-          <div className="absolute -top-4 right-16 z-30 md:-top-8 md:-right-20">
+          <div className="absolute top-0 right-[-4rem] z-30 md:-top-8 md:-right-20">
             {/* Enhanced glow background */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-emerald-500/30 rounded-full blur-2xl animate-pulse"></div>
 
