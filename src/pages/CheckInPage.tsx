@@ -367,7 +367,7 @@ export default function CheckInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50 ">
       <div className="max-w-2xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center mb-8">

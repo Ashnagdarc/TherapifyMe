@@ -215,7 +215,7 @@ function DashboardNavContainer({
           <div className="relative">
             <button
               onClick={handleMenuToggle}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
             >
               <MoreHorizontal className="w-5 h-5 text-gray-600" />
             </button>
@@ -226,7 +226,7 @@ function DashboardNavContainer({
                 <NavLink
                   to="/settings"
                   onClick={() => setOpenMenu(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-white/50 transition-all duration-200 rounded-xl mx-2"
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-white/50 transition-all duration-200 rounded-xl mx-2 cursor-pointer"
                 >
                   <Settings className="w-4 h-4" />
                   Settings
@@ -237,7 +237,7 @@ function DashboardNavContainer({
                     setOpenMenu(false);
                     onSignOut();
                   }}
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50/70 transition-all duration-200 w-full text-left rounded-xl mx-2"
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50/70 transition-all duration-200 w-full text-left rounded-xl mx-2 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   Log Out
@@ -271,7 +271,7 @@ function SidebarToggle({ onSidebarToggle }: { onSidebarToggle: () => void }) {
   return (
     <button
       onClick={onSidebarToggle}
-      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+      className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
     >
       <PanelRightOpen className="w-5 h-5 text-gray-600" />
     </button>

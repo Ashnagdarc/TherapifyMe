@@ -75,7 +75,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className={`w-full min-h-screen bg-gray-50 flex flex-col items-center justify-center px-8 pt-24 ${
+      className={`w-full min-h-screen bg-gray-50 flex flex-col items-center justify-center px-8 pt-24 pb-[2rem] ${
         width <= 375 && "pt-[10rem]"
       } ${width >= 1200 && "pt-[10rem]"} `}
     >
@@ -100,7 +100,7 @@ export default function Dashboard() {
           </div>
 
           {/* Main Orb Component */}
-          <div className="relative z-10 w-full h-full flex items-center justify-center ">
+          <div className="relative z-10 w-full h-full flex items-center justify-center">
             <CheckIn onCheckInComplete={handleCheckInComplete} />
           </div>
         </div>
