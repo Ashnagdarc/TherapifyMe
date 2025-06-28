@@ -29,15 +29,16 @@ export default function Header() {
 
   return (
     <header
-      className={`w-full ${isOpen &&
-        " h-dvh backdrop-blur-3xl transition-all duration-200 ease-in"
-        } py-2 flex flex-col items-center gap-[1rem] fixed top-2 z-50 md:flex-row md:justify-center md:gap-0`}
+      className={`w-full ${
+        isOpen && " h-dvh backdrop-blur-3xl transition-all duration-200 ease-in"
+      } py-2 flex flex-col items-center gap-[1rem] fixed top-2 z-50  md:flex-row md:justify-center md:gap-0`}
     >
-      <div className="w-[90%] max-w-4xl h-[60px] mx-auto px-4 rounded-2xl relative overflow-hidden border border-white/20"
+      <div
+        className="w-[90%] max-w-4xl h-[60px] mx-auto px-4 rounded-2xl relative overflow-hidden border border-white/20"
         style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(15px)',
-          WebkitBackdropFilter: 'blur(15px)'
+          background: "rgba(255, 255, 255, 0.15)",
+          backdropFilter: "blur(15px)",
+          WebkitBackdropFilter: "blur(15px)",
         }}
       >
         <div className="relative z-10 flex justify-between items-center h-full">
