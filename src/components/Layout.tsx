@@ -4,7 +4,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { AnalyticsService, DashboardData } from "../services/analyticsService";
 
 import DashboardSidebar from "./dashboard/DashboardSidebar";
-import { Button } from "./ui/Button";
 
 import Logo from "./Logo";
 
@@ -80,7 +79,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (!profile || loading) return;
     const interval = setInterval(() => {
       fetchDashboardData();
-    }, 30000);
+    }, 300000);
 
     return () => clearInterval(interval);
   }, [profile, loading, fetchDashboardData]);
@@ -194,12 +193,7 @@ function DashboardContainer({
 }
 
 function DashboardNavContainer({ onSignOut }: DashboardNavContainerProps) {
-  const [openNav, setOpenNav] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-
-  function handleNavToggle() {
-    setOpenNav(!openNav);
-  }
 
   function handleProfileToggleNav() {
     setOpenProfile(!openProfile);

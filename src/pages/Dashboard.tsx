@@ -6,6 +6,7 @@ import { AnalyticsService, DashboardData } from "../services/analyticsService";
 
 // imported UI components
 import CheckIn from "../components/dashboard/CheckIn";
+import SilkBackground from "../components/SilkBackground";
 
 export default function Dashboard() {
   const { profile, loading: authLoading } = useAuth();
@@ -78,7 +79,7 @@ export default function Dashboard() {
 
   if (loading || !profile) {
     return (
-      <div className="min-h-screen bg-grey-2 flex items-center justify-center">
+      <div className="w-full min-h-screen bg-grey-2 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-main/70 mx-auto"></div>
           <p className="text-text-blue/70 mt-4 text-sm">
@@ -90,37 +91,39 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-sky-blue/20 font-lato text-text-blue md:w-full">
-      {/* Real-time status bar and header */}
-      <div className="z-10 p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+    <SilkBackground>
+      <div className="w-full min-h-screen bg-sky-blue/20 font-lato text-text-blue md:w-full">
+        {/* Real-time status bar and header */}
+        <div className="z-10 p-4">
+          <div className="container mx-auto flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
 
-              <p className="text-xs text-slate-400">
-                Live Data • {formatLastUpdated()}
-              </p>
+                <p className="text-xs text-slate-400">
+                  Live Data • {formatLastUpdated()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Responsive grid layout */}
+        <div className="w-[300px] h-full p-4 flex flex-col gap-[0.5rem] md:w-full">
+          {/* Main content: orb area, responsive */}
+          <div className=" w-full h-full flex items-center justify-center relative">
+            {/* Soft ambient glow behind orb */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-72 h-72 md:w-96 md:h-96 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
+            </div>
+
+            {/* Main Orb Component */}
+            <div className="relative z-10 w-full h-full flex items-center justify-center ">
+              <CheckIn onCheckInComplete={handleCheckInComplete} />
             </div>
           </div>
         </div>
       </div>
-
-      {/* Responsive grid layout */}
-      <div className="w-[300px] h-full p-4 flex flex-col gap-[0.5rem] md:w-full">
-        {/* Main content: orb area, responsive */}
-        <div className=" w-full h-full flex items-center justify-center relative">
-          {/* Soft ambient glow behind orb */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-72 h-72 md:w-96 md:h-96 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
-          </div>
-
-          {/* Main Orb Component */}
-          <div className="relative z-10 w-full h-full flex items-center justify-center ">
-            <CheckIn onCheckInComplete={handleCheckInComplete} />
-          </div>
-        </div>
-      </div>
-    </div>
+    </SilkBackground>
   );
 }
