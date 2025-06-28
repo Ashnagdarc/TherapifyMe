@@ -1,8 +1,8 @@
-import { MoodTag } from "../types/database";
+import { MoodTag } from '../types/database';
 
 export interface AIResponse {
   response: string;
-  tone: "calm" | "motivational" | "reflective";
+  tone: 'calm' | 'motivational' | 'reflective';
   suggestions: string[];
 }
 
@@ -21,7 +21,7 @@ export class AIResponseService {
   static async generateResponse(
     mood: MoodTag,
     transcription: string,
-    userTone: "calm" | "motivational" | "reflective" = "calm",
+    userTone: 'calm' | 'motivational' | 'reflective' = 'calm',
     userId?: string
   ): Promise<AIResponse> {
     try {
@@ -31,17 +31,10 @@ export class AIResponseService {
       // Add variety factors for more dynamic responses
       const varietyFactors = this.calculateVarietyFactors(analysis, userId);
 
-      return this.generatePersonalizedResponse(
-        mood,
-        transcription,
-        userTone,
-        analysis,
-        varietyFactors,
-        userId
-      );
+      return this.generatePersonalizedResponse(mood, transcription, userTone, analysis, varietyFactors, userId);
     } catch (error) {
-      console.error("AI response generation error:", error);
-      throw new Error("Failed to generate AI response");
+      console.error('AI response generation error:', error);
+      throw new Error('Failed to generate AI response');
     }
   }
 
@@ -67,9 +60,9 @@ export class AIResponseService {
     // Extract themes from recent responses to avoid repetition
     const themes = [];
     for (const response of history.recentResponses.slice(-5)) {
-      if (response.includes("work")) themes.push("work");
-      if (response.includes("relationship")) themes.push("relationships");
-      if (response.includes("gratitude")) themes.push("gratitude");
+      if (response.includes('work')) themes.push('work');
+      if (response.includes('relationship')) themes.push('relationships');
+      if (response.includes('gratitude')) themes.push('gratitude');
       // Add more theme extraction logic
     }
     return [...new Set(themes)]; // Remove duplicates
@@ -77,10 +70,10 @@ export class AIResponseService {
 
   private static getCurrentSeason(): string {
     const month = new Date().getMonth();
-    if (month >= 2 && month <= 4) return "spring";
-    if (month >= 5 && month <= 7) return "summer";
-    if (month >= 8 && month <= 10) return "fall";
-    return "winter";
+    if (month >= 2 && month <= 4) return 'spring';
+    if (month >= 5 && month <= 7) return 'summer';
+    if (month >= 8 && month <= 10) return 'fall';
+    return 'winter';
   }
 
   private static analyzeTranscription(transcription: string) {
@@ -88,90 +81,41 @@ export class AIResponseService {
 
     // Enhanced theme detection with more nuanced patterns
     const themes = {
-      work: /work|job|career|boss|meeting|deadline|project|office|colleague|interview|promotion|workplace/.test(
-        text
-      ),
-      relationships:
-        /friend|family|partner|relationship|love|marriage|dating|social|mother|father|sibling|child/.test(
-          text
-        ),
-      health:
-        /health|sick|tired|energy|sleep|exercise|doctor|medical|wellness|fitness|nutrition/.test(
-          text
-        ),
-      progress:
-        /progress|better|improving|growing|learning|achievement|success|accomplished|development/.test(
-          text
-        ),
-      struggle:
-        /difficult|hard|struggle|challenge|problem|issue|tough|overwhelm|stress|anxiety/.test(
-          text
-        ),
-      gratitude:
-        /thank|grateful|appreciate|blessed|lucky|fortunate|thankful|blessing/.test(
-          text
-        ),
-      change:
-        /change|different|new|transition|moving|starting|beginning|transformation/.test(
-          text
-        ),
-      isolation:
-        /alone|lonely|isolated|nobody|empty|disconnected|solitary|abandoned/.test(
-          text
-        ),
-      support:
-        /help|support|friend|family|therapy|counseling|assistance|guidance/.test(
-          text
-        ),
-      selfCare:
-        /self|myself|me|personal|own|need|want|deserve|care|nurture/.test(text),
-      creativity:
-        /art|music|creative|paint|write|design|imagination|inspiration/.test(
-          text
-        ),
-      spirituality:
-        /spiritual|soul|faith|meditation|prayer|universe|purpose|meaning/.test(
-          text
-        ),
-      nature:
-        /nature|outside|walk|trees|ocean|mountains|sky|garden|fresh air/.test(
-          text
-        ),
-      goals: /goal|dream|aspiration|ambition|future|plan|vision|hope/.test(
-        text
-      ),
-      finances: /money|financial|budget|expense|income|salary|cost|afford/.test(
-        text
-      ),
+      work: /work|job|career|boss|meeting|deadline|project|office|colleague|interview|promotion|workplace/.test(text),
+      relationships: /friend|family|partner|relationship|love|marriage|dating|social|mother|father|sibling|child/.test(text),
+      health: /health|sick|tired|energy|sleep|exercise|doctor|medical|wellness|fitness|nutrition/.test(text),
+      progress: /progress|better|improving|growing|learning|achievement|success|accomplished|development/.test(text),
+      struggle: /difficult|hard|struggle|challenge|problem|issue|tough|overwhelm|stress|anxiety/.test(text),
+      gratitude: /thank|grateful|appreciate|blessed|lucky|fortunate|thankful|blessing/.test(text),
+      change: /change|different|new|transition|moving|starting|beginning|transformation/.test(text),
+      isolation: /alone|lonely|isolated|nobody|empty|disconnected|solitary|abandoned/.test(text),
+      support: /help|support|friend|family|therapy|counseling|assistance|guidance/.test(text),
+      selfCare: /self|myself|me|personal|own|need|want|deserve|care|nurture/.test(text),
+      creativity: /art|music|creative|paint|write|design|imagination|inspiration/.test(text),
+      spirituality: /spiritual|soul|faith|meditation|prayer|universe|purpose|meaning/.test(text),
+      nature: /nature|outside|walk|trees|ocean|mountains|sky|garden|fresh air/.test(text),
+      goals: /goal|dream|aspiration|ambition|future|plan|vision|hope/.test(text),
+      finances: /money|financial|budget|expense|income|salary|cost|afford/.test(text)
     };
 
     // Enhanced intensity and context detection
     const intensity = {
-      high: /very|extremely|really|so|too|overwhelm|intense|terrible|amazing|incredible|absolutely/.test(
-        text
-      ),
-      moderate:
-        /quite|pretty|somewhat|kind of|sort of|a bit|rather|fairly/.test(text),
-      mild: /little|slightly|maybe|perhaps|might|somewhat|kind of/.test(text),
+      high: /very|extremely|really|so|too|overwhelm|intense|terrible|amazing|incredible|absolutely/.test(text),
+      moderate: /quite|pretty|somewhat|kind of|sort of|a bit|rather|fairly/.test(text),
+      mild: /little|slightly|maybe|perhaps|might|somewhat|kind of/.test(text)
     };
 
     const emotionalNuances = {
-      hopeful: /hope|optimistic|positive|bright|future|better|improve/.test(
-        text
-      ),
+      hopeful: /hope|optimistic|positive|bright|future|better|improve/.test(text),
       uncertain: /maybe|perhaps|not sure|unclear|confused|doubt/.test(text),
-      determined: /will|going to|determined|committed|focused|driven/.test(
-        text
-      ),
-      vulnerable: /scared|afraid|worried|nervous|unsure|fragile/.test(text),
+      determined: /will|going to|determined|committed|focused|driven/.test(text),
+      vulnerable: /scared|afraid|worried|nervous|unsure|fragile/.test(text)
     };
 
     const timeReferences = {
-      past: /yesterday|before|used to|remember|ago|past|history|was|were/.test(
-        text
-      ),
+      past: /yesterday|before|used to|remember|ago|past|history|was|were/.test(text),
       present: /today|now|currently|right now|at the moment|this/.test(text),
-      future: /tomorrow|will|going to|next|future|plan|hope|want/.test(text),
+      future: /tomorrow|will|going to|next|future|plan|hope|want/.test(text)
     };
 
     return {
@@ -179,31 +123,26 @@ export class AIResponseService {
       intensity,
       emotionalNuances,
       timeReferences,
-      wordCount: transcription.split(" ").length,
-      complexity: this.calculateComplexity(transcription),
+      wordCount: transcription.split(' ').length,
+      complexity: this.calculateComplexity(transcription)
     };
   }
 
-  private static calculateComplexity(
-    transcription: string
-  ): "simple" | "moderate" | "complex" {
-    const words = transcription.split(" ");
-    const avgWordLength =
-      words.reduce((sum, word) => sum + word.length, 0) / words.length;
-    const sentenceCount = transcription
-      .split(/[.!?]+/)
-      .filter((s) => s.trim().length > 0).length;
+  private static calculateComplexity(transcription: string): 'simple' | 'moderate' | 'complex' {
+    const words = transcription.split(' ');
+    const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
+    const sentenceCount = transcription.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
     const avgSentenceLength = words.length / sentenceCount;
 
-    if (avgWordLength > 6 || avgSentenceLength > 15) return "complex";
-    if (avgWordLength > 4 || avgSentenceLength > 10) return "moderate";
-    return "simple";
+    if (avgWordLength > 6 || avgSentenceLength > 15) return 'complex';
+    if (avgWordLength > 4 || avgSentenceLength > 10) return 'moderate';
+    return 'simple';
   }
 
   private static generatePersonalizedResponse(
     mood: MoodTag,
     transcription: string,
-    tone: "calm" | "motivational" | "reflective",
+    tone: 'calm' | 'motivational' | 'reflective',
     analysis: any,
     varietyFactors: any,
     userId?: string
@@ -214,35 +153,16 @@ export class AIResponseService {
     const toneResponses = moodResponses[tone];
 
     // Select response with anti-repetition logic
-    let selectedResponse = this.selectNonRepetitiveResponse(
-      toneResponses,
-      analysis,
-      varietyFactors,
-      userId
-    );
+    let selectedResponse = this.selectNonRepetitiveResponse(toneResponses, analysis, varietyFactors, userId);
 
     // Apply dynamic variations to the selected response
-    selectedResponse = this.applyDynamicVariations(
-      selectedResponse,
-      varietyFactors,
-      analysis
-    );
+    selectedResponse = this.applyDynamicVariations(selectedResponse, varietyFactors, analysis);
 
     // Personalize the response with transcription insights
-    selectedResponse = this.personalizeResponse(
-      selectedResponse,
-      transcription,
-      analysis,
-      mood,
-      varietyFactors
-    );
+    selectedResponse = this.personalizeResponse(selectedResponse, transcription, analysis, mood, varietyFactors);
 
     // Generate contextual suggestions with variety
-    const suggestions = this.getVariedSuggestions(
-      mood,
-      analysis,
-      varietyFactors
-    );
+    const suggestions = this.getVariedSuggestions(mood, analysis, varietyFactors);
 
     // Track this response to prevent future repetition
     if (userId) {
@@ -252,7 +172,7 @@ export class AIResponseService {
     return {
       response: selectedResponse,
       tone,
-      suggestions,
+      suggestions
     };
   }
 
@@ -267,8 +187,8 @@ export class AIResponseService {
     // Filter out recently used responses
     let availableResponses = responses;
     if (history) {
-      availableResponses = responses.filter(
-        (response) => !this.isRecentlyUsed(response, history)
+      availableResponses = responses.filter(response =>
+        !this.isRecentlyUsed(response, history)
       );
     }
 
@@ -281,94 +201,70 @@ export class AIResponseService {
     let selectedResponse;
 
     if (analysis.themes.work && analysis.themes.struggle) {
-      selectedResponse = availableResponses.find(
-        (r) =>
-          r.includes("pressure") ||
-          r.includes("challenge") ||
-          r.includes("professional")
+      selectedResponse = availableResponses.find(r =>
+        r.includes('pressure') || r.includes('challenge') || r.includes('professional')
       );
     } else if (analysis.themes.progress) {
-      selectedResponse = availableResponses.find(
-        (r) =>
-          r.includes("progress") ||
-          r.includes("growth") ||
-          r.includes("journey") ||
-          r.includes("development")
+      selectedResponse = availableResponses.find(r =>
+        r.includes('progress') || r.includes('growth') || r.includes('journey') || r.includes('development')
       );
     } else if (analysis.themes.isolation) {
-      selectedResponse = availableResponses.find(
-        (r) =>
-          r.includes("alone") ||
-          r.includes("here") ||
-          r.includes("with you") ||
-          r.includes("connection")
+      selectedResponse = availableResponses.find(r =>
+        r.includes('alone') || r.includes('here') || r.includes('with you') || r.includes('connection')
       );
     } else if (analysis.themes.gratitude) {
-      selectedResponse = availableResponses.find(
-        (r) =>
-          r.includes("grateful") ||
-          r.includes("appreciate") ||
-          r.includes("thankful")
+      selectedResponse = availableResponses.find(r =>
+        r.includes('grateful') || r.includes('appreciate') || r.includes('thankful')
       );
     }
 
     // Fallback to variety-based selection
     if (!selectedResponse) {
-      const responseIndex =
-        (varietyFactors.sessionNumber + varietyFactors.responseVariant) %
-        availableResponses.length;
+      const responseIndex = (varietyFactors.sessionNumber + varietyFactors.responseVariant) % availableResponses.length;
       selectedResponse = availableResponses[responseIndex];
     }
 
     return selectedResponse || responses[0];
   }
 
-  private static isRecentlyUsed(
-    response: string,
-    history: ResponseHistory
-  ): boolean {
+  private static isRecentlyUsed(response: string, history: ResponseHistory): boolean {
     const responseSnippet = response.substring(0, 100); // Compare first 100 chars
-    return history.recentResponses.some(
-      (recent) => recent.substring(0, 100) === responseSnippet
+    return history.recentResponses.some(recent =>
+      recent.substring(0, 100) === responseSnippet
     );
   }
 
-  private static applyDynamicVariations(
-    response: string,
-    varietyFactors: any,
-    analysis: any
-  ): string {
+  private static applyDynamicVariations(response: string, varietyFactors: any, analysis: any): string {
     let variedResponse = response;
 
     // Time-of-day variations
     if (varietyFactors.timeOfDay < 12) {
-      variedResponse = variedResponse.replace(/today/g, "this morning");
+      variedResponse = variedResponse.replace(/today/g, 'this morning');
     } else if (varietyFactors.timeOfDay >= 18) {
-      variedResponse = variedResponse.replace(/today/g, "this evening");
+      variedResponse = variedResponse.replace(/today/g, 'this evening');
     }
 
     // Seasonal touches
     const seasonalPhrases: Record<string, string[]> = {
-      spring: ["renewed", "fresh", "blossoming", "emerging"],
-      summer: ["vibrant", "energetic", "flourishing", "alive"],
-      fall: ["grounded", "reflective", "transitional", "harvesting"],
-      winter: ["contemplative", "inner", "peaceful", "introspective"],
+      spring: ['renewed', 'fresh', 'blossoming', 'emerging'],
+      summer: ['vibrant', 'energetic', 'flourishing', 'alive'],
+      fall: ['grounded', 'reflective', 'transitional', 'harvesting'],
+      winter: ['contemplative', 'inner', 'peaceful', 'introspective']
     };
 
     const seasonWords = seasonalPhrases[varietyFactors.currentSeason] || [];
     if (seasonWords.length > 0 && Math.random() < 0.3) {
-      const randomWord =
-        seasonWords[Math.floor(Math.random() * seasonWords.length)];
+      const randomWord = seasonWords[Math.floor(Math.random() * seasonWords.length)];
       variedResponse = variedResponse.replace(/beautiful/g, randomWord);
     }
 
     // Complexity-based language adjustments
-    if (analysis.complexity === "simple") {
-      variedResponse = variedResponse.replace(/profound/g, "deep");
-      variedResponse = variedResponse.replace(/remarkable/g, "amazing");
-    } else if (analysis.complexity === "complex") {
-      variedResponse = variedResponse.replace(/good/g, "remarkable");
-      variedResponse = variedResponse.replace(/nice/g, "wonderful");
+    if (analysis.complexity === 'simple') {
+      variedResponse = variedResponse.replace(/profound/g, 'deep');
+      variedResponse = variedResponse.replace(/remarkable/g, 'amazing');
+    } else if (analysis.complexity === 'complex') {
+      variedResponse = variedResponse.replace(/good/g, 'remarkable');
+      variedResponse = variedResponse.replace(/nice/g, 'wonderful');
     }
 
     return variedResponse;
@@ -381,7 +277,7 @@ export class AIResponseService {
       history = {
         recentResponses: [],
         usedTemplateIds: new Set(),
-        lastUsedTimestamp: Date.now(),
+        lastUsedTimestamp: Date.now()
       };
     }
 
@@ -390,47 +286,31 @@ export class AIResponseService {
 
     // Keep only recent responses
     if (history.recentResponses.length > this.MAX_RECENT_RESPONSES) {
-      history.recentResponses = history.recentResponses.slice(
-        -this.MAX_RECENT_RESPONSES
-      );
+      history.recentResponses = history.recentResponses.slice(-this.MAX_RECENT_RESPONSES);
     }
 
     history.lastUsedTimestamp = Date.now();
     this.responseHistory.set(userId, history);
   }
 
-  private static getVariedSuggestions(
-    mood: MoodTag,
-    analysis: any,
-    varietyFactors: any
-  ): string[] {
+  private static getVariedSuggestions(mood: MoodTag, analysis: any, varietyFactors: any): string[] {
     const baseSuggestions = this.getBaseSuggestions(mood);
-    const contextualSuggestions = this.getContextualSuggestions(
-      analysis,
-      varietyFactors
-    );
-    const timeSensitiveSuggestions =
-      this.getTimeSensitiveSuggestions(varietyFactors);
+    const contextualSuggestions = this.getContextualSuggestions(analysis, varietyFactors);
+    const timeSensitiveSuggestions = this.getTimeSensitiveSuggestions(varietyFactors);
 
     // Combine and rotate suggestions
     const allSuggestions = [
       ...baseSuggestions,
       ...contextualSuggestions,
-      ...timeSensitiveSuggestions,
+      ...timeSensitiveSuggestions
     ];
 
     // Use variety factors to ensure different suggestions each time
-    const rotatedSuggestions = this.rotateSuggestions(
-      allSuggestions,
-      varietyFactors
-    );
+    const rotatedSuggestions = this.rotateSuggestions(allSuggestions, varietyFactors);
     return this.shuffleArray(rotatedSuggestions).slice(0, 3);
   }
 
-  private static getContextualSuggestions(
-    analysis: any,
-    varietyFactors: any
-  ): string[] {
+  private static getContextualSuggestions(analysis: any, varietyFactors: any): string[] {
     const suggestions = [];
 
     // Theme-based suggestions with variety
@@ -440,11 +320,9 @@ export class AIResponseService {
         "Set a boundary around work communication after hours",
         "Practice the 'two-minute rule' for quick work tasks",
         "Schedule a walking meeting or outdoor lunch break",
-        "Write down three work accomplishments from this week",
+        "Write down three work accomplishments from this week"
       ];
-      suggestions.push(
-        workSuggestions[varietyFactors.responseVariant % workSuggestions.length]
-      );
+      suggestions.push(workSuggestions[varietyFactors.responseVariant % workSuggestions.length]);
     }
 
     if (analysis.themes.relationships) {
@@ -453,13 +331,9 @@ export class AIResponseService {
         "Practice active listening in your next conversation",
         "Express appreciation to someone who supports you",
         "Plan a meaningful activity with a loved one",
-        "Reflect on what you value most in your relationships",
+        "Reflect on what you value most in your relationships"
       ];
-      suggestions.push(
-        relationshipSuggestions[
-          varietyFactors.responseVariant % relationshipSuggestions.length
-        ]
-      );
+      suggestions.push(relationshipSuggestions[varietyFactors.responseVariant % relationshipSuggestions.length]);
     }
 
     if (analysis.themes.selfCare) {
@@ -468,13 +342,9 @@ export class AIResponseService {
         "Practice saying 'no' to something that drains your energy",
         "Create a five-minute self-care ritual",
         "Write yourself a compassionate note",
-        "Take three conscious breaths and check in with your body",
+        "Take three conscious breaths and check in with your body"
       ];
-      suggestions.push(
-        selfCareSuggestions[
-          varietyFactors.responseVariant % selfCareSuggestions.length
-        ]
-      );
+      suggestions.push(selfCareSuggestions[varietyFactors.responseVariant % selfCareSuggestions.length]);
     }
 
     return suggestions;
@@ -491,8 +361,7 @@ export class AIResponseService {
     }
 
     // Day of week suggestions
-    if (varietyFactors.dayOfWeek === 0 || varietyFactors.dayOfWeek === 6) {
-      // Weekend
+    if (varietyFactors.dayOfWeek === 0 || varietyFactors.dayOfWeek === 6) { // Weekend
       suggestions.push("Take time for something that brings you joy");
     } else {
       suggestions.push("Find one moment of peace in your busy day");
@@ -503,7 +372,7 @@ export class AIResponseService {
       spring: "Notice something in nature that's growing or changing",
       summer: "Spend a few minutes in sunlight or fresh air",
       fall: "Practice gratitude for something you're harvesting in your life",
-      winter: "Create a cozy moment for reflection and inner warmth",
+      winter: "Create a cozy moment for reflection and inner warmth"
     };
 
     if (seasonalSuggestions[varietyFactors.currentSeason]) {
@@ -513,59 +382,31 @@ export class AIResponseService {
     return suggestions;
   }
 
-  private static rotateSuggestions(
-    suggestions: string[],
-    varietyFactors: any
-  ): string[] {
+  private static rotateSuggestions(suggestions: string[], varietyFactors: any): string[] {
     // Rotate suggestions based on session number to ensure variety
     const rotateBy = varietyFactors.sessionNumber % suggestions.length;
     return [...suggestions.slice(rotateBy), ...suggestions.slice(0, rotateBy)];
   }
 
-  private static selectContextualResponse(
-    responses: string[],
-    analysis: any
-  ): string {
+  private static selectContextualResponse(responses: string[], analysis: any): string {
     // Select response based on content analysis
     if (analysis.themes.work && analysis.themes.struggle) {
-      return (
-        responses.find(
-          (r) => r.includes("pressure") || r.includes("challenge")
-        ) || responses[0]
-      );
+      return responses.find(r => r.includes('pressure') || r.includes('challenge')) || responses[0];
     }
 
     if (analysis.themes.progress) {
-      return (
-        responses.find(
-          (r) =>
-            r.includes("progress") ||
-            r.includes("growth") ||
-            r.includes("journey")
-        ) || responses[0]
-      );
+      return responses.find(r => r.includes('progress') || r.includes('growth') || r.includes('journey')) || responses[0];
     }
 
     if (analysis.themes.isolation) {
-      return (
-        responses.find(
-          (r) =>
-            r.includes("alone") || r.includes("here") || r.includes("with you")
-        ) || responses[0]
-      );
+      return responses.find(r => r.includes('alone') || r.includes('here') || r.includes('with you')) || responses[0];
     }
 
     // Default to random selection
     return responses[Math.floor(Math.random() * responses.length)];
   }
 
-  private static personalizeResponse(
-    response: string,
-    transcription: string,
-    analysis: any,
-    mood: MoodTag,
-    varietyFactors: any
-  ): string {
+  private static personalizeResponse(response: string, transcription: string, analysis: any, mood: MoodTag, varietyFactors: any): string {
     let personalizedResponse = response;
 
     // Add a deeper reflection section
@@ -576,94 +417,72 @@ export class AIResponseService {
       const workInsight = this.getWorkRelatedInsight(mood);
       personalizedResponse += `${workInsight} I notice that work is playing a significant role in your emotional landscape right now. `;
 
-      if (mood === "stressed" || mood === "overwhelmed") {
-        personalizedResponse +=
-          "Many people struggle with finding the right balance between professional demands and personal well-being. Your awareness of this tension is actually the first step toward creating healthier boundaries. ";
-      } else if (mood === "happy" || mood === "excited") {
-        personalizedResponse +=
-          "It's wonderful when our professional lives align with our sense of purpose and bring us genuine satisfaction. This positive energy from work can be incredibly nourishing for other areas of your life too. ";
+      if (mood === 'stressed' || mood === 'overwhelmed') {
+        personalizedResponse += "Many people struggle with finding the right balance between professional demands and personal well-being. Your awareness of this tension is actually the first step toward creating healthier boundaries. ";
+      } else if (mood === 'happy' || mood === 'excited') {
+        personalizedResponse += "It's wonderful when our professional lives align with our sense of purpose and bring us genuine satisfaction. This positive energy from work can be incredibly nourishing for other areas of your life too. ";
       }
     }
 
     if (analysis.themes.progress) {
-      personalizedResponse +=
-        "I'm struck by the growth mindset that comes through in your words. The fact that you're actively reflecting on your progress shows a level of self-awareness that's truly valuable. Personal development isn't always linear, and recognizing where you are in your journey takes both courage and wisdom. ";
+      personalizedResponse += "I'm struck by the growth mindset that comes through in your words. The fact that you're actively reflecting on your progress shows a level of self-awareness that's truly valuable. Personal development isn't always linear, and recognizing where you are in your journey takes both courage and wisdom. ";
     }
 
     if (analysis.themes.relationships) {
-      personalizedResponse +=
-        "The way you talk about the people in your life reveals so much about your character. Relationships are often mirrors that reflect both our challenges and our strengths back to us. The care you show for these connections suggests you understand that we're all interconnected, and that's a beautiful perspective to carry through life. ";
+      personalizedResponse += "The way you talk about the people in your life reveals so much about your character. Relationships are often mirrors that reflect both our challenges and our strengths back to us. The care you show for these connections suggests you understand that we're all interconnected, and that's a beautiful perspective to carry through life. ";
     }
 
     if (analysis.themes.struggle) {
-      personalizedResponse +=
-        "Struggles, while difficult, often contain important information about what needs attention in our lives. The fact that you're willing to sit with these challenging feelings rather than pushing them away shows real emotional maturity. Sometimes our difficulties are invitations to develop new strengths or to reach out for support in ways we haven't before. ";
+      personalizedResponse += "Struggles, while difficult, often contain important information about what needs attention in our lives. The fact that you're willing to sit with these challenging feelings rather than pushing them away shows real emotional maturity. Sometimes our difficulties are invitations to develop new strengths or to reach out for support in ways we haven't before. ";
     }
 
     if (analysis.themes.gratitude) {
-      personalizedResponse +=
-        "Your capacity for gratitude is like a superpower that transforms not only your own experience but also touches everyone around you. Gratitude has this amazing ability to shift our entire perspective, helping us see abundance where we might otherwise see lack. This appreciation you're expressing is both a gift you give yourself and a light you shine into the world. ";
+      personalizedResponse += "Your capacity for gratitude is like a superpower that transforms not only your own experience but also touches everyone around you. Gratitude has this amazing ability to shift our entire perspective, helping us see abundance where we might otherwise see lack. This appreciation you're expressing is both a gift you give yourself and a light you shine into the world. ";
     }
 
     if (analysis.themes.change) {
-      personalizedResponse +=
-        "Change can feel both exciting and terrifying, sometimes in the same moment. The fact that you're navigating transitions while staying connected to your inner world shows remarkable resilience. Every change, even the challenging ones, carries within it the seeds of new possibilities and growth. ";
+      personalizedResponse += "Change can feel both exciting and terrifying, sometimes in the same moment. The fact that you're navigating transitions while staying connected to your inner world shows remarkable resilience. Every change, even the challenging ones, carries within it the seeds of new possibilities and growth. ";
     }
 
     if (analysis.themes.isolation) {
-      personalizedResponse +=
-        "Feeling alone can be one of the most difficult human experiences, but please know that your feelings matter and you deserve connection and support. Sometimes isolation is temporary, and sometimes it's a signal that we need to reach out in new ways or create different kinds of community. You don't have to navigate this alone. ";
+      personalizedResponse += "Feeling alone can be one of the most difficult human experiences, but please know that your feelings matter and you deserve connection and support. Sometimes isolation is temporary, and sometimes it's a signal that we need to reach out in new ways or create different kinds of community. You don't have to navigate this alone. ";
     }
 
     if (analysis.themes.selfCare) {
-      personalizedResponse +=
-        "Your attention to self-care shows a deep understanding that you can't pour from an empty cup. Taking time to nurture yourself isn't selfish - it's essential. When you care for yourself with intention and compassion, you're modeling for others what it looks like to value your own well-being. ";
+      personalizedResponse += "Your attention to self-care shows a deep understanding that you can't pour from an empty cup. Taking time to nurture yourself isn't selfish - it's essential. When you care for yourself with intention and compassion, you're modeling for others what it looks like to value your own well-being. ";
     }
 
     // Add emotional intensity acknowledgment with more depth
     if (analysis.intensity.high) {
-      personalizedResponse +=
-        "The intensity of what you're experiencing right now is palpable in your words. Intense emotions, whether positive or challenging, often signal that something deeply important is happening in your life. These powerful feelings deserve to be honored and explored with patience and self-compassion. ";
+      personalizedResponse += "The intensity of what you're experiencing right now is palpable in your words. Intense emotions, whether positive or challenging, often signal that something deeply important is happening in your life. These powerful feelings deserve to be honored and explored with patience and self-compassion. ";
     }
 
     // Add appreciation for their sharing style
     if (analysis.wordCount > 100) {
-      personalizedResponse +=
-        "The depth and openness of your sharing reveals someone who is genuinely committed to understanding themselves. It takes real vulnerability to explore your inner world this honestly, and that courage is already creating positive change in your life. ";
+      personalizedResponse += "The depth and openness of your sharing reveals someone who is genuinely committed to understanding themselves. It takes real vulnerability to explore your inner world this honestly, and that courage is already creating positive change in your life. ";
     } else if (analysis.wordCount > 50) {
-      personalizedResponse +=
-        "I appreciate the thoughtful way you've shared your experience. Sometimes the most profound insights come through simple, honest expression. ";
+      personalizedResponse += "I appreciate the thoughtful way you've shared your experience. Sometimes the most profound insights come through simple, honest expression. ";
     }
 
     // Add a closing reflection that ties it all together
-    personalizedResponse +=
-      "\n\nAs I reflect on everything you've shared, what strikes me most is your willingness to be present with your experience, whatever it might be. This kind of mindful awareness is the foundation of all healing and growth. You're not just going through your emotions - you're learning from them, growing through them, and allowing them to guide you toward greater wisdom and self-understanding.";
+    personalizedResponse += "\n\nAs I reflect on everything you've shared, what strikes me most is your willingness to be present with your experience, whatever it might be. This kind of mindful awareness is the foundation of all healing and growth. You're not just going through your emotions - you're learning from them, growing through them, and allowing them to guide you toward greater wisdom and self-understanding.";
 
     return personalizedResponse;
   }
 
   private static getWorkRelatedInsight(mood: MoodTag): string {
     const workInsights: Record<string, string> = {
-      stressed:
-        "Work pressures can feel all-consuming sometimes, but remember that your worth isn't defined by your productivity.",
-      anxious:
-        "Work anxiety is so common, and it often means you care deeply about doing well. That caring is actually a strength.",
-      frustrated:
-        "Work frustrations can be particularly draining because we spend so much of our time there. Your feelings make complete sense.",
-      happy:
-        "It's wonderful when work feels aligned with who you are. This positive energy can ripple into other areas of your life.",
-      overwhelmed:
-        "When work feels overwhelming, it's often a sign that you're taking on more than any one person should handle.",
+      stressed: "Work pressures can feel all-consuming sometimes, but remember that your worth isn't defined by your productivity.",
+      anxious: "Work anxiety is so common, and it often means you care deeply about doing well. That caring is actually a strength.",
+      frustrated: "Work frustrations can be particularly draining because we spend so much of our time there. Your feelings make complete sense.",
+      happy: "It's wonderful when work feels aligned with who you are. This positive energy can ripple into other areas of your life.",
+      overwhelmed: "When work feels overwhelming, it's often a sign that you're taking on more than any one person should handle.",
       sad: "Work-related sadness often points to a disconnect between our values and our daily experience. Your feelings are valid.",
-      grateful:
-        "When work aligns with our sense of purpose, it can be a source of genuine gratitude and fulfillment.",
-      excited:
-        "Work excitement often signals that you're moving toward something meaningful and aligned with your passions.",
+      grateful: "When work aligns with our sense of purpose, it can be a source of genuine gratitude and fulfillment.",
+      excited: "Work excitement often signals that you're moving toward something meaningful and aligned with your passions.",
       calm: "Finding calm in relation to work suggests a healthy balance between engagement and inner peace.",
-      content:
-        "Work contentment is a beautiful thing - it means you've found harmony between your professional and personal values.",
-      default:
-        "Your relationship with work is an important part of your overall well-being.",
+      content: "Work contentment is a beautiful thing - it means you've found harmony between your professional and personal values.",
+      default: "Your relationship with work is an important part of your overall well-being."
     };
 
     return workInsights[mood] || workInsights.default;
@@ -685,7 +504,7 @@ export class AIResponseService {
         reflective: [
           "Happiness has so much wisdom to offer us. What do you think created this shift in your inner world? Understanding the roots of joy can help us cultivate more of it. When we take time to really examine our moments of happiness, we often discover that they're not random accidents but the result of specific conditions, choices, or perspectives that we can learn to recognize and nurture. Sometimes it's the people we're with, sometimes it's activities that align with our values, and sometimes it's simply the practice of being present and grateful for what we have. This kind of self-awareness is incredibly valuable because it helps us become active participants in our own well-being rather than passive recipients of whatever mood happens to visit us.",
           "There's something profound about pausing to really examine happiness when we're in it. What patterns in your life, thoughts, or relationships might be contributing to this beautiful state? Most people wait until they're struggling to do inner work, but you're doing something much wiser - you're studying your joy with the same curiosity and attention that you might give to a challenge. This practice of happiness archaeology, if you will, can reveal so much about what truly nourishes your soul and what conditions allow your authentic self to flourish. The insights you gain from these moments of reflection can become a roadmap for creating more joy in your life, even during times when happiness doesn't come as naturally.",
-        ],
+        ]
       },
       anxious: {
         calm: [
@@ -701,7 +520,7 @@ export class AIResponseService {
         reflective: [
           "Anxiety often carries important information about what we value and what we're afraid of losing. What do you think your anxiety might be trying to protect or prepare you for?",
           "Sometimes our anxious thoughts are like an overprotective friend - well-meaning but not always helpful. What would you say to that worried part of yourself with compassion?",
-        ],
+        ]
       },
       stressed: {
         calm: [
@@ -717,7 +536,7 @@ export class AIResponseService {
         reflective: [
           "Stress often points to places where we're stretched beyond our comfortable capacity. What aspects of your current situation feel most demanding of your energy and attention?",
           "Sometimes stress is our inner wisdom saying 'slow down' or 'something needs to change.' What might your stress be trying to tell you about your current life balance?",
-        ],
+        ]
       },
       sad: {
         calm: [
@@ -730,7 +549,7 @@ export class AIResponseService {
         ],
         reflective: [
           "Sadness often signals that something meaningful to us has been affected. What losses or changes might be contributing to this feeling? When we sit with sadness long enough to really listen to what it's telling us, we often discover important information about what we value, what we've lost, or what we're grieving. Sometimes sadness is about obvious losses - people, opportunities, or circumstances that have changed. But sometimes it's subtler - perhaps the loss of an old version of ourselves, the ending of a chapter in our lives, or even just the recognition that time is passing and things we love are impermanent. Sadness can also be a response to beauty, to love, or to the overwhelming nature of being human in a complex world. What do you think your sadness might be teaching you about what matters most to you right now?",
-        ],
+        ]
       },
       frustrated: {
         calm: [
@@ -743,7 +562,7 @@ export class AIResponseService {
         ],
         reflective: [
           "Frustration often emerges when there's a gap between our expectations and reality. What shift in perspective or approach might help bridge that gap? Sometimes frustration is our teacher, showing us where we're holding too tightly to how we think things should be, or where we might need to adapt our strategies or expectations. But other times, frustration is our protector, alerting us to situations that genuinely need to change because they're not aligned with our values or needs. The key is learning to distinguish between frustration that's calling us to acceptance and frustration that's calling us to action. When you really examine this feeling, what do you think it's asking of you? Is it inviting you to let go of something, to fight for something, or perhaps to find a creative third option that you hadn't considered before?",
-        ],
+        ]
       },
       grateful: {
         calm: [
@@ -756,7 +575,7 @@ export class AIResponseService {
         ],
         reflective: [
           "Gratitude has this amazing ability to shift our entire perspective on life. What specific experiences or people are you feeling most thankful for right now?",
-        ],
+        ]
       },
       overwhelmed: {
         calm: [
@@ -769,7 +588,7 @@ export class AIResponseService {
         ],
         reflective: [
           "Overwhelm often happens when we're trying to carry more than our current capacity allows. What would it look like to be gentle with yourself about what's realistically possible right now?",
-        ],
+        ]
       },
       content: {
         calm: [
@@ -782,7 +601,7 @@ export class AIResponseService {
         ],
         reflective: [
           "Contentment often emerges when there's harmony between our inner world and external circumstances. What aspects of your life are contributing most to this sense of peace?",
-        ],
+        ]
       },
       excited: {
         calm: [
@@ -795,7 +614,7 @@ export class AIResponseService {
         ],
         reflective: [
           "Excitement often signals that we're moving toward something that deeply resonates with our values and desires. What is it about this situation that's generating such positive energy in you?",
-        ],
+        ]
       },
       calm: {
         calm: [
@@ -808,7 +627,7 @@ export class AIResponseService {
         ],
         reflective: [
           "Calm moments like this are perfect opportunities for deeper self-reflection. What insights about yourself or your life are emerging in this peaceful space?",
-        ],
+        ]
       },
       default: {
         calm: [
@@ -822,8 +641,8 @@ export class AIResponseService {
         ],
         reflective: [
           "The simple act of pausing to notice and name what you're feeling is profound. What insights about yourself or your life are emerging in this space of reflection?",
-        ],
-      },
+        ]
+      }
     };
   }
 
@@ -832,53 +651,53 @@ export class AIResponseService {
       happy: [
         "Write down what's contributing to your happiness to remember for tougher days",
         "Share your positive energy with someone who might need encouragement",
-        "Take a photo or make a note about this moment to capture the feeling",
+        "Take a photo or make a note about this moment to capture the feeling"
       ],
       anxious: [
         "Try the 5-4-3-2-1 grounding technique: 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste",
         "Practice box breathing: inhale for 4, hold for 4, exhale for 4, hold for 4",
-        "Remind yourself: 'This feeling is temporary, and I have the strength to handle it'",
+        "Remind yourself: 'This feeling is temporary, and I have the strength to handle it'"
       ],
       sad: [
         "Allow yourself to feel this emotion fully - it's part of healing",
         "Create a comfort kit: tea, soft blanket, soothing music, or whatever brings you peace",
-        "Consider journaling about what this sadness might be teaching you",
+        "Consider journaling about what this sadness might be teaching you"
       ],
       stressed: [
         "Use the 'One Thing' rule: focus on completing just one task before moving to the next",
         "Take 10 conscious breaths while releasing tension from your shoulders and jaw",
-        "Ask yourself: 'What would I tell a friend feeling this way?'",
+        "Ask yourself: 'What would I tell a friend feeling this way?'"
       ],
       overwhelmed: [
         "Brain dump everything on your mind onto paper, then categorize by urgency and importance",
         "Practice the 'Good Enough' principle: not everything needs to be perfect",
-        "Schedule a 15-minute 'worry window' - contain anxious thoughts to this time",
+        "Schedule a 15-minute 'worry window' - contain anxious thoughts to this time"
       ],
       frustrated: [
         "Take a break from whatever is causing frustration and return with fresh perspective",
         "Try some physical movement to release tension - even a 2-minute walk helps",
-        "Write down what's frustrating you, then brainstorm 3 possible solutions",
+        "Write down what's frustrating you, then brainstorm 3 possible solutions"
       ],
       grateful: [
         "Write a thank-you note to someone who has positively impacted your life",
         "Take a mindful moment to appreciate something beautiful around you",
-        "Consider how you might pay this gratitude forward to others",
+        "Consider how you might pay this gratitude forward to others"
       ],
       excited: [
         "Channel this energy into taking one concrete step toward what excites you",
         "Share your enthusiasm with someone who would celebrate with you",
-        "Write down what's exciting you to revisit when you need motivation",
+        "Write down what's exciting you to revisit when you need motivation"
       ],
       calm: [
         "Use this peaceful moment for meditation or mindful reflection",
         "Set positive intentions for how you want to feel today",
-        "Appreciate this sense of balance and remember how you created it",
+        "Appreciate this sense of balance and remember how you created it"
       ],
       content: [
         "Reflect on what has contributed to this sense of satisfaction",
         "Consider how you might maintain this feeling going forward",
-        "Take a moment to really savor this inner peace",
-      ],
+        "Take a moment to really savor this inner peace"
+      ]
     };
 
     return suggestionMap[mood] || suggestionMap.content;
@@ -893,60 +712,43 @@ export class AIResponseService {
     return shuffled;
   }
 }
+  // Additional methods for compatibility with AISettingsModal
+  static configureAI(config: { useAIPercentage: number; confidenceThreshold: number }) {
+    localStorage.setItem('ai-percentage', config.useAIPercentage.toString());
+    localStorage.setItem('ai-confidence-threshold', config.confidenceThreshold.toString());
+    console.log('AI configuration updated:', config);
+  }
 
-// Additional methods for compatibility with AISettingsModal
-// static configureAI(config: { useAIPercentage: number; confidenceThreshold: number }) {
-//   localStorage.setItem('ai-percentage', config.useAIPercentage.toString());
-//   localStorage.setItem('ai-confidence-threshold', config.confidenceThreshold.toString());
-//   console.log('AI configuration updated:', config);
-// }
+  static async runDiagnostics(): Promise<{
+    huggingFace: { success: boolean; message: string };
+    tavus: { success: boolean; message: string };
+    overall: { success: boolean; message: string };
+  }> {
+    const results = {
+      huggingFace: { success: true, message: 'AI Response Service operational with enhanced templates' },
+      tavus: { success: true, message: 'Video service available' },
+      overall: { success: true, message: 'All systems operational' }
+    };
 
-// Method for backward compatibility with CheckIn component
-// static async generateEnhancedResponse(transcription: string): Promise<{
-//   finalResponse: string;
-//   aiConfidence: number;
-//   source: string;
-//   videoScript: string;
-// }> {
-//   const result = await this.generateResponse("content", transcription, "calm");
-//   return {
-//     finalResponse: result.response,
-//     aiConfidence: 85,
-//     source: "Enhanced Templates",
-//     videoScript: "Your check-in has been processed with care."
-//   };
-// }
+    // Test if we have API keys for enhanced functionality
+    const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const tavusKey = import.meta.env.VITE_TAVUS_API_KEY;
 
-// static async runDiagnostics(): Promise<{
-//   huggingFace: { success: boolean; message: string };
-//   tavus: { success: boolean; message: string };
-//   overall: { success: boolean; message: string };
-// }> {
-//   const results = {
-//     huggingFace: { success: true, message: 'AI Response Service operational with enhanced templates' },
-//     tavus: { success: true, message: 'Video service available' },
-//     overall: { success: true, message: 'All systems operational' }
-//   };
+    if (!geminiKey) {
+      results.huggingFace.success = false;
+      results.huggingFace.message = 'Gemini API key not configured - using enhanced templates only';
+    }
 
-//   // Test if we have API keys for enhanced functionality
-//   const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-//   const tavusKey = import.meta.env.VITE_TAVUS_API_KEY;
+    if (!tavusKey) {
+      results.tavus.success = false;
+      results.tavus.message = 'Tavus API key not configured';
+    }
 
-//   if (!geminiKey) {
-//     results.huggingFace.success = false;
-//     results.huggingFace.message = 'Gemini API key not configured - using enhanced templates only';
-//   }
+    if (!results.huggingFace.success || !results.tavus.success) {
+      results.overall.success = false;
+      results.overall.message = 'Some services have missing API keys';
+    }
 
-//   if (!tavusKey) {
-//     results.tavus.success = false;
-//     results.tavus.message = 'Tavus API key not configured';
-//   }
-
-//   if (!results.huggingFace.success || !results.tavus.success) {
-//     results.overall.success = false;
-//     results.overall.message = 'Some services have missing API keys';
-//   }
-
-//   return results;
-// }
-// }
+    return results;
+  }
+}

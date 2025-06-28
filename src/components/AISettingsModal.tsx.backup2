@@ -8,7 +8,7 @@ import {
   AlertCircle,
   Loader,
 } from "lucide-react";
-import { AIResponseService } from "../services/aiResponseService";
+import { EnhancedAIService } from "../services/aiResponseService";
 
 interface AISettingsModalProps {
   isOpen: boolean;
@@ -51,7 +51,7 @@ export default function AISettingsModal({
     );
 
     // Update AI service configuration
-    AIResponseService.configureAI({
+    EnhancedAIService.configureAI({
       useAIPercentage: aiPercentage,
       confidenceThreshold: confidenceThreshold,
     });
@@ -62,7 +62,7 @@ export default function AISettingsModal({
   const runDiagnostics = async () => {
     setIsRunningDiagnostics(true);
     try {
-      const result = await AIResponseService.runDiagnostics();
+      const result = await EnhancedAIService.runDiagnostics();
       setDiagnostics(result);
       setLastTestTime(new Date().toLocaleString());
     } catch (error) {
@@ -79,7 +79,7 @@ export default function AISettingsModal({
   const resetToDefaults = () => {
     setAiPercentage(70);
     setConfidenceThreshold(0.6);
-    AIResponseService.configureAI({
+    EnhancedAIService.configureAI({
       useAIPercentage: 70,
       confidenceThreshold: 0.6,
     });
