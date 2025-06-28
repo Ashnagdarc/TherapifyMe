@@ -5,7 +5,6 @@ import { AnalyticsService, DashboardData } from "../services/analyticsService";
 import { User } from "../types/database";
 
 import DashboardSidebar from "./dashboard/DashboardSidebar";
-import { Button } from "./ui/Button";
 
 import Logo from "./Logo";
 
@@ -78,7 +77,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (!profile || loading) return;
     const interval = setInterval(() => {
       fetchDashboardData();
-    }, 30000);
+    }, 300000);
 
     return () => clearInterval(interval);
   }, [profile, loading, fetchDashboardData]);
@@ -131,14 +130,16 @@ function DashboardContainer({
 }: DashboardContainerProps) {
   return (
     <section
-      className={`${openSidebar && "w-full h-full lg:w-[300px]"
-        } w-[10%] absolute z-[998] flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
+      className={`${
+        openSidebar && "w-full h-full lg:w-[300px]"
+      } w-[10%] absolute z-[998] flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
     >
       <div
-        className={`${!openSidebar
-          ? "w-full items-end pt-[1rem] "
-          : "w-[65%] h-svh items-center bg-grey-2 py-[1rem] md:py-[2rem] lg:w-[270px] "
-          } flex flex-col gap-[2rem] px-[0.5rem] text-[15px] text-black md:pt-[0.7rem] md:text-[16px] transition-all duration-300 ease-in `}
+        className={`${
+          !openSidebar
+            ? "w-full items-end pt-[1rem] "
+            : "w-[65%] h-svh items-center bg-grey-2 py-[1rem] md:py-[2rem] lg:w-[270px] "
+        } flex flex-col gap-[2rem] px-[0.5rem] text-[15px] text-black md:pt-[0.7rem] md:text-[16px] transition-all duration-300 ease-in `}
       >
         {openSidebar && (
           <div className="w-full flex items-center justify-between pt-16">
@@ -153,8 +154,9 @@ function DashboardContainer({
 
         {openSidebar && (
           <div
-            className={`w-full flex flex-col items-start gap-[1rem] capitalize ${!openSidebar ? "opacity-0" : "opacity-100"
-              } transition-opacity delay-100 duration-300 ease-in `}
+            className={`w-full flex flex-col items-start gap-[1rem] capitalize ${
+              !openSidebar ? "opacity-0" : "opacity-100"
+            } transition-opacity delay-100 duration-300 ease-in `}
           >
             {/* Move to Journal button */}
             <div className="flex items-center gap-[0.5rem] cursor-pointer ">
@@ -176,15 +178,20 @@ function DashboardContainer({
       </div>
 
       <div
-        className={`${!openSidebar ? "hidden" : "flex"
-          } bg-black/40 backdrop-blur-xl w-[35%] h-full lg:hidden`}
+        className={`${
+          !openSidebar ? "hidden" : "flex"
+        } bg-black/40 backdrop-blur-xl w-[35%] h-full lg:hidden`}
         onClick={onSidebarToggle}
       ></div>
     </section>
   );
 }
 
-function DashboardNavContainer({ onSignOut, onSidebarToggle, showSidebarToggle }: DashboardNavContainerProps) {
+function DashboardNavContainer({
+  onSignOut,
+  onSidebarToggle,
+  showSidebarToggle,
+}: DashboardNavContainerProps) {
   const [openMenu, setOpenMenu] = useState(false);
   const { profile } = useAuth();
 
@@ -208,7 +215,7 @@ function DashboardNavContainer({ onSignOut, onSidebarToggle, showSidebarToggle }
           <div className="relative">
             <button
               onClick={handleMenuToggle}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
             >
               <MoreHorizontal className="w-5 h-5 text-gray-600" />
             </button>
@@ -219,7 +226,7 @@ function DashboardNavContainer({ onSignOut, onSidebarToggle, showSidebarToggle }
                 <NavLink
                   to="/settings"
                   onClick={() => setOpenMenu(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-white/50 transition-all duration-200 rounded-xl mx-2"
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-white/50 transition-all duration-200 rounded-xl mx-2 cursor-pointer"
                 >
                   <Settings className="w-4 h-4" />
                   Settings
@@ -230,7 +237,7 @@ function DashboardNavContainer({ onSignOut, onSidebarToggle, showSidebarToggle }
                     setOpenMenu(false);
                     onSignOut();
                   }}
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50/70 transition-all duration-200 w-full text-left rounded-xl mx-2"
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50/70 transition-all duration-200 w-full text-left rounded-xl mx-2 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   Log Out
@@ -242,7 +249,7 @@ function DashboardNavContainer({ onSignOut, onSidebarToggle, showSidebarToggle }
           {/* Profile Avatar */}
           <div className="flex items-center">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
-              {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+              {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
             </div>
           </div>
         </div>
@@ -264,11 +271,9 @@ function SidebarToggle({ onSidebarToggle }: { onSidebarToggle: () => void }) {
   return (
     <button
       onClick={onSidebarToggle}
-      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+      className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
     >
       <PanelRightOpen className="w-5 h-5 text-gray-600" />
     </button>
   );
 }
-
-

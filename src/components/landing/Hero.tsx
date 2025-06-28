@@ -28,8 +28,6 @@ export default function Hero() {
       id="home"
       className="pt-32 pb-20 md:pt-40 md:pb-28 bg-[linear-gradient(to_bottom,_#CCE1FF_0%,_#CCE1FF_30%,_#E0EEFF_100%)] backdrop-blur-2xl relative min-h-screen"
     >
-
-
       <div className="w-full flex flex-col items-center gap-[1.5rem] px-6 text-center md:px-0">
         <div className="flex flex-col items-center justify-center gap-[0.7rem] md:flex-row md:gap-[0.4rem]">
           <div className=" w-[111px] h-[31.73] flex items-center">
@@ -38,8 +36,9 @@ export default function Hero() {
                 key={i}
                 src={avatar}
                 alt="a random user avatar"
-                className={`h-[31px] w-[31px] rounded-full border z-[${i + 1
-                  }] ${i !== 0 ? "ml-[-0.6rem]" : ""} `}
+                className={`h-[31px] w-[31px] rounded-full border z-[${
+                  i + 1
+                }] ${i !== 0 ? "ml-[-0.6rem]" : ""} `}
               />
             ))}
           </div>
@@ -57,7 +56,7 @@ export default function Hero() {
           </h1>
 
           {/* Circular Text Badge positioned close to heading */}
-          <div className="absolute -top-4 -right-16 z-30 md:-top-8 md:-right-20">
+          <div className="absolute -top-4 right-16 z-30 md:-top-8 md:-right-20">
             {/* Enhanced glow background */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-emerald-500/30 rounded-full blur-2xl animate-pulse"></div>
 

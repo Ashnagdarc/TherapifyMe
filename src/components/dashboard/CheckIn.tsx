@@ -545,7 +545,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
   // Main render logic
   if (step === "reviewing") {
     return (
-      <div className="w-[300px] flex flex-col items-center gap-[1rem]  text-grey-2/80 bg-gradient-to-br from-dark to-black rounded-2xl p-4 lg:w-[90%] ">
+      <div className=" absolute w-[350px] flex flex-col items-center gap-[1rem]  text-grey-2/80 bg-gradient-to-br from-dark to-black rounded-2xl p-4 mb-[2rem] lg:w-[90%] ">
         <h2 className="text-2xl font-bold mb-4 text-center">Review & Save</h2>
         {renderAudioPlayer()}
         {renderTranscriptionEditor()}
@@ -577,7 +577,7 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
   function getOrbProps() {
     if (step === "recording") {
       return {
-        hue: 0, // Red for recording
+        hue: 280, // purple for recording
         forceHoverState: true,
         rotateOnHover: true,
         hoverIntensity: 0.8,
@@ -628,8 +628,9 @@ export default function CheckIn({ onCheckInComplete }: CheckInProps) {
                 : "auto",
           }}
         >
-          <Orb {...getOrbProps()} hue={280} />
+          <Orb {...getOrbProps()} />
         </div>
+
         <div className="w-full absolute inset-0 flex items-center justify-center text-dark/70 pointer-events-none">
           {renderOrbContent()}
         </div>
