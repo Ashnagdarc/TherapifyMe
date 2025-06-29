@@ -892,61 +892,74 @@ export class AIResponseService {
     }
     return shuffled;
   }
+
+  // Additional methods for compatibility with AISettingsModal
+  static configureAI(config: {
+    useAIPercentage: number;
+    confidenceThreshold: number;
+  }) {
+    localStorage.setItem("ai-percentage", config.useAIPercentage.toString());
+    localStorage.setItem(
+      "ai-confidence-threshold",
+      config.confidenceThreshold.toString()
+    );
+    console.log("AI configuration updated:", config);
+  }
+
+  // Method for backward compatibility with CheckIn component
+  static async generateEnhancedResponse(transcription: string): Promise<{
+    finalResponse: string;
+    aiConfidence: number;
+    source: string;
+    videoScript: string;
+  }> {
+    const result = await this.generateResponse(
+      "content",
+      transcription,
+      "calm"
+    );
+    return {
+      finalResponse: result.response,
+      aiConfidence: 85,
+      source: "Enhanced Templates",
+      videoScript: "Your check-in has been processed with care.",
+    };
+  }
+
+  static async runDiagnostics(): Promise<{
+    huggingFace: { success: boolean; message: string };
+    tavus: { success: boolean; message: string };
+    overall: { success: boolean; message: string };
+  }> {
+    const results = {
+      huggingFace: {
+        success: true,
+        message: "AI Response Service operational with enhanced templates",
+      },
+      tavus: { success: true, message: "Video service available" },
+      overall: { success: true, message: "All systems operational" },
+    };
+
+    //   // Test if we have API keys for enhanced functionality
+    const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const tavusKey = import.meta.env.VITE_TAVUS_API_KEY;
+
+    if (!geminiKey) {
+      results.huggingFace.success = false;
+      results.huggingFace.message =
+        "Gemini API key not configured - using enhanced templates only";
+    }
+
+    if (!tavusKey) {
+      results.tavus.success = false;
+      results.tavus.message = "Tavus API key not configured";
+    }
+
+    if (!results.huggingFace.success || !results.tavus.success) {
+      results.overall.success = false;
+      results.overall.message = "Some services have missing API keys";
+    }
+
+    return results;
+  }
 }
-
-// Additional methods for compatibility with AISettingsModal
-// static configureAI(config: { useAIPercentage: number; confidenceThreshold: number }) {
-//   localStorage.setItem('ai-percentage', config.useAIPercentage.toString());
-//   localStorage.setItem('ai-confidence-threshold', config.confidenceThreshold.toString());
-//   console.log('AI configuration updated:', config);
-// }
-
-// Method for backward compatibility with CheckIn component
-// static async generateEnhancedResponse(transcription: string): Promise<{
-//   finalResponse: string;
-//   aiConfidence: number;
-//   source: string;
-//   videoScript: string;
-// }> {
-//   const result = await this.generateResponse("content", transcription, "calm");
-//   return {
-//     finalResponse: result.response,
-//     aiConfidence: 85,
-//     source: "Enhanced Templates",
-//     videoScript: "Your check-in has been processed with care."
-//   };
-// }
-
-// static async runDiagnostics(): Promise<{
-//   huggingFace: { success: boolean; message: string };
-//   tavus: { success: boolean; message: string };
-//   overall: { success: boolean; message: string };
-// }> {
-//   const results = {
-//     huggingFace: { success: true, message: 'AI Response Service operational with enhanced templates' },
-//     tavus: { success: true, message: 'Video service available' },
-//     overall: { success: true, message: 'All systems operational' }
-//   };
-
-//   // Test if we have API keys for enhanced functionality
-//   const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-//   const tavusKey = import.meta.env.VITE_TAVUS_API_KEY;
-
-//   if (!geminiKey) {
-//     results.huggingFace.success = false;
-//     results.huggingFace.message = 'Gemini API key not configured - using enhanced templates only';
-//   }
-
-//   if (!tavusKey) {
-//     results.tavus.success = false;
-//     results.tavus.message = 'Tavus API key not configured';
-//   }
-
-//   if (!results.huggingFace.success || !results.tavus.success) {
-//     results.overall.success = false;
-//     results.overall.message = 'Some services have missing API keys';
-//   }
-
-//   return results;
-// }
-// }
