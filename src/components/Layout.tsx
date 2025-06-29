@@ -131,7 +131,7 @@ function DashboardContainer({
   return (
     <section
       className={`${
-        openSidebar && "w-full h-full lg:w-[300px]"
+        openSidebar && "w-full h-full lg:w-[300px] over-flow-y-hidden "
       } w-[10%] absolute z-[998] flex flex-row items-start transition-all duration-200 ease-in lg:w-[5%]`}
     >
       <div
