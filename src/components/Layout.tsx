@@ -12,7 +12,6 @@ import {
   BookOpen,
   Settings,
   LogOut,
-  UserRound,
   PanelRightOpen,
   MoreHorizontal,
 } from "lucide-react";
@@ -249,7 +248,7 @@ function DashboardNavContainer({
           {/* Profile Avatar */}
           <div className="flex items-center">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
-              {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
+              {profile?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
           </div>
         </div>
