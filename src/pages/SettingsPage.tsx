@@ -238,8 +238,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex justify-center">
-      <div className="w-full max-w-4xl px-6 py-8 pt-24">
+    <div className="w-full min-h-screen bg-gray-50 flex justify-center ">
+      <div className="w-full px-6 py-8 pt-24 lg:w-[90%]">
         {/* Back to Dashboard Button */}
         <Button
           onClick={() => navigate("/dashboard")}
@@ -277,8 +277,8 @@ export default function SettingsPage() {
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-start justify-between mb-[2rem]">
               <div className="flex flex-col md:flex-row  md:items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-bold text-[20px] ">
+                  {profile?.name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
 
                 <div>
@@ -312,7 +312,7 @@ export default function SettingsPage() {
                 <Button
                   onClick={() => setIsEditing(true)}
                   variant="outline"
-                  className="w-full flex items-center gap-2"
+                  className="w-full flex items-center gap-2 md:w-[25%] lg:w-[15%] "
                 >
                   <Edit3 className="w-4 h-4" />
                   Edit Profile
